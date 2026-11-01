@@ -1,0 +1,4 @@
+COMPILATION_UNIT -> COMPILATION_UNIT [1:1]
+|--SEMI -> ; [1:1]
+|--SEMI -> ; [1:2]
+`--SEMI -> ; [2:1]

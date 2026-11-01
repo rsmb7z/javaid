@@ -7,6 +7,7 @@ FallThrough                          1        1       1         0        0     1
 FileTabCharacter                934099   934099  934099         0        0     100.0%
 GenericWhitespace                   55       55      55         0        0     100.0%
 InterfaceTypeParameterName          14       14      14         0        0     100.0%
+InvalidJavadocPosition               3        3       3         0        0     100.0%
 LambdaParameterName                 45       45      45         0        0     100.0%
 LeftCurlyEol                       353      353     353         0        0     100.0%
 LeftCurlyNl                        278      278     278         0        0     100.0%
@@ -15,6 +16,7 @@ LocalFinalVariableName              30       30      30         0        0     1
 LocalVariableName                  479      479     479         0        0     100.0%
 MethodParamPad                       2        2       2         0        0     100.0%
 MethodTypeParameterName             24       24      24         0        0     100.0%
+MissingJavadocMethod             20787    20787   20787         0        0     100.0%
 MissingSwitchDefault               142      142     142         0        0     100.0%
 ModifierOrder                       58       58      58         0        0     100.0%
 MultipleVariableDeclarations        42       42      42         0        0     100.0%
@@ -34,4 +36,4 @@ TypeName                            30       30      30         0        0     1
 WhitespaceAfter                   2904     2904    2904         0        0     100.0%
 WhitespaceAround                  1001     1001    1001         0        0     100.0%
 noTrailingWhitespace               113      113     113         0        0     100.0%
-TOTAL                          1025538  1025538 1025538         0        0     100.0%
+TOTAL                          1046328  1046328 1046328         0        0     100.0%

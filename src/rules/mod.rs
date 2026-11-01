@@ -11,9 +11,19 @@ pub mod fallthrough;
 pub mod hidden;
 pub mod importcheck;
 pub mod imports;
+pub mod javadoc;
+pub mod javadoc_style;
+pub mod javadoc_tags;
+pub mod javadoc_tree;
+pub mod javadoc_tree_checks;
 pub mod magic;
 pub mod misc;
 pub mod modifiers;
+pub mod abbr;
+pub mod commentfilter;
+pub mod customimport;
+pub mod unicode;
+pub mod googlenames;
 pub mod naming;
 pub mod pad;
 pub mod redundant;
@@ -40,6 +50,9 @@ pub struct State<'a> {
     pub design: design::State,
     pub declorder: declorder::State,
     pub importcheck: importcheck::State,
+    pub unicode: unicode::State,
+    pub commentfilter: commentfilter::State,
+    pub customimport: customimport::State,
     /// End of the `package` or `import` declaration being walked into. Only the padding rules look
     /// inside one; to every other rule it is a leaf, as before.
     pub inert_end: usize,
@@ -67,6 +80,14 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
     }
     imports::leave_scopes(&mut st.imports, node);
     declorder::on_node(cx, &mut st.declorder, node);
+    match node.kind() {
+        "enum_constant" => javadoc::on_variable(cx, node),
+        "annotation_type_element_declaration" => {
+            javadoc::on_method(cx, node);
+            javadoc::on_javadoc_method(cx, node);
+        }
+        _ => {}
+    }
     let kind = cx.syn.kind(node);
     if kind.pad_token {
         whitespace::on_token(cx, node);
@@ -80,14 +101,19 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
     }
     match kind.act {
         Act::None => {}
+        Act::StringLiteral => unicode::on_literal(cx, &mut st.unicode, node),
         Act::Comment => {
+            unicode::on_comment(cx, &mut st.unicode, node);
+            commentfilter::on_comment(cx, &mut st.commentfilter, node);
             imports::on_comment(cx, &mut st.imports, node);
+            javadoc::on_comment(cx, node);
             comments::on_comment(cx, node);
             whitespace::on_comment(cx, node);
         }
         Act::Ident => imports::on_ident(cx, &mut st.imports, node),
         Act::Import => {
             importcheck::on_import(cx, &mut st.importcheck, node);
+            customimport::on_import(cx, &mut st.customimport, node);
             imports::on_star_import(cx, node);
             imports::on_import(cx, &mut st.imports, node);
             return enter_for_padding(cx, st, node);
@@ -95,12 +121,16 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
         Act::Package => {
             design::on_package(cx, &mut st.design, node);
             importcheck::on_package(cx, &mut st.importcheck, node);
+            customimport::on_package(cx, &mut st.customimport, node);
             naming::on_package(cx, node);
             imports::on_package(cx, &mut st.imports, node);
             return enter_for_padding(cx, st, node);
         }
         Act::TypeDecl => {
             naming::on_type_decl(cx, node);
+            abbr::on_type_decl(cx, node);
+            javadoc::on_type(cx, node);
+            javadoc::on_missing_type(cx, node);
             design::on_type_decl(cx, &mut st.design, node);
             importcheck::on_class_decl(cx, &mut st.importcheck, node);
             design::on_class(cx, node);
@@ -118,30 +148,42 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
         }
         Act::Method => {
             naming::on_method(cx, node);
+            abbr::on_method(cx, node);
+            googlenames::on_method(cx, node);
             size::on_method_like(cx, node);
             extension::on_method(cx, node);
+            javadoc::on_method(cx, node);
+            javadoc::on_javadoc_method(cx, node);
         }
         Act::Constructor => {
             size::on_method_like(cx, node);
             design::on_constructor(cx, &mut st.design, node);
+            javadoc::on_method(cx, node);
+            javadoc::on_javadoc_method(cx, node);
         }
         Act::Field => {
             naming::on_field(cx, node);
+            abbr::on_field(cx, node);
+            googlenames::on_field(cx, node);
             design::on_visibility(cx, node);
+            javadoc::on_variable(cx, node);
             coding::on_declaration(cx, node);
         }
         Act::LocalVar => {
             naming::on_local_var(cx, node);
+            abbr::on_local_var(cx, node);
             hidden::on_local(cx, node);
             coding::on_declaration(cx, node);
         }
         Act::Param => {
             naming::on_param(cx, node);
+            abbr::on_param(cx, node);
             hidden::on_param(cx, node);
             design::on_final_parameter(cx, node);
         }
         Act::CatchParam => {
             naming::on_catch_param(cx, node);
+            abbr::on_param(cx, node);
             hidden::on_param(cx, node);
             design::on_final_parameter(cx, node);
         }
@@ -160,18 +202,22 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
         }
         Act::Lambda => {
             naming::on_lambda(cx, node);
+            abbr::on_lambda(cx, node);
             hidden::on_lambda(cx, node);
         }
         Act::InstanceOf => {
             naming::on_instanceof(cx, node);
+            abbr::on_instanceof(cx, node);
             hidden::on_instanceof(cx, node);
         }
         Act::TypePattern => {
             naming::on_type_pattern(cx, node);
+            abbr::on_pattern(cx, node);
             hidden::on_pattern(cx, node);
         }
         Act::RecordPatternComponent => {
             naming::on_record_pattern_component(cx, node);
+            abbr::on_pattern(cx, node);
             hidden::on_pattern(cx, node);
         }
         Act::Catch => blocks::on_catch(cx, node),
@@ -189,6 +235,7 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
             hidden::on_enhanced_for(cx, node);
             blocks::on_loop(cx, node, "for");
             naming::on_enhanced_for(cx, node);
+            abbr::on_enhanced_for(cx, node);
         }
         Act::Do => blocks::on_loop(cx, node, "do"),
         Act::Dimensions => misc::on_dimensions(cx, node),
@@ -228,4 +275,7 @@ pub fn finish<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>) {
     imports::finish(cx, &mut st.imports);
     design::finish(cx, &mut st.design);
     importcheck::finish(cx, &mut st.importcheck);
+    unicode::finish(cx, &mut st.unicode);
+    customimport::finish(cx, &mut st.customimport);
+    commentfilter::finish(cx, &mut st.commentfilter);
 }

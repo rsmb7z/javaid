@@ -1,0 +1,7 @@
+COMPACT_COMPILATION_UNIT -> COMPACT_COMPILATION_UNIT [1:1]
+`--VARIABLE_DEF -> VARIABLE_DEF [1:1]
+    |--MODIFIERS -> MODIFIERS [1:1]
+    |--TYPE -> TYPE [1:1]
+    |   `--LITERAL_INT -> int [1:1]
+    |--IDENT -> x [1:5]
+    `--SEMI -> ; [1:6]

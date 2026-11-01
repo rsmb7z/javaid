@@ -1,7 +1,7 @@
 # javaid
 
 A fast Java linter written in Rust, built to **reproduce Checkstyle's findings exactly**. It is a
-v0.1 preview (see [CHANGELOG.md](CHANGELOG.md)): 67 modules, a `checkstyle.xml` reader, no cache, no
+v0.1 preview (see [CHANGELOG.md](CHANGELOG.md)): 81 modules, a `checkstyle.xml` reader, no cache, no
 fixes. The goal is a drop-in for Checkstyle configurations; today it runs the modules it has and
 lists, by name, every one it skips. The project began with one question, answered with evidence:
 
@@ -121,9 +121,9 @@ one file (Checkstyle 4.0 ms), at 733 MB. See [FINDINGS.md](FINDINGS.md) section 
 
 ## Known limits
 
-- **67 modules.** Checkstyle 14.4 has 243 rule modules; its two bundled configs name 128 distinct
+- **81 modules.** Checkstyle 14.4 has 243 rule modules; its two bundled configs name 128 distinct
   modules, filters included. javaid runs every instance of the modules it implements, which is
-  44 of the 106 in `google_checks.xml` and 58 of the 73 in `sun_checks.xml`, and
+  49 of the 106 in `google_checks.xml` and 72 of the 73 in `sun_checks.xml`, and
   says which it skips and why. Most of what is missing is Javadoc style, `Indentation`, the
   suppression filters and the rest of the whitespace family (`SingleSpaceSeparator`,
   `EmptyLineSeparator`, `GoogleRightCurly` and a few more), so javaid is **not yet a drop-in for those

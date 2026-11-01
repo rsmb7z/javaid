@@ -1,0 +1,1 @@
+int x = 1; void m() {} class A {} int y;

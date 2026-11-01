@@ -64,7 +64,36 @@ pub const REGISTRY: &[Module] = &[
     Module { name: "RegexpSingleline", family: "text", multi: true, own_name: true },
     Module { name: "BeforeExecutionExclusionFileFilter", family: "filters", multi: true, own_name: true },
     Module { name: "SuppressionFilter", family: "filters", multi: true, own_name: true },
+    Module { name: "SuppressWithNearbyTextFilter", family: "filters", multi: true, own_name: true },
+    Module { name: "SuppressionCommentFilter", family: "filters", multi: true, own_name: true },
+    Module { name: "SuppressWithNearbyCommentFilter", family: "filters", multi: true, own_name: true },
+    Module { name: "SuppressWithPlainTextCommentFilter", family: "filters", multi: true, own_name: true },
     Module { name: "SuppressionXpathFilter", family: "filters", multi: true, own_name: true },
+    Module { name: "NonEmptyAtclauseDescription", family: "javadoc", multi: false, own_name: false },
+    Module { name: "AtclauseOrder", family: "javadoc", multi: false, own_name: false },
+    Module { name: "SingleLineJavadoc", family: "javadoc", multi: false, own_name: false },
+    Module { name: "JavadocMissingLeadingAsterisk", family: "javadoc", multi: false, own_name: false },
+    Module { name: "AbbreviationAsWordInName", family: "naming", multi: false, own_name: false },
+    Module { name: "GoogleMethodName", family: "naming", multi: false, own_name: false },
+    Module { name: "GoogleNonConstantFieldName", family: "naming", multi: false, own_name: false },
+    Module { name: "MultilineCommentLeadingAsteriskPresence", family: "misc", multi: false, own_name: false },
+    Module { name: "AvoidEscapedUnicodeCharacters", family: "misc", multi: false, own_name: false },
+    Module { name: "CustomImportOrder", family: "imports", multi: false, own_name: false },
+    Module { name: "JavadocContentLocation", family: "javadoc", multi: false, own_name: false },
+    Module { name: "JavadocLeadingAsteriskAlign", family: "javadoc", multi: false, own_name: false },
+    Module { name: "RequireEmptyLineBeforeBlockTagGroup", family: "javadoc", multi: false, own_name: false },
+    Module { name: "SummaryJavadoc", family: "javadoc", multi: false, own_name: false },
+    Module { name: "JavadocParagraph", family: "javadoc", multi: false, own_name: false },
+    Module { name: "JavadocTagContinuationIndentation", family: "javadoc", multi: false, own_name: false },
+    Module { name: "MissingJavadocType", family: "javadoc", multi: false, own_name: false },
+    Module { name: "JavadocPackage", family: "javadoc", multi: false, own_name: false },
+    Module { name: "Translation", family: "misc", multi: false, own_name: false },
+    Module { name: "MultiFileRegexpHeader", family: "header", multi: false, own_name: false },
+    Module { name: "JavadocMethod", family: "javadoc", multi: false, own_name: false },
+    Module { name: "JavadocType", family: "javadoc", multi: false, own_name: false },
+    Module { name: "InvalidJavadocPosition", family: "javadoc", multi: false, own_name: false },
+    Module { name: "MissingJavadocMethod", family: "javadoc", multi: false, own_name: false },
+    Module { name: "JavadocVariable", family: "javadoc", multi: false, own_name: false },
     Module { name: "DescendantToken", family: "coding and blocks", multi: true, own_name: true },
     Module { name: "TodoComment", family: "text", multi: true, own_name: true },
     Module { name: "ArrayTypeStyle", family: "modifiers and small checks", multi: false, own_name: false },
@@ -148,6 +177,28 @@ impl Format {
             }
         };
         Ok(Format { source: source.to_string(), engine })
+    }
+
+    /// The groups of the first match (`Matcher.find()`), group 0 first; an unmatched group is `None`.
+    pub fn captures(&self, text: &str) -> Option<Vec<Option<String>>> {
+        match &self.engine {
+            Engine::Fast(re) => {
+                let c = re.captures(text.as_bytes())?;
+                Some((0..c.len()).map(|i| c.get(i).map(|m| String::from_utf8_lossy(m.as_bytes()).into_owned())).collect())
+            }
+            Engine::Fancy(re) => {
+                let c = re.captures(text).ok()??;
+                Some((0..c.len()).map(|i| c.get(i).map(|m| m.as_str().to_string())).collect())
+            }
+        }
+    }
+
+    /// Every non-overlapping match as `(start, length)` in bytes, like `Matcher.find()` in a loop.
+    pub fn find_all(&self, text: &str) -> Vec<(usize, usize)> {
+        match &self.engine {
+            Engine::Fast(re) => re.find_iter(text.as_bytes()).map(|m| (m.start(), m.end() - m.start())).collect(),
+            Engine::Fancy(re) => re.find_iter(text).filter_map(Result::ok).map(|m| (m.start(), m.end() - m.start())).collect(),
+        }
     }
 
     pub fn matches(&self, name: &[u8]) -> bool {
@@ -383,6 +434,39 @@ pub struct RedundantModifier {
 }
 
 #[derive(Clone, Debug)]
+pub struct AbbreviationAsWordInName {
+    pub allowed_length: usize,
+    pub allowed_abbreviations: Vec<String>,
+    pub ignore_final: bool,
+    pub ignore_static: bool,
+    pub ignore_static_final: bool,
+    pub ignore_overridden_methods: bool,
+    pub tokens: Vec<String>,
+}
+
+#[derive(Clone, Debug)]
+pub struct AvoidEscapedUnicode {
+    pub allow_escapes_for_control_characters: bool,
+    pub allow_by_tail_comment: bool,
+    pub allow_if_all_characters_escaped: bool,
+    pub allow_non_printable_escapes: bool,
+}
+
+#[derive(Clone, Debug)]
+pub struct CustomImportOrder {
+    /// The configured groups in order (`SAME_PACKAGE(3)` becomes `SAME_PACKAGE`).
+    pub rules: Vec<String>,
+    /// The same, with the catch-all group Checkstyle appends.
+    pub rules_with_fallback: Vec<String>,
+    pub same_package_depth: usize,
+    pub standard_package: Format,
+    pub third_party: Format,
+    pub special_imports: Format,
+    pub separate_line_between_groups: bool,
+    pub sort_alphabetically: bool,
+}
+
+#[derive(Clone, Debug)]
 pub struct HiddenField {
     pub ignore_format: Option<Format>,
     pub ignore_constructor_parameter: bool,
@@ -599,6 +683,96 @@ pub struct FallThrough {
     pub relief: Format,
 }
 
+#[derive(Clone, Debug)]
+pub struct AtclauseOrder {
+    /// The order, as written (`@param`, `@return`, ...).
+    pub tag_order: Vec<String>,
+    /// Checkstyle token names of the declarations whose Javadoc is checked.
+    pub target: Vec<String>,
+}
+
+#[derive(Clone, Debug)]
+pub struct SingleLineJavadoc {
+    pub ignored_tags: Vec<String>,
+    pub ignore_inline_tags: bool,
+}
+
+#[derive(Clone, Debug)]
+pub struct SummaryJavadoc {
+    pub forbidden_fragments: Format,
+    pub period: String,
+}
+
+#[derive(Clone, Debug)]
+pub struct MissingJavadocType {
+    pub scope: u8,
+    pub exclude_scope: Option<u8>,
+    pub skip_annotations: Vec<String>,
+}
+
+#[derive(Clone, Debug)]
+pub struct JavadocPackage {
+    pub allow_legacy: bool,
+}
+
+#[derive(Clone, Debug)]
+pub struct Translation {
+    pub base_name: Format,
+    pub required: Vec<String>,
+    pub extensions: Extensions,
+}
+
+#[derive(Clone, Debug)]
+pub struct MultiFileRegexpHeader {
+    /// The header file names as written, joined with ", " for messages.
+    pub names: String,
+    /// One list of line patterns per header file, in order, with the file's name.
+    pub headers: Vec<(String, Vec<Format>)>,
+    pub extensions: Extensions,
+}
+
+/// What Checkstyle ships as `/com/puppycrawl/tools/checkstyle/any.header`: one line that matches anything.
+pub const ANY_HEADER: &str = "/com/puppycrawl/tools/checkstyle/any.header";
+
+#[derive(Clone, Debug)]
+pub struct JavadocMethod {
+    pub access: [bool; 4],
+    pub allow_missing_param_tags: bool,
+    pub allow_missing_return_tag: bool,
+    pub allowed_annotations: Vec<String>,
+    pub validate_throws: bool,
+    pub allow_inline_return: bool,
+}
+
+#[derive(Clone, Debug)]
+pub struct JavadocType {
+    pub scope: u8,
+    pub exclude_scope: Option<u8>,
+    pub author_format: Option<Format>,
+    pub version_format: Option<Format>,
+    pub allow_missing_param_tags: bool,
+    pub allow_unknown_tags: bool,
+    pub allowed_annotations: Vec<String>,
+}
+
+#[derive(Clone, Debug)]
+pub struct MissingJavadocMethod {
+    /// Checkstyle's `Scope` rank: 0 nothing, 1 public, 2 protected, 3 package, 4 private, 5 anonymous.
+    pub scope: u8,
+    pub exclude_scope: Option<u8>,
+    pub min_line_count: i64,
+    pub allowed_annotations: Vec<String>,
+    pub allow_missing_property_javadoc: bool,
+    pub ignore_method_names: Option<Format>,
+}
+
+#[derive(Clone, Debug)]
+pub struct JavadocVariable {
+    /// Public, protected, package, private: which access levels are checked.
+    pub access: [bool; 4],
+    pub ignore_name: Option<Format>,
+}
+
 /// `DescendantToken` as the bundled configurations use it: commas in a `for` header.
 #[derive(Clone, Debug)]
 pub struct DescendantToken {
@@ -633,6 +807,35 @@ pub struct Config {
     pub regexp_singleline: Vec<RegexpSingleline>,
     pub todo_comments: Vec<TodoComment>,
     pub descendant_tokens: Vec<DescendantToken>,
+    pub javadoc_variable: Option<JavadocVariable>,
+    pub missing_javadoc_method: Option<MissingJavadocMethod>,
+    pub invalid_javadoc_position: Option<()>,
+    pub javadoc_type: Option<JavadocType>,
+    pub javadoc_method: Option<JavadocMethod>,
+    pub javadoc_package: Option<JavadocPackage>,
+    pub non_empty_atclause_description: bool,
+    pub atclause_order: Option<AtclauseOrder>,
+    pub single_line_javadoc: Option<SingleLineJavadoc>,
+    pub javadoc_missing_leading_asterisk: bool,
+    /// `JavadocContentLocation.location`: true for `first_line`.
+    pub javadoc_content_location: Option<bool>,
+    pub abbreviation_as_word_in_name: Option<AbbreviationAsWordInName>,
+    pub multiline_comment_asterisk: bool,
+    pub custom_import_order: Option<CustomImportOrder>,
+    pub avoid_escaped_unicode: Option<AvoidEscapedUnicode>,
+    pub google_method_name: bool,
+    pub google_non_constant_field_name: bool,
+    /// `JavadocLeadingAsteriskAlign.indentation`.
+    pub javadoc_asterisk_align: Option<usize>,
+    pub require_empty_line_before_tag_group: bool,
+    pub summary_javadoc: Option<SummaryJavadoc>,
+    /// `JavadocParagraph.allowNewlineParagraph`.
+    pub javadoc_paragraph: Option<bool>,
+    /// `JavadocTagContinuationIndentation.offset`.
+    pub javadoc_tag_continuation_indent: Option<usize>,
+    pub missing_javadoc_type: Option<MissingJavadocType>,
+    pub translation: Option<Translation>,
+    pub multi_file_regexp_header: Option<MultiFileRegexpHeader>,
     pub array_type_style: bool,
     pub upper_ell: bool,
     pub empty_statement: bool,
@@ -683,6 +886,9 @@ pub struct Config {
     pub filters: Vec<String>,
     /// `BeforeExecutionExclusionFileFilter`: files whose path matches are not read at all.
     pub file_excludes: Vec<Format>,
+    /// `SuppressWithNearbyTextFilter` and `SuppressWithPlainTextCommentFilter` instances.
+    pub text_filters: Vec<crate::suppress::TextFilter>,
+    pub comment_filters: Vec<crate::suppress::CommentFilter>,
     /// The elements of every `SuppressionFilter` file.
     pub suppressions: Vec<crate::suppress::Suppression>,
     /// The Checker's own `fileExtensions`, if the configuration sets one.
@@ -709,6 +915,31 @@ impl Default for Config {
             regexp_singleline: Vec::new(),
             todo_comments: Vec::new(),
             descendant_tokens: Vec::new(),
+            javadoc_variable: None,
+            missing_javadoc_method: None,
+            invalid_javadoc_position: None,
+            javadoc_type: None,
+            javadoc_method: None,
+            javadoc_package: None,
+            non_empty_atclause_description: false,
+            atclause_order: None,
+            single_line_javadoc: None,
+            javadoc_missing_leading_asterisk: false,
+            javadoc_content_location: None,
+            abbreviation_as_word_in_name: None,
+            multiline_comment_asterisk: false,
+            custom_import_order: None,
+            avoid_escaped_unicode: None,
+            google_method_name: false,
+            google_non_constant_field_name: false,
+            javadoc_asterisk_align: None,
+            require_empty_line_before_tag_group: false,
+            summary_javadoc: None,
+            javadoc_paragraph: None,
+            javadoc_tag_continuation_indent: None,
+            missing_javadoc_type: None,
+            translation: None,
+            multi_file_regexp_header: None,
             array_type_style: false,
             upper_ell: false,
             empty_statement: false,
@@ -754,6 +985,8 @@ impl Default for Config {
             filters: Vec::new(),
             file_excludes: Vec::new(),
             suppressions: Vec::new(),
+            text_filters: Vec::new(),
+            comment_filters: Vec::new(),
             checker_extensions: None,
             tab_width: 8,
             ids: Vec::new(),
@@ -806,6 +1039,12 @@ impl Config {
             }
         };
         if let Some(m) = &self.file_tab_character {
+            add(&m.extensions);
+        }
+        if let Some(m) = &self.translation {
+            add(&m.extensions);
+        }
+        if let Some(m) = &self.multi_file_regexp_header {
             add(&m.extensions);
         }
         if let Some(m) = &self.newline_at_end_of_file {
@@ -899,6 +1138,36 @@ impl Props {
             return Err(format!("tokens: {name} is not supported by this module"));
         }
         Ok(tokens)
+    }
+
+    /// A `Scope` property: nothing, public, protected, package, private or anoninner.
+    fn scope(&mut self, name: &str) -> Result<Option<u8>, String> {
+        let Some(v) = self.take(name) else { return Ok(None) };
+        Ok(Some(match v.trim().to_ascii_lowercase().as_str() {
+            "nothing" => 0,
+            "public" => 1,
+            "protected" => 2,
+            "package" => 3,
+            "private" => 4,
+            "anoninner" => 5,
+            other => return Err(format!("property {name}: '{other}' is not a scope")),
+        }))
+    }
+
+    /// `accessModifiers`: a list of public, protected, package, private; all four when absent.
+    fn access_modifiers(&mut self) -> Result<[bool; 4], String> {
+        let Some(list) = self.take("accessModifiers") else { return Ok([true; 4]) };
+        let mut out = [false; 4];
+        for word in list.split(',').map(|w| w.trim().to_ascii_lowercase()).filter(|w| !w.is_empty()) {
+            match word.as_str() {
+                "public" => out[0] = true,
+                "protected" => out[1] = true,
+                "package" => out[2] = true,
+                "private" => out[3] = true,
+                other => return Err(format!("property accessModifiers: '{other}' is not public, protected, package or private")),
+            }
+        }
+        Ok(out)
     }
 
     /// `option`: `nospace` (the default) or `space`; true for `space`.
@@ -1449,6 +1718,292 @@ impl Config {
                     return Err(format!("the suppressions file '{file}' has <{first}> elements, which are not implemented yet"));
                 }
                 self.suppressions.extend(found);
+            }
+            "SuppressWithNearbyTextFilter" => {
+                let pattern = Format::new(&p.take("nearbyTextPattern").unwrap_or_else(|| "SUPPRESS CHECKSTYLE (\\w+)".to_string()))?;
+                let check = p.take("checkPattern").unwrap_or_else(|| ".*".to_string());
+                let message = p.take("messagePattern");
+                let id = p.take("idPattern");
+                let range = p.take("lineRange").unwrap_or_else(|| "0".to_string());
+                p.finish()?;
+                self.text_filters.push(crate::suppress::TextFilter::Nearby { pattern, check, message, id, range });
+            }
+            "SuppressionCommentFilter" => {
+                let off = Format::new(&p.take("offCommentFormat").unwrap_or_else(|| "CHECKSTYLE:OFF".to_string()))?;
+                let on = Format::new(&p.take("onCommentFormat").unwrap_or_else(|| "CHECKSTYLE:ON".to_string()))?;
+                let check = p.take("checkFormat").unwrap_or_else(|| ".*".to_string());
+                let message = p.take("messageFormat");
+                let id = p.take("idFormat");
+                let check_c = p.bool("checkC", true)?;
+                let check_cpp = p.bool("checkCPP", true)?;
+                p.finish()?;
+                self.comment_filters.push(crate::suppress::CommentFilter::OnOff { off, on, check, message, id, check_c, check_cpp });
+            }
+            "SuppressWithNearbyCommentFilter" => {
+                let comment = Format::new(&p.take("commentFormat").unwrap_or_else(|| "SUPPRESS CHECKSTYLE (\\w+)".to_string()))?;
+                let check = p.take("checkFormat").unwrap_or_else(|| ".*".to_string());
+                let message = p.take("messageFormat");
+                let id = p.take("idFormat");
+                let influence = p.take("influenceFormat").unwrap_or_else(|| "0".to_string());
+                let check_c = p.bool("checkC", true)?;
+                let check_cpp = p.bool("checkCPP", true)?;
+                p.finish()?;
+                self.comment_filters.push(crate::suppress::CommentFilter::Nearby { comment, check, message, id, influence, check_c, check_cpp });
+            }
+            "SuppressWithPlainTextCommentFilter" => {
+                let off = Format::new(&p.take("offCommentFormat").unwrap_or_else(|| "// CHECKSTYLE:OFF".to_string()))?;
+                let on = Format::new(&p.take("onCommentFormat").unwrap_or_else(|| "// CHECKSTYLE:ON".to_string()))?;
+                let check = p.take("checkFormat").unwrap_or_else(|| ".*".to_string());
+                let message = p.take("messageFormat");
+                let id = p.take("idFormat");
+                p.finish()?;
+                self.text_filters.push(crate::suppress::TextFilter::Plain { off, on, check, message, id });
+            }
+            "NonEmptyAtclauseDescription" => {
+                p.finish()?;
+                self.non_empty_atclause_description = true;
+            }
+            "JavadocMissingLeadingAsterisk" => {
+                p.finish()?;
+                self.javadoc_missing_leading_asterisk = true;
+            }
+            "MultilineCommentLeadingAsteriskPresence" => {
+                p.finish()?;
+                self.multiline_comment_asterisk = true;
+            }
+            "AvoidEscapedUnicodeCharacters" => {
+                let allow_escapes_for_control_characters = p.bool("allowEscapesForControlCharacters", false)?;
+                let allow_by_tail_comment = p.bool("allowByTailComment", false)?;
+                let allow_if_all_characters_escaped = p.bool("allowIfAllCharactersEscaped", false)?;
+                let allow_non_printable_escapes = p.bool("allowNonPrintableEscapes", false)?;
+                p.finish()?;
+                self.avoid_escaped_unicode =
+                    Some(AvoidEscapedUnicode { allow_escapes_for_control_characters, allow_by_tail_comment, allow_if_all_characters_escaped, allow_non_printable_escapes });
+            }
+            "CustomImportOrder" => {
+                let standard_package = Format::new(&p.take("standardPackageRegExp").unwrap_or_else(|| "^(java|javax)\\.".to_string()))?;
+                let third_party = Format::new(&p.take("thirdPartyPackageRegExp").unwrap_or_else(|| ".*".to_string()))?;
+                let special_imports = Format::new(&p.take("specialImportsRegExp").unwrap_or_else(|| "^$".to_string()))?;
+                let separate_line_between_groups = p.bool("separateLineBetweenGroups", true)?;
+                let sort_alphabetically = p.bool("sortImportsInGroupAlphabetically", false)?;
+                let mut same_package_depth = 0usize;
+                let mut rules = Vec::new();
+                if let Some(v) = p.take("customImportOrderRules") {
+                    for part in v.split(',').flat_map(|r| r.split("###")) {
+                        let rule = part.trim();
+                        match rule {
+                            "" => {}
+                            "STATIC" | "THIRD_PARTY_PACKAGE" | "STANDARD_JAVA_PACKAGE" | "SPECIAL_IMPORTS" => rules.push(rule.to_string()),
+                            r if r.starts_with("SAME_PACKAGE") => {
+                                let inner = r.split_once('(').and_then(|(_, t)| t.split_once(')')).map(|(n, _)| n.trim());
+                                same_package_depth = inner.and_then(|n| n.parse().ok()).filter(|n| *n > 0).ok_or_else(|| format!("SAME_PACKAGE rule parameter should be positive integer: {r}"))?;
+                                rules.push("SAME_PACKAGE".to_string());
+                            }
+                            other => return Err(format!("customImportOrderRules: unexpected rule {other}")),
+                        }
+                    }
+                }
+                p.finish()?;
+                let mut rules_with_fallback = rules.clone();
+                rules_with_fallback.push("NOT_ASSIGNED_TO_ANY_GROUP".to_string());
+                self.custom_import_order =
+                    Some(CustomImportOrder { rules, rules_with_fallback, same_package_depth, standard_package, third_party, special_imports, separate_line_between_groups, sort_alphabetically });
+            }
+            "GoogleMethodName" => {
+                p.finish()?;
+                self.google_method_name = true;
+            }
+            "GoogleNonConstantFieldName" => {
+                p.finish()?;
+                self.google_non_constant_field_name = true;
+            }
+            "AbbreviationAsWordInName" => {
+                let allowed_length = p.usize("allowedAbbreviationLength", 3)?;
+                let allowed_abbreviations = p.take("allowedAbbreviations").map_or_else(Vec::new, |v| v.split(',').map(|a| a.trim().to_string()).filter(|a| !a.is_empty()).collect());
+                let ignore_final = p.bool("ignoreFinal", true)?;
+                let ignore_static = p.bool("ignoreStatic", true)?;
+                let ignore_static_final = p.bool("ignoreStaticFinal", true)?;
+                let ignore_overridden_methods = p.bool("ignoreOverriddenMethods", true)?;
+                const ACCEPTED: &[&str] = &[
+                    "CLASS_DEF", "INTERFACE_DEF", "ENUM_DEF", "ANNOTATION_DEF", "ANNOTATION_FIELD_DEF", "PARAMETER_DEF", "VARIABLE_DEF", "METHOD_DEF", "ENUM_CONSTANT_DEF",
+                    "PATTERN_VARIABLE_DEF", "RECORD_DEF", "RECORD_COMPONENT_DEF",
+                ];
+                let tokens = match p.take("tokens") {
+                    None => ACCEPTED.iter().filter(|t| **t != "ENUM_CONSTANT_DEF").map(|t| t.to_string()).collect(),
+                    Some(v) => {
+                        let list: Vec<String> = v.split(',').map(|a| a.trim().to_string()).filter(|a| !a.is_empty()).collect();
+                        if let Some(bad) = list.iter().find(|t| !ACCEPTED.contains(&t.as_str())) {
+                            return Err(format!("tokens: {bad} is not a token this module accepts"));
+                        }
+                        list
+                    }
+                };
+                p.finish()?;
+                self.abbreviation_as_word_in_name =
+                    Some(AbbreviationAsWordInName { allowed_length, allowed_abbreviations, ignore_final, ignore_static, ignore_static_final, ignore_overridden_methods, tokens });
+            }
+            "JavadocContentLocation" => {
+                let first = match p.take("location").map(|v| v.trim().to_ascii_lowercase()) {
+                    None => false,
+                    Some(v) if v == "second_line" => false,
+                    Some(v) if v == "first_line" => true,
+                    Some(v) => return Err(format!("property location: expected first_line or second_line, got '{v}'")),
+                };
+                p.finish()?;
+                self.javadoc_content_location = Some(first);
+            }
+            "JavadocLeadingAsteriskAlign" => {
+                let indentation = p.usize("indentation", 1)?;
+                p.finish()?;
+                self.javadoc_asterisk_align = Some(indentation);
+            }
+            "RequireEmptyLineBeforeBlockTagGroup" => {
+                p.finish()?;
+                self.require_empty_line_before_tag_group = true;
+            }
+            "SummaryJavadoc" => {
+                let forbidden_fragments = Format::new(&p.take("forbiddenSummaryFragments").unwrap_or_else(|| "^$".to_string()))?;
+                let period = p.take("period").unwrap_or_else(|| ".".to_string());
+                p.finish()?;
+                self.summary_javadoc = Some(SummaryJavadoc { forbidden_fragments, period });
+            }
+            "JavadocParagraph" => {
+                let allow_newline_paragraph = p.bool("allowNewlineParagraph", true)?;
+                p.finish()?;
+                self.javadoc_paragraph = Some(allow_newline_paragraph);
+            }
+            "JavadocTagContinuationIndentation" => {
+                let offset = p.usize("offset", 4)?;
+                p.finish()?;
+                self.javadoc_tag_continuation_indent = Some(offset);
+            }
+            "AtclauseOrder" => {
+                let list = |v: String| v.split(',').map(|a| a.trim().to_string()).filter(|a| !a.is_empty()).collect::<Vec<_>>();
+                let tag_order = p.take("tagOrder").map_or_else(
+                    || {
+                        ["@author", "@version", "@param", "@return", "@throws", "@exception", "@see", "@since", "@serial", "@serialField", "@serialData", "@deprecated"]
+                            .map(String::from)
+                            .to_vec()
+                    },
+                    list,
+                );
+                let target = p.take("target").map_or_else(
+                    || ["CLASS_DEF", "INTERFACE_DEF", "ENUM_DEF", "METHOD_DEF", "CTOR_DEF", "VARIABLE_DEF", "RECORD_DEF", "COMPACT_CTOR_DEF"].map(String::from).to_vec(),
+                    list,
+                );
+                p.finish()?;
+                self.atclause_order = Some(AtclauseOrder { tag_order, target });
+            }
+            "SingleLineJavadoc" => {
+                let ignored_tags = p.take("ignoredTags").map_or_else(Vec::new, |v| v.split(',').map(|a| a.trim().to_string()).filter(|a| !a.is_empty()).collect());
+                let ignore_inline_tags = p.bool("ignoreInlineTags", true)?;
+                p.finish()?;
+                self.single_line_javadoc = Some(SingleLineJavadoc { ignored_tags, ignore_inline_tags });
+            }
+            "MissingJavadocType" => {
+                p.expect_default("tokens", "INTERFACE_DEF, CLASS_DEF, ENUM_DEF, ANNOTATION_DEF, RECORD_DEF")?;
+                let scope = p.scope("scope")?.unwrap_or(1);
+                let exclude_scope = p.scope("excludeScope")?;
+                let skip_annotations = match p.take("skipAnnotations") {
+                    None => vec!["Generated".to_string()],
+                    Some(v) => v.split(',').map(|a| a.trim().to_string()).filter(|a| !a.is_empty()).collect(),
+                };
+                p.finish()?;
+                self.missing_javadoc_type = Some(MissingJavadocType { scope, exclude_scope, skip_annotations });
+            }
+            "JavadocPackage" => {
+                let allow_legacy = p.bool("allowLegacy", false)?;
+                p.finish()?;
+                self.javadoc_package = Some(JavadocPackage { allow_legacy });
+            }
+            "Translation" => {
+                let base_name = Format::new(&p.take("baseName").unwrap_or_else(|| "^messages.*$".to_string()))?;
+                let required = p.take("requiredTranslations").map_or_else(Vec::new, |v| v.split(',').map(|c| c.trim().to_string()).filter(|c| !c.is_empty()).collect());
+                // A bundle is made of `.properties` files unless told otherwise.
+                let extensions = p.extensions().or_else(|| Some(vec!["properties".to_string()]));
+                p.finish()?;
+                self.translation = Some(Translation { base_name, required, extensions });
+            }
+            "MultiFileRegexpHeader" => {
+                let list = p.take("headerFiles");
+                let extensions = p.extensions();
+                p.finish()?;
+                let Some(list) = list else { return Ok(()) };
+                let mut headers = Vec::new();
+                for name in list.split(',').map(str::trim).filter(|n| !n.is_empty()) {
+                    let text = if name == ANY_HEADER {
+                        "^.*$\n".to_string()
+                    } else {
+                        std::fs::read_to_string(name).map_err(|e| format!("unable to load header file {name}: {e}"))?
+                    };
+                    let patterns = text.lines().map(|l| Format::new(if l.is_empty() { "^$" } else { l })).collect::<Result<Vec<_>, _>>()?;
+                    if patterns.is_empty() {
+                        return Err(format!("Header file is empty: {name}"));
+                    }
+                    headers.push((name.to_string(), patterns));
+                }
+                let names = headers.iter().map(|(n, _)| n.as_str()).collect::<Vec<_>>().join(", ");
+                self.multi_file_regexp_header = Some(MultiFileRegexpHeader { names, headers, extensions });
+            }
+            "JavadocMethod" => {
+                p.expect_default("tokens", "METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF, COMPACT_CTOR_DEF")?;
+                p.expect_default("violateExecutionOnNonTightHtml", "false")?;
+                let access = p.access_modifiers()?;
+                let allow_missing_param_tags = p.bool("allowMissingParamTags", false)?;
+                let allow_missing_return_tag = p.bool("allowMissingReturnTag", false)?;
+                let allowed_annotations = match p.take("allowedAnnotations") {
+                    None => vec!["Override".to_string()],
+                    Some(v) => v.split(',').map(|a| a.trim().to_string()).filter(|a| !a.is_empty()).collect(),
+                };
+                let validate_throws = p.bool("validateThrows", false)?;
+                let allow_inline_return = p.bool("allowInlineReturn", false)?;
+                p.finish()?;
+                self.javadoc_method =
+                    Some(JavadocMethod { access, allow_missing_param_tags, allow_missing_return_tag, allowed_annotations, validate_throws, allow_inline_return });
+            }
+            "JavadocType" => {
+                p.expect_default("tokens", "INTERFACE_DEF, CLASS_DEF, ENUM_DEF, ANNOTATION_DEF, RECORD_DEF")?;
+                p.expect_default("violateExecutionOnNonTightHtml", "false")?;
+                let scope = p.scope("scope")?.unwrap_or(4);
+                let exclude_scope = p.scope("excludeScope")?;
+                let author_format = p.take("authorFormat").map(|v| Format::new(&v)).transpose()?;
+                let version_format = p.take("versionFormat").map(|v| Format::new(&v)).transpose()?;
+                let allow_missing_param_tags = p.bool("allowMissingParamTags", false)?;
+                let allow_unknown_tags = p.bool("allowUnknownTags", false)?;
+                let allowed_annotations = match p.take("allowedAnnotations") {
+                    None => vec!["Generated".to_string()],
+                    Some(v) => v.split(',').map(|a| a.trim().to_string()).filter(|a| !a.is_empty()).collect(),
+                };
+                p.finish()?;
+                self.javadoc_type =
+                    Some(JavadocType { scope, exclude_scope, author_format, version_format, allow_missing_param_tags, allow_unknown_tags, allowed_annotations });
+            }
+            "InvalidJavadocPosition" => {
+                p.finish()?;
+                self.invalid_javadoc_position = Some(());
+            }
+            "MissingJavadocMethod" => {
+                p.expect_default("tokens", "METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF, COMPACT_CTOR_DEF")?;
+                let scope = p.scope("scope")?.unwrap_or(1);
+                let exclude_scope = p.scope("excludeScope")?;
+                let min_line_count = p.take("minLineCount").map_or(Ok(-1), |v| v.trim().parse::<i64>().map_err(|_| format!("property minLineCount: '{}' is not an integer", v.trim())))?;
+                let allowed_annotations = match p.take("allowedAnnotations") {
+                    None => vec!["Override".to_string()],
+                    Some(v) => v.split(',').map(|a| a.trim().to_string()).filter(|a| !a.is_empty()).collect(),
+                };
+                let allow_missing_property_javadoc = p.bool("allowMissingPropertyJavadoc", false)?;
+                let ignore_method_names = p.take("ignoreMethodNamesRegex").map(|v| Format::new(&format!("^(?:{v})$"))).transpose()?;
+                p.finish()?;
+                self.missing_javadoc_method =
+                    Some(MissingJavadocMethod { scope, exclude_scope, min_line_count, allowed_annotations, allow_missing_property_javadoc, ignore_method_names });
+            }
+            "JavadocVariable" => {
+                p.expect_default("tokens", "VARIABLE_DEF, ENUM_CONSTANT_DEF")?;
+                let access = p.access_modifiers()?;
+                // `matches()`, not `find()`: the whole name has to match.
+                let ignore_name = p.take("ignoreNamePattern").map(|v| Format::new(&format!("^(?:{v})$"))).transpose()?;
+                p.finish()?;
+                self.javadoc_variable = Some(JavadocVariable { access, ignore_name });
             }
             "DescendantToken" => {
                 // Without `tokens` Checkstyle's module looks at nothing.

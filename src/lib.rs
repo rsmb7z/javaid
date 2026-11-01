@@ -5,8 +5,10 @@
 //! engine as the command-line binary.
 
 pub mod config;
+pub mod csast;
 pub mod engine;
 pub mod javadoc;
 pub mod rules;
+pub mod fileset;
 pub mod suppress;
 pub mod syntax;

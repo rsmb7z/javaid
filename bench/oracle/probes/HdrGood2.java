@@ -1,0 +1,4 @@
+/*
+ * Foo
+ */
+class HdrGood2 {}

@@ -1,0 +1,1 @@
+class A {} class B {} interface C {} enum D {} @interface E {} record F() {}

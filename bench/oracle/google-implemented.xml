@@ -6,6 +6,10 @@
   <property name="charset" value="UTF-8" />
   <property name="severity" value="${org.checkstyle.google.severity}" default="warning" />
   <property name="fileExtensions" value="java, properties, xml" />
+  <module name="SuppressionFilter">
+    <property name="file" value="${org.checkstyle.google.suppressionfilter.config}" default="checkstyle-suppressions.xml" />
+    <property name="optional" value="true" />
+  </module>
   <module name="FileTabCharacter">
     <property name="eachLine" value="true" />
   </module>
@@ -168,6 +172,20 @@
       <property name="option" value="EOL" />
       <property name="tokens" value="LAMBDA" />
     </module>
+    <module name="InvalidJavadocPosition" />
+    <module name="JavadocMethod">
+      <property name="accessModifiers" value="public, protected" />
+      <property name="allowMissingParamTags" value="true" />
+      <property name="allowMissingReturnTag" value="true" />
+      <property name="allowedAnnotations" value="Override, Test" />
+      <property name="tokens" value="METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF, COMPACT_CTOR_DEF" />
+    </module>
+    <module name="MissingJavadocMethod">
+      <property name="scope" value="protected" />
+      <property name="allowMissingPropertyJavadoc" value="true" />
+      <property name="allowedAnnotations" value="Override, Test" />
+      <property name="tokens" value="METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF,                                    COMPACT_CTOR_DEF" />
+    </module>
     <module name="TodoComment">
       <property name="id" value="TodoFormat" />
       <property name="format" value="^[ \t]*(?!TODO:)(?i:TODO)\b:?" />
@@ -180,6 +198,10 @@
     </module>
     <module name="EmptyCatchBlock">
       <property name="commentFormat" value="\w+" />
+    </module>
+    <module name="SuppressionXpathFilter">
+      <property name="file" value="${org.checkstyle.google.suppressionxpathfilter.config}" default="checkstyle-xpath-suppressions.xml" />
+      <property name="optional" value="true" />
     </module>
   </module>
 </module>

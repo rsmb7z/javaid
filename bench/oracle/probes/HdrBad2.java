@@ -1,0 +1,4 @@
+/*
+ * Bar
+ */
+class HdrBad2 {}

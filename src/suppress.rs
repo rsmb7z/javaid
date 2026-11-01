@@ -83,8 +83,130 @@ pub fn file_excluded(cfg: &Config, path: &Path) -> bool {
     cfg.file_excludes.iter().any(|f| f.matches(name.as_bytes()))
 }
 
+/// A filter that reads the file's text for its instructions.
+#[derive(Clone, Debug)]
+pub enum TextFilter {
+    /// `SUPPRESS CHECKSTYLE name` in a line suppresses the lines around it.
+    Nearby { pattern: Format, check: String, message: Option<String>, id: Option<String>, range: String },
+    /// An "off" line suppresses everything after it until an "on" line.
+    Plain { off: Format, on: Format, check: String, message: Option<String>, id: Option<String> },
+}
+
+/// `SuppressionCommentFilter` and `SuppressWithNearbyCommentFilter`: filters of the TreeWalker's
+/// findings that read the file's comments.
+#[derive(Clone, Debug)]
+pub enum CommentFilter {
+    OnOff { off: Format, on: Format, check: String, message: Option<String>, id: Option<String>, check_c: bool, check_cpp: bool },
+    Nearby { comment: Format, check: String, message: Option<String>, id: Option<String>, influence: String, check_c: bool, check_cpp: bool },
+}
+
+/// `fillTemplateWithStringsByRegexp`: `$n` becomes group `n` of the first match of `re` in `text`.
+pub fn fill(template: &str, text: &str, re: &Format) -> String {
+    let mut out = template.to_string();
+    if let Some(groups) = re.captures(text) {
+        for (i, g) in groups.iter().enumerate() {
+            if let Some(g) = g {
+                out = out.replace(&format!("${i}"), g);
+            }
+        }
+    }
+    out
+}
+
+/// The part of a finding the text filters look at.
+struct Event<'a> {
+    line: u32,
+    source: String,
+    id: Option<&'static str>,
+    message: &'a str,
+}
+
+struct Rule {
+    first: u32,
+    last: u32,
+    on: bool,
+    source: Option<Format>,
+    message: Option<Format>,
+    id: Option<Format>,
+}
+
+impl Rule {
+    fn matches(&self, e: &Event) -> bool {
+        self.source.as_ref().is_none_or(|f| f.matches(e.source.as_bytes()))
+            && self.id.as_ref().is_none_or(|f| e.id.is_some_and(|id| f.matches(id.as_bytes())))
+            && self.message.as_ref().is_none_or(|f| f.matches(e.message.as_bytes()))
+    }
+}
+
+fn text_rules(filter: &TextFilter, lines: &[String]) -> Vec<Rule> {
+    let mut rules = Vec::new();
+    for (i, line) in lines.iter().enumerate() {
+        let line_no = i as u32 + 1;
+        match filter {
+            TextFilter::Nearby { pattern, check, message, id, range } => {
+                let Some(groups) = pattern.captures(line) else { continue };
+                let text = groups[0].clone().unwrap_or_default();
+                let Ok(range) = fill(range, &text, pattern).trim().parse::<i64>() else { continue };
+                let (first, last) = ((line_no as i64).min(line_no as i64 + range), (line_no as i64).max(line_no as i64 + range));
+                rules.push(Rule {
+                    first: first.max(0) as u32,
+                    last: last.max(0) as u32,
+                    on: false,
+                    source: Format::new(&fill(check, &text, pattern)).ok(),
+                    message: message.as_ref().and_then(|m| Format::new(&fill(m, &text, pattern)).ok()),
+                    id: id.as_ref().and_then(|m| Format::new(&fill(m, &text, pattern)).ok()),
+                });
+            }
+            TextFilter::Plain { off, on, check, message, id } => {
+                let mut found: Option<(bool, &Format, String)> = None;
+                if let Some(g) = on.captures(line) {
+                    found = Some((true, on, g[0].clone().unwrap_or_default()));
+                }
+                if let Some(g) = off.captures(line) {
+                    found = Some((false, off, g[0].clone().unwrap_or_default()));
+                }
+                let Some((is_on, format, text)) = found else { continue };
+                rules.push(Rule {
+                    first: line_no,
+                    last: u32::MAX,
+                    on: is_on,
+                    source: Format::new(&fill(check, &text, format)).ok(),
+                    message: message.as_ref().and_then(|m| Format::new(&fill(m, &text, format)).ok()),
+                    id: id.as_ref().and_then(|m| Format::new(&fill(m, &text, format)).ok()),
+                });
+            }
+        }
+    }
+    rules
+}
+
+/// Remove the findings that the text-reading filters suppress.
+fn by_text(cfg: &Config, src: &[u8], findings: &mut Vec<Diagnostic>) {
+    if cfg.text_filters.is_empty() || findings.is_empty() {
+        return;
+    }
+    let text = String::from_utf8_lossy(src);
+    // FileText splits on \n, \r and \r\n.
+    let lines: Vec<String> = text.replace("\r\n", "\n").replace('\r', "\n").split('\n').map(str::to_string).collect();
+    let lines = if lines.last().is_some_and(String::is_empty) { &lines[..lines.len() - 1] } else { &lines[..] };
+    let per_filter: Vec<(bool, Vec<Rule>)> = cfg.text_filters.iter().map(|f| (matches!(f, TextFilter::Plain { .. }), text_rules(f, lines))).collect();
+    findings.retain(|d| {
+        let (module, id) = module_of(cfg, d.rule);
+        let event = Event { line: d.line, source: source_name(module), id, message: &d.message };
+        !per_filter.iter().any(|(plain, rules)| {
+            if *plain {
+                // The nearest matching instruction before the finding decides; "on" lifts the suppression.
+                rules.iter().filter(|r| r.first <= event.line && r.matches(&event)).next_back().is_some_and(|r| !r.on)
+            } else {
+                rules.iter().any(|r| r.first <= event.line && event.line <= r.last && r.matches(&event))
+            }
+        })
+    });
+}
+
 /// Remove the findings of a file that the `SuppressionFilter` suppresses.
 pub fn by_file(cfg: &Config, path: &Path, src: &[u8], findings: &mut Vec<Diagnostic>) {
+    by_text(cfg, src, findings);
     if cfg.suppressions.is_empty() || findings.is_empty() {
         return;
     }
@@ -121,7 +243,7 @@ fn position_matches(s: &Suppression, line: u32, column: u32) -> bool {
 }
 
 /// The module behind a finding's printed name, and the `id` it was given if that is what was printed.
-fn module_of(cfg: &Config, display: &str) -> (String, Option<&'static str>) {
+pub fn module_of(cfg: &Config, display: &str) -> (String, Option<&'static str>) {
     if let Some((module, id)) = cfg.ids.iter().find(|(_, id)| *id == display) {
         return (module.to_string(), Some(id));
     }
@@ -172,7 +294,7 @@ pub fn source_name(module: String) -> String {
 
 /// The column the filter compares: Checkstyle counts a tab as running to the next multiple of the
 /// tab width, so a finding after tab indentation sits further right than its character index.
-fn expanded_column(lines: &[&[u8]], line: u32, col: u32, tab_width: usize) -> u32 {
+pub fn expanded_column(lines: &[&[u8]], line: u32, col: u32, tab_width: usize) -> u32 {
     let Some(text) = lines.get((line as usize).wrapping_sub(1)) else { return col };
     let mut width = 0usize;
     for &b in text.iter().take((col as usize).saturating_sub(1)) {

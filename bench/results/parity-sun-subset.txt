@@ -3,6 +3,8 @@ rule                         reference   javaid   agree  only-ref  only-jv  agre
 ArrayTypeStyle                       5        5       5         0        0     100.0%
 AvoidNestedBlocks                  170      170     170         0        0     100.0%
 ConstantName                      1138     1138    1138         0        0     100.0%
+DeclarationOrder                  4701     4701    4701         0        0     100.0%
+DesignForExtension               29832    29832   29832         0        0     100.0%
 EmptyBlock                          62       62      62         0        0     100.0%
 EmptyForIteratorPad                 61       61      61         0        0     100.0%
 EmptyStatement                       2        2       2         0        0     100.0%
@@ -18,8 +20,13 @@ HideUtilityClassConstructor         46       46      46         0        0     1
 IllegalImport                       12       12      12         0        0     100.0%
 InnerAssignment                    242      242     242         0        0     100.0%
 InterfaceIsType                      9        9       9         0        0     100.0%
+InvalidJavadocPosition               3        3       3         0        0     100.0%
+JavadocMethod                    33466    33466   33466         0        0     100.0%
+JavadocPackage                     877      877     877         0        0     100.0%
+JavadocType                       1982     1986    1982         0        4      99.8%
+JavadocVariable                  37013    37013   37013         0        0     100.0%
 LeftCurly                          376      376     376         0        0     100.0%
-LineLength                      306738   306738  306738         0        0     100.0%
+LineLength                      306730   306730  306730         0        0     100.0%
 LocalFinalVariableName              30       30      30         0        0     100.0%
 LocalVariableName                  129      129     129         0        0     100.0%
 MagicNumber                      83559    83559   83559         0        0     100.0%
@@ -27,6 +34,7 @@ MemberName                          73       73      73         0        0     1
 MethodLength                        64       64      64         0        0     100.0%
 MethodName                        8593     8593    8593         0        0     100.0%
 MethodParamPad                       2        2       2         0        0     100.0%
+MissingJavadocMethod             22467    22467   22467         0        0     100.0%
 MissingSwitchDefault               142      142     142         0        0     100.0%
 ModifierOrder                       58       58      58         0        0     100.0%
 MultipleVariableDeclarations        42       42      42         0        0     100.0%
@@ -44,9 +52,11 @@ RegexpSingleline                   113      113     113         0        0     1
 RightCurly                        9640     9640    9640         0        0     100.0%
 StaticVariableName                  23       23      23         0        0     100.0%
 TodoComment                        240      240     240         0        0     100.0%
+Translation                         11       11      11         0        0     100.0%
 TypeName                            31       31      31         0        0     100.0%
 UnusedImports                     1440     1440    1440         0        0     100.0%
 VisibilityModifier                5731     5731    5731         0        0     100.0%
 WhitespaceAfter                   2415     2415    2415         0        0     100.0%
 WhitespaceAround                  8531     8531    8531         0        0     100.0%
-TOTAL                           567607   567607  567607         0        0     100.0%
+TOTAL                           697951   697955  697951         0        4     100.0%
+ignored 4 reference finding(s) matching /has parse error/

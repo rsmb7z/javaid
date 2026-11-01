@@ -18,7 +18,9 @@ import sys
 
 jar, config, probe, out = sys.argv[1:5]
 res = subprocess.run(["java", "-jar", jar, "-c", config, probe], capture_output=True, text=True)
-if "Audit done." not in res.stdout or "Exception" in res.stdout + res.stderr:
+# A finding's message may name an exception class; only a line that is not a finding counts.
+broken = [l for l in (res.stdout + res.stderr).splitlines() if "Exception" in l and not l.startswith(("[WARN]", "[ERROR]", "[INFO]"))]
+if "Audit done." not in res.stdout or broken:
     sys.exit(f"Checkstyle did not complete the audit of {probe} with {config}:\n{res.stdout}\n{res.stderr}")
 rx = re.compile(r"^\[(?:WARN|ERROR|INFO)\] .*?:(\d+)(?::\d+)?: .* \[(\w+)\]$")
 rows = []

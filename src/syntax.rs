@@ -20,6 +20,7 @@ pub enum Grammar {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Act {
     None,
+    StringLiteral,
     Ident,
     Import,
     Package,
@@ -162,6 +163,7 @@ impl Syntax {
                 "enhanced_for_statement" => Act::EnhancedFor,
                 "do_statement" => Act::Do,
                 "block_comment" | "line_comment" => Act::Comment,
+                "string_literal" | "character_literal" => Act::StringLiteral,
                 "dimensions" => Act::Dimensions,
                 "modifiers" => Act::Modifiers,
                 "annotation" | "marker_annotation" => Act::Annotation,

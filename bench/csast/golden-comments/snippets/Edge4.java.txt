@@ -1,0 +1,6 @@
+COMPILATION_UNIT -> COMPILATION_UNIT [1:1]
+`--IMPORT -> import [1:1]
+    |--DOT -> . [1:9]
+    |   |--IDENT -> a [1:8]
+    |   `--IDENT -> B [1:10]
+    `--SEMI -> ; [1:11]

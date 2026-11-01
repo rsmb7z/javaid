@@ -65,6 +65,26 @@ struct Cli {
     /// Debug aid: print each file's syntax tree as an S-expression and exit
     #[arg(long, hide = true)]
     dump_tree: bool,
+
+    /// Debug aid: print each file's Checkstyle-style AST (the text of `checkstyle -t`) and exit
+    #[arg(long, hide = true)]
+    dump_ast: bool,
+
+    /// Debug aid: as `--dump-ast`, with comment nodes (the text of `checkstyle -T`)
+    #[arg(long, hide = true)]
+    dump_ast_comments: bool,
+
+    /// Debug aid: read file names from this list and write each AST dump to `--dump-ast-out`
+    #[arg(long, hide = true, value_name = "LIST")]
+    dump_ast_list: Option<std::path::PathBuf>,
+
+    /// Debug aid: as `--dump-ast-list`, with comment nodes
+    #[arg(long, hide = true, value_name = "LIST")]
+    dump_ast_comments_list: Option<std::path::PathBuf>,
+
+    /// Debug aid: output directory for `--dump-ast-list` (`NNNNNN.txt`, or `.err` when the AST cannot be built)
+    #[arg(long, hide = true, value_name = "DIR")]
+    dump_ast_out: Option<std::path::PathBuf>,
 }
 
 #[derive(Clone, Copy)]
@@ -87,7 +107,9 @@ struct FileResult {
 
 /// `exts` are the file extensions some enabled module reads: `java`, plus whatever a file-level
 /// module's `fileExtensions` adds (see `Config::extensions`).
-fn discover(paths: &[PathBuf], follow_symlinks: bool, exts: &[String]) -> Vec<PathBuf> {
+///
+/// Returns the files sorted, and in the order the walk met them (which the file-set modules need).
+fn discover(paths: &[PathBuf], follow_symlinks: bool, exts: &[String]) -> (Vec<PathBuf>, Vec<PathBuf>) {
     let mut files = Vec::new();
     for p in paths {
         if p.is_file() {
@@ -106,9 +128,10 @@ fn discover(paths: &[PathBuf], follow_symlinks: bool, exts: &[String]) -> Vec<Pa
             }
         }
     }
+    let walk_order = files.clone();
     files.sort();
     files.dedup();
-    files
+    (files, walk_order)
 }
 
 fn check_file(parser: &mut tree_sitter::Parser, syn: &Syntax, mode: Mode, explain: bool, path: &Path) -> FileResult {
@@ -200,10 +223,31 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
 
+    if let (Some(list), Some(out)) = (&cli.dump_ast_list, &cli.dump_ast_out) {
+        return dump_ast_batch(list, out, cli.grammar, false);
+    }
+    if let (Some(list), Some(out)) = (&cli.dump_ast_comments_list, &cli.dump_ast_out) {
+        return dump_ast_batch(list, out, cli.grammar, true);
+    }
+
+    if cli.dump_ast || cli.dump_ast_comments {
+        for path in discover(&cli.paths, !cli.no_follow_symlinks, &["java".to_string()]).0 {
+            let src = std::fs::read(&path).expect("readable file");
+            match javaid::csast::try_build_source(&src, cli.grammar, cli.dump_ast_comments) {
+                Ok(ast) => print!("{}", javaid::csast::dump(&ast)),
+                Err(e) => {
+                    eprintln!("javaid: {}: {e}", path.display());
+                    return ExitCode::from(2);
+                }
+            }
+        }
+        return ExitCode::SUCCESS;
+    }
+
     if cli.dump_tree {
         let syn = Syntax::new(cli.grammar);
         let mut parser = syn.new_parser();
-        for path in discover(&cli.paths, !cli.no_follow_symlinks, &["java".to_string()]) {
+        for path in discover(&cli.paths, !cli.no_follow_symlinks, &["java".to_string()]).0 {
             let src = std::fs::read(&path).expect("readable file");
             let tree = parser.parse(&src, None).expect("parse");
             println!("; {}\n{}\n", path.display(), tree.root_node().to_sexp());
@@ -231,15 +275,27 @@ fn main() -> ExitCode {
     }
 
     let t0 = Instant::now();
-    let files = discover(&cli.paths, !cli.no_follow_symlinks, &cfg.extensions());
+    let (files, walk_order) = discover(&cli.paths, !cli.no_follow_symlinks, &cfg.extensions());
     let t_walk = t0.elapsed();
 
     let syn = Syntax::new(cli.grammar);
     let t1 = Instant::now();
-    let results: Vec<FileResult> = files
+    let mut results: Vec<FileResult> = files
         .par_iter()
         .map_init(|| syn.new_parser(), |parser, path| check_file(parser, &syn, mode, cli.list_syntax_errors, path))
         .collect();
+    // The modules that look at the set of files, not at one.
+    let mut at_end = Vec::new();
+    if let Mode::Lint(cfg) = mode {
+        let mut sets = javaid::fileset::analyse(cfg, &walk_order);
+        for (path, r) in files.iter().zip(results.iter_mut()) {
+            if let Some(found) = sets.on_file.remove(path) {
+                r.diagnostics.extend(found);
+                r.diagnostics.sort_by_key(|d| (d.line, d.col));
+            }
+        }
+        at_end = std::mem::take(&mut sets.at_end);
+    }
     let t_lint = t1.elapsed();
 
     let mut violations = 0usize;
@@ -257,7 +313,18 @@ fn main() -> ExitCode {
             continue;
         }
         for d in &r.diagnostics {
-            let _ = writeln!(out, "{}:{}:{}: {}: {}", path.display(), d.line, d.col, d.rule, d.message);
+            if d.col == 0 {
+                // Checkstyle prints no column for a finding that has none.
+                let _ = writeln!(out, "{}:{}: {}: {}", path.display(), d.line, d.rule, d.message);
+            } else {
+                let _ = writeln!(out, "{}:{}:{}: {}: {}", path.display(), d.line, d.col, d.rule, d.message);
+            }
+        }
+    }
+    for (path, d) in &at_end {
+        violations += 1;
+        if !cli.quiet {
+            let _ = writeln!(out, "{}:{}: {}: {}", path.display(), d.line, d.rule, d.message);
         }
     }
     let _ = out.flush();
@@ -284,4 +351,29 @@ fn main() -> ExitCode {
     } else {
         ExitCode::SUCCESS
     }
+}
+
+/// Dumps the Checkstyle-style AST of every file named in `list` into `out`, in parallel.
+fn dump_ast_batch(list: &Path, out: &Path, grammar: Grammar, comments: bool) -> ExitCode {
+    let names = std::fs::read_to_string(list).expect("readable list");
+    std::fs::create_dir_all(out).expect("output directory");
+    let files: Vec<&str> = names.lines().filter(|l| !l.is_empty()).collect();
+    files.par_iter().enumerate().for_each(|(i, f)| {
+        let src = match std::fs::read(f) {
+            Ok(s) => s,
+            Err(e) => {
+                let _ = std::fs::write(out.join(format!("{i:06}.err")), e.to_string());
+                return;
+            }
+        };
+        match javaid::csast::try_build_source(&src, grammar, comments) {
+            Ok(ast) => {
+                let _ = std::fs::write(out.join(format!("{i:06}.txt")), javaid::csast::dump(&ast));
+            }
+            Err(e) => {
+                let _ = std::fs::write(out.join(format!("{i:06}.err")), e);
+            }
+        }
+    });
+    ExitCode::SUCCESS
 }

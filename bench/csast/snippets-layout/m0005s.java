@@ -1,0 +1,6205 @@
+    package
+	 demo
+.
+ ambiguities
+	 ;
+	/* Statements where tree-sitter and Checkstyle's grammar could disagree: casts against parenthesized*/
+	 /* expressions, generics against comparisons, lambdas, method references, switch forms.*/
+class
+	Ambiguities
+	{
+void
+    exprs
+	(
+	 int
+    a
+  ,
+	 int
+	 b
+		,
+ Object
+  o
+)
+throws
+	Exception
+  {
+ r
+ =
+ (
+a
+	 )
+-
+b
+    ;
+  r
+=
+ (
+ a
+  )
+    +
+b
+	 ;
+  r
+    =
+  (
+a
+)
+  *
+	b
+ ;
+ r
+		=
+	 (
+  a
+    )
+	&
+	 b
+  ;
+		r
+	=
+    (
+	 a
+ )
+  ++
+;
+	r
+  =
+	(
+	a
+    )
+++
+ +
+  b
+	;
+  r
+	=
+ (
+	 a
+    )
+	 <
+  b
+	;
+  r
+		=
+(
+int
+  )
+a
+		-
+  b
+	 ;
+  r
+	=
+  (
+	Integer
+  )
+a
+ -
+		b
+    ;
+	 r
+    =
+ (
+		String
+  )
+ -
+a
+  ;
+  r
+	 =
+	 (
+	a
+  )
+    ?
+b
+		:
+    c
+    ;
+    r
+=
+  (
+    a
+ )
+	?
+  (
+		b
+ )
+	:
+	(
+  c
+	 )
+  ;
+	x
+	 =
+	 a
+		<
+  b
+		>
+		c
+ ;
+ x
+	=
+    a
+		<
+	 b
+||
+  c
+    >
+	 d
+;
+	x
+	 =
+		foo
+	 (
+  a
+	<
+	 b
+	 ,
+ c
+  >
+	 d
+)
+  ;
+  x
+    =
+ (
+    a
+	 <
+    b
+    )
+?
+c
+    :
+ d
+	;
+  x
+ =
+  a
+	.
+		b
+    <
+    c
+  ;
+    x
+  =
+	(
+  List
+<
+ String
+>
+	)
+		a
+;
+		x
+    =
+  (
+	 List
+  <
+    String
+	>
+		)
+  a
+    +
+ b
+ ;
+    x
+		=
+		(
+		List
+  <
+	String
+	>
+  [
+	]
+  )
+    a
+  ;
+x
+  =
+		(
+		a
+ .
+    b
+.
+	 C
+ )
+d
+	;
+	x
+	 =
+(
+ a
+ .
+  b
+	 .
+	C
+  <
+		D
+  >
+		)
+d
+;
+    x
+=
+ (
+    a
+ .
+    b
+.
+  C
+ <
+		D
+	 >
+    .
+	E
+	)
+d
+ ;
+		x
+	=
+    (
+  a
+ )
+(
+b
+)
+  ;
+	x
+=
+	 (
+    a
+  )
+    (
+    b
+	)
+	;
+  x
+ =
+	(
+ int
+  [
+ ]
+ )
+	 a
+	 ;
+  x
+    =
+	(
+	 int
+	 [
+ ]
+		)
+    a
+    [
+	 0
+  ]
+	 ;
+		x
+=
+ (
+	a
+	)
+    [
+	0
+		]
+ ;
+    x
+	 =
+(
+		a
+	)
+  .
+ b
+		;
+	 x
+	=
+(
+a
+  )
+    .
+	 b
+  (
+	 )
+    ;
+    x
+	=
+	(
+  (
+ a
+		)
+    )
+ .
+	b
+ ;
+    x
+    =
+	(
+		a
+	 )
+  ::
+		b
+	;
+	 x
+    =
+  a
+::
+	 b
+;
+		x
+	 =
+a
+		.
+		b
+    ::
+  c
+    ;
+	 x
+    =
+	a
+  [
+ 0
+  ]
+	 ::
+    b
+		;
+		x
+	 =
+ (
+  a
++
+  b
+	 )
+ ::
+	c
+  ;
+	 x
+=
+    (
+	a
+	?
+    b
+    :
+	 c
+ )
+    ::
+	 d
+  ;
+	 x
+    =
+		a
+    <
+	 b
+ ?
+	c
+		:
+  d
+		;
+ x
+    =
+ a
+	?
+  b
+	<
+c
+:
+	d
+	>
+    e
+ ;
+		x
+ =
+ a
+  ?
+    b
+	:
+c
+	?
+	 d
+		:
+ e
+;
+	x
+	=
+	 a
+		?
+  b
+	?
+    c
+  :
+	d
+	 :
+    e
+    ;
+    x
+		=
+	a
+	->
+    b
+    ;
+x
+ =
+	(
+ a
+	)
+	 ->
+ b
+	 ;
+  x
+	=
+	(
+a
+    ,
+	 b
+    )
+	->
+	c
+;
+		x
+	=
+ (
+ a
+	)
+->
+    (
+	b
+	)
+;
+		x
+ =
+  a
+	->
+(
+		b
+  )
+  ;
+	x
+	=
+		a
+		->
+	 {
+	 }
+    ;
+x
+	=
+  (
+		)
+	 ->
+	(
+		a
+ )
+  ;
+  x
+	=
+ (
+ a
+	)
+		->
+    a
+?
+ b
+ :
+ c
+;
+ x
+    =
+		(
+ int
+ a
+		)
+    ->
+	 a
+  ;
+	x
+	 =
+  (
+	final
+    int
+a
+ )
+    ->
+    a
+ ;
+  x
+		=
+  (
+ @
+A
+    int
+	a
+)
+->
+	a
+	;
+x
+  =
+ (
+		int
+		...
+ a
+	 )
+    ->
+a
+		;
+		x
+ =
+	 (
+  int
+ a
+	,
+ int
+		...
+	 b
+	)
+  ->
+a
+  ;
+	x
+	 =
+  (
+ var
+	 a
+	,
+var
+  b
+  )
+ ->
+ a
+		;
+		x
+=
+    (
+	 _
+  ,
+	 _
+    )
+ ->
+		a
+	 ;
+x
+	=
+ _
+->
+ a
+	 ;
+		x
+    =
+    (
+	Map
+	.
+    Entry
+<
+  A
+,
+	 B
+		>
+e
+	)
+    ->
+  e
+	 ;
+	 x
+  =
+  (
+	java
+	 .
+	util
+	.
+	 List
+		<
+	 A
+>
+ e
+  )
+ ->
+e
+ ;
+	 x
+	=
+    (
+		a
+  )
+ ->
+    (
+Object
+    )
+b
+		;
+    x
+	 =
+    (
+Runnable
+		)
+ (
+)
+		->
+  {
+  }
+		;
+    x
+	 =
+	(
+	Function
+<
+  A
+		,
+	B
+		>
+&
+	Serializable
+ )
+  a
+ ->
+    a
+	 ;
+ x
+ =
+ (
+Object
+    &
+    Serializable
+    )
+		a
+	;
+ x
+  =
+  i
+	++
++
+  ++
+  i
+    ;
+x
+		=
+i
+  ++
+		+
+	 j
+	 ;
+    x
+	 =
+i
+  --
+    -
+ j
+  ;
+	 x
+  =
+ -
+ -
+	 i
+		;
+  x
+	 =
+ -
+		(
+  -
+	i
+	)
+;
+ x
+=
+  +
+    +
+	i
+		;
+x
+	 =
+		!
+		!
+		b
+ ;
+		x
+ =
+ ~
+~
+i
+	;
+ x
+	=
+ i
+<
+j
+  <
+ k
+;
+x
+  =
+  a
+	 instanceof
+    B
+    &&
+    c
+ ;
+	 x
+  =
+	a
+	 instanceof
+    B
+    b
+ &&
+ b
+		.
+    c
+		(
+  )
+	 ;
+  x
+ =
+a
+	instanceof
+		B
+	 [
+ ]
+	 b
+	;
+x
+    =
+ a
+  instanceof
+B
+<
+    ?
+    >
+    b
+	;
+    x
+		=
+	 a
+		instanceof
+		List
+		<
+ ?
+    >
+    ;
+x
+    =
+	a
+		instanceof
+java
+  .
+		util
+	 .
+  List
+		<
+?
+ >
+	l
+  ;
+    x
+  =
+!
+  (
+ a
+		instanceof
+		B
+	)
+		;
+  x
+ =
+  a
+	instanceof
+	B
+	?
+		c
+:
+  d
+;
+	x
+    =
+a
+  ==
+  b
+  instanceof
+ C
+		;
+x
+	=
+a
+ +
+		b
+instanceof
+ C
+	 ;
+x
+    =
+	(
+	 a
+  instanceof
+    B
+	)
+instanceof
+ C
+	 ;
+    x
+ =
+  a
+	.
+	 b
+    .
+	 c
+	 .
+  d
+  ;
+  x
+=
+ a
+ .
+	 b
+	 (
+	 )
+	 .
+	 c
+	.
+d
+	(
+		)
+	 ;
+    x
+    =
+	 a
+  [
+ 0
+]
+  .
+    b
+ [
+1
+    ]
+	 ;
+  x
+    =
+		a
+  [
+	 0
+	 ]
+		[
+ 1
+]
+    ;
+		x
+=
+  a
+  [
+ b
+		[
+    c
+    ]
+]
+		;
+ x
+  =
+	a
+ [
+		(
+	b
+)
+  ]
+		;
+	 x
+	 =
+ a
+    [
+    b
+		+
+	c
+    ]
+;
+	x
+	 =
+		a
+[
+b
+	?
+  c
+		:
+ d
+    ]
+		;
+	x
+	 =
+a
+  [
+b
+	->
+		c
+ ]
+ ;
+	 x
+	=
+		new
+		int
+ [
+		a
+	[
+	0
+		]
+    ]
+	;
+  x
+	 =
+    new
+ int
+	[
+	a
+    ]
+  [
+ b
+		]
+ ;
+		x
+ =
+  new
+ int
+ [
+    (
+	a
+ )
+  ]
+	 ;
+	 x
+	=
+  new
+	 Foo
+  [
+  ]
+ {
+	 a
+	,
+b
+  }
+	 ;
+    x
+	=
+ new
+		Foo
+	[
+    ]
+ {
+  }
+	;
+	 x
+ =
+ new
+	Foo
+    [
+	 ]
+  [
+		]
+		{
+		{
+ a
+ }
+ ,
+    {
+	}
+    }
+	 ;
+		x
+	=
+new
+    Foo
+    <
+    >
+  (
+ )
+{
+	}
+;
+ x
+=
+	 new
+	Foo
+		<
+  A
+	>
+		(
+ )
+	{
+	 }
+	;
+	 x
+	=
+    new
+	 a
+    .
+	 b
+.
+    Foo
+    (
+		)
+    ;
+    x
+=
+		new
+a
+.
+ b
+		.
+	Foo
+	 <
+		C
+>
+	 (
+    )
+		;
+	 x
+  =
+ new
+ a
+  .
+		Foo
+	 <
+	 B
+	>
+  .
+Bar
+	 <
+	C
+	>
+	 (
+	 )
+;
+  x
+    =
+	 new
+	Foo
+	 (
+		a
+	,
+    b
+)
+    {
+ void
+	 m
+	 (
+		)
+    {
+    }
+    }
+	;
+	x
+	=
+	new
+		Foo
+[
+ 3
+	 ]
+.
+length
+		;
+  x
+	=
+		new
+ Foo
+    (
+  )
+	.
+	bar
+ ;
+    x
+ =
+	 new
+    Foo
+    (
+		)
+		.
+	new
+ Bar
+		(
+	 )
+;
+		x
+ =
+a
+ .
+	new
+		Bar
+		(
+  )
+ ;
+		x
+    =
+  a
+		.
+  new
+ Bar
+<
+	>
+	 (
+)
+;
+    x
+	=
+	 a
+ .
+new
+		Bar
+<
+	 B
+ >
+ (
+	c
+	)
+	 {
+	 }
+	 ;
+    x
+=
+		this
+    .
+ new
+	 Bar
+  (
+    )
+ ;
+		x
+    =
+	a
+	.
+ b
+ .
+  new
+ Bar
+  (
+  )
+ ;
+ x
+	=
+  foo
+ (
+		)
+	.
+		new
+ Bar
+  (
+	)
+	 ;
+	 x
+=
+		a
+	.
+		<
+  B
+	 >
+    foo
+(
+	 )
+	 ;
+		x
+		=
+	 a
+    .
+		<
+	 B
+,
+		C
+	>
+		foo
+(
+ )
+	;
+	x
+	 =
+  a
+.
+		<
+B
+<
+ C
+    >>
+	 foo
+  (
+	 )
+	;
+	x
+=
+ a
+    .
+	 <
+	B
+    [
+]
+	>
+	foo
+	(
+    )
+ ;
+	 x
+  =
+  a
+    .
+	 <
+@
+	A
+	B
+	>
+    foo
+		(
+)
+    ;
+	x
+=
+	super
+    .
+    a
+		;
+  x
+    =
+	 super
+	.
+	 a
+		(
+		)
+		;
+	x
+  =
+	super
+ .
+<
+	 B
+	 >
+	a
+    (
+)
+    ;
+ x
+    =
+  a
+.
+super
+	 .
+		b
+	;
+		x
+		=
+ a
+  .
+		b
+		.
+super
+ .
+ c
+(
+    )
+ ;
+    x
+  =
+    this
+		.
+	 a
+	 ;
+    x
+=
+ this
+.
+ a
+(
+    )
+ ;
+	 x
+	 =
+ this
+  .
+		<
+	 B
+ >
+ a
+	 (
+		)
+	 ;
+	 x
+    =
+		a
+  .
+  this
+	 ;
+	x
+=
+	 a
+	 .
+ b
+    .
+	this
+	;
+		x
+    =
+	 this
+  ;
+	 x
+=
+	super
+  ::
+ a
+    ;
+		x
+  =
+ a
+		.
+		super
+	 ::
+    b
+		;
+	x
+    =
+int
+    .
+    class
+    ;
+  x
+		=
+	 int
+		[
+ ]
+.
+	class
+  ;
+    x
+	 =
+	 a
+  .
+	class
+		;
+x
+    =
+  a
+.
+b
+  .
+class
+;
+		x
+  =
+	a
+ .
+	b
+    [
+  ]
+    .
+class
+  ;
+		x
+	 =
+	 a
+		[
+  ]
+		.
+	class
+		;
+		x
+		=
+	a
+  <
+	 B
+    >
+ .
+	 class
+  ;
+x
+  =
+void
+		.
+	class
+    ;
+ x
+		=
+  a
+    .
+	 b
+ .
+ C
+ .
+ D
+ .
+	class
+;
+  x
+	=
+	"a"
++
+"b"
+		;
+  x
+	=
+    "a"
+	 .
+		length
+  (
+		)
+    ;
+	x
+	 =
+    'a'
+		;
+    x
+    =
+    1
+ ;
+  x
+  =
+  1L
+	 ;
+	x
+  =
+0x1F
+;
+  x
+		=
+	1_0
+ ;
+    x
+	 =
+		0b1
+;
+	 x
+    =
+	 07
+  ;
+	 x
+ =
+ 1.0
+	;
+	x
+    =
+		1e3
+		;
+x
+	=
+1.0f
+		;
+	x
+	=
+  1.0d
+		;
+	 x
+=
+	 .5f
+	;
+	x
+    =
+	0x1.0p3
+	 ;
+	x
+ =
+ 0x1p3f
+	 ;
+x
+		=
+	 1D
+	 ;
+	 x
+=
+  1F
+		;
+    x
+	=
+ -
+		1
+;
+x
+	=
+ -
+  1
+		;
+	x
+	=
+	-
+		1L
+;
+x
+		=
+	2147483648
+    ;
+		x
+    =
+	true
+;
+		x
+		=
+    false
+  ;
+		x
+	=
+	 null
+	 ;
+x
+	=
+  a
+=
+	b
+	;
+x
+	=
+a
+		+=
+b
+ ;
+		x
+    =
+		a
+    >>=
+  b
+;
+		x
+	=
+a
+		>>>=
+    b
+	;
+	x
+=
+ a
+<<=
+    b
+	 ;
+	 x
+	 =
+  (
+  a
+	 )
+ =
+ b
+    ;
+		x
+	 =
+	a
+		.
+	b
+	 =
+    c
+  ;
+    x
+	 =
+	 a
+	[
+  0
+		]
+		=
+		c
+	 ;
+	 a
+ =
+b
+	 ?
+c
+		:
+		d
+	 ;
+		a
+.
+ b
+	 =
+	 c
+  ;
+	a
+ [
+  0
+  ]
+	 +=
+		c
+	;
+  ++
+ a
+;
+    a
+++
+	 ;
+    (
+		a
+ )
+ ++
+	;
+  --
+	 a
+		;
+	 a
+    --
+    ;
+ f
+    (
+)
+	 ;
+f
+		(
+	 a
+	)
+	;
+a
+.
+  f
+	(
+ )
+ ;
+		a
+.
+  b
+ .
+f
+    (
+    )
+ ;
+f
+ (
+ )
+.
+  g
+		(
+)
+	;
+  f
+	(
+  )
+ [
+	 0
+  ]
+  .
+    g
+ (
+	)
+  ;
+	 (
+  f
+ (
+		)
+)
+    .
+    g
+(
+  )
+		;
+  (
+(
+Foo
+    )
+ a
+    )
+	 .
+	f
+	 (
+ )
+;
+		new
+    Foo
+	 (
+  )
+  ;
+  new
+  Foo
+    (
+ )
+		.
+	 f
+  (
+  )
+ ;
+  new
+	Foo
+		[
+0
+		]
+		;
+ a
+	->
+	b
+ ;
+		}
+    void
+	 casts
+    (
+ int
+ a
+  ,
+    int
+	 b
+	 ,
+  Object
+		o
+  )
+  throws
+		Exception
+    {
+	 x
+	 =
+ foo
+ (
+ (
+	L
+	 )
+	+
+1
+)
+	;
+x
+  =
+ foo
+    (
+  (
+    L
+    )
+  +
+1
+  *
+q
+		,
+(
+		M
+  )
+ -
+2
+		*
+    r
+ )
+ ;
+	 x
+	 =
+	c
+  ?
+	(
+ L
+	)
+    +
+		1
+ :
+		2
+	;
+ x
+	 =
+c
+ ?
+	1
+    :
+	 (
+		L
+)
+-
+    2
+	*
+q
+		;
+    x
+	 =
+(
+L
+	 )
+  +
+		1
+	 ?
+  a
+    :
+  b
+	;
+	 x
+=
+    -
+    (
+		L
+    )
+  +
+ 1
+		;
+x
+ =
+	 !
+	 (
+    L
+    )
+    ;
+  x
+	=
+		(
+	L
+	 )
+	 -
+		(
+  M
+)
+	+
+	(
+	N
+)
+;
+	 x
+=
+  (
+	 L
+	 )
++
+		(
+  M
+	 )
+*
+	 (
+    N
+  )
+	 ;
+	 x
+	 =
+a
+	 +
+(
+	L
+)
+  +
+1
+	 ;
+		x
+	 =
+    (
+		a
+ )
+  +
+	 (
+ b
+)
+    +
+	(
+		c
+)
+    *
+		d
+  ;
+    x
+	 =
+	 (
+		a
+		.
+ b
+		)
+	 +
+    c
+    ;
+x
+=
+ (
+	 a
+ .
+ b
+ .
+	c
+	)
+  -
+	 d
+*
+	e
+  +
+    f
+ ;
+		x
+	 =
+  (
+ L
+    )
+	+
+		-
+1
+	 ;
+ x
+	=
+  (
+ L
+    )
+  -
+    +
+ 1
+	;
+x
+	 =
+	(
+    (
+  L
+		)
+ )
+  +
+		1
+  *
+q
+;
+x
+=
+	a
+		*
+(
+  L
+)
+	 -
+    b
+*
+    c
+    -
+		d
+;
+ x
+=
+    a
+ <
+	 (
+		L
+		)
+ +
+		1
+		;
+  x
+  =
+ a
+	<<
+	(
+ L
+    )
+	 +
+	1
+    ;
+  x
+ =
+  (
+	L
+		)
+  +
+1
+	 <<
+	2
+ ;
+		x
+ =
+  (
+	int
+		)
+    +
+    1
+		*
+		q
+	 ;
+	 x
+		=
+	(
+    int
+)
+    -
+		1
+	 *
+    q
+ +
+(
+L
+ )
+    -
+    1
+    ;
+ x
+	 =
+k
+ *
+  (
+ L
+)
+		+
+	1
+	*
+  q
+	 ==
+ m
+  ;
+x
+	 =
+	k
+    *
+ (
+	 L
+	)
+ +
+  1
+	*
+	q
+	&&
+	n
+ ;
+x
+		=
+	 k
+	*
+    (
+		L
+  )
+    +
+1
+    *
+ q
+instanceof
+  Foo
+  ;
+    x
+ =
+	 (
+	 L
+  )
+ +
+1
+		*
+  q
+		instanceof
+Foo
+;
+	x
+ =
+		a
+		[
+    (
+ L
+    )
+		+
+		1
+	 *
+  q
+		]
+;
+    x
+=
+ a
+	 [
+		0
+	 ]
+	 *
+	(
+L
+	 )
++
+ b
+  [
+	1
+]
+ *
+		c
+	 ;
+	 x
+	 =
+  f
+	(
+ a
+	)
+  *
+		(
+L
+    )
+  +
+ g
+	(
+  b
+  )
+*
+  c
+	 ;
+		x
+ =
+ a
+ .
+	 b
+	*
+ (
+    L
+    )
+    +
+ c
+		.
+	 d
+	 *
+    e
+	 ;
+ x
+  =
+		"s"
+ +
+ (
+ L
+ )
+ +
+  1
+*
+  q
+	;
+    x
+	=
+    (
+    String
+)
+ a
++
+		(
+		L
+)
++
+    1
+;
+		x
+		=
+		(
+	 L
+)
++
+	 (
+	int
+ )
+		b
+  *
+		c
+	+
+	1
+    ;
+  x
+		=
+  (
+		L
+		)
+	 -
+    (
+ long
+	 )
+    -
+		1
+    *
+	 c
+    ;
+x
+	=
+	 2
+ *
+ (
+ L
+		)
+  +
+  3
+ *
+  (
+	 M
+  )
+ +
+    4
+    *
+(
+  N
+	 )
+  -
+  5
+    ;
+	x
+    =
+	a
+  ?
+	 b
+    *
+	(
+    L
+    )
+	 +
+  1
+    *
+q
+  :
+  c
+	;
+		x
+=
+    (
+  a
+ )
+		+
+	 b
+	?
+	c
+:
+  d
+  ;
+return
+(
+ L
+  )
+  +
+	1
+  *
+		q
+	;
+		foo
+	(
+  (
+		L
+ )
+  +
+1
+    *
+		q
+)
+	;
+	y
+ +=
+	(
+	 L
+	)
+	+
+    1
+  *
+  q
+		;
+	 y
+	 =
+z
+ =
+ (
+ L
+	)
+ +
+  1
+	*
+  q
+ +
+		w
+  ;
+		if
+		(
+		(
+L
+    )
+		+
+		1
+	 *
+	 q
+ >
+	0
+    )
+{
+    }
+ int
+		y
+		=
+		k
+*
+    (
+	L
+	)
+  +
+    1
+  *
+	q
+  ;
+		int
+	[
+ ]
+	y
+		=
+ {
+ k
+  *
+	(
+ L
+  )
+    +
+		1
+*
+ q
+  }
+	 ;
+	 new
+Foo
+  (
+		(
+	 L
+    )
+    +
+	1
+	 *
+q
+)
+	 ;
+x
+	=
+  (
+	 )
+ ->
+  (
+L
+  )
+	+
+	1
+	 *
+ q
+  ;
+ x
+=
+	 (
+ L
+    )
+	 ->
+ (
+		L
+  )
+	 +
+		1
+ *
+ q
+  ;
+	x
+  =
+switch
+(
+  a
+	)
+    {
+    default
+    ->
+ (
+		L
+	 )
+		+
+	1
+	 *
+q
+	;
+		}
+	 ;
+x
+	=
+	 (
+    L
+ )
+ +
+    1
+ *
+		q
+		+
+		(
+  M
+ )
+  -
+2
+ *
+ r
+    ;
+	 x
+		=
+	a
+	%
+	(
+	 L
+)
+	-
+  b
+/
+ c
+  ;
+	x
+  =
+ (
+	a
+	 )
+    &
+	 b
+;
+ x
+ =
+		(
+ a
+	 )
+  |
+ b
+;
+	x
+  =
+	(
+		a
+  )
+	 ^
+ b
+ ;
+ x
+	=
+  (
+a
+	 )
+		&&
+  b
+;
+x
+	 =
+(
+  a
+ )
+ ==
+    b
+;
+ x
+ =
+(
+	a
+)
+    <
+b
+	 ;
+  x
+		=
+	(
+a
+    )
+    *
+b
+	 ;
+		x
+ =
+		(
+		a
+)
+  /
+		b
+    ;
+  x
+	 =
+	(
+a
+	 )
+	%
+    b
+;
+x
+  =
+a
+	^
+(
+ L
+	)
+		+
+    1
+		*
+q
+	;
+	 x
+	=
+a
+    |
+	 (
+	 L
+	 )
+	 -
+  1
+ ;
+		}
+  void
+casts2
+ (
+ int
+    a
+ ,
+int
+		b
+ ,
+		Object
+	 o
+	 )
+    throws
+Exception
+{
+x
+ =
+	(
+		a
+	)
+ !
+	 b
+;
+x
+	 =
+	(
+ a
+		)
+		~
+	 b
+;
+ x
+		=
+ (
+		a
+  )
+	 1
+		;
+		x
+=
+(
+a
+ )
+ "s"
+    ;
+x
+=
+    (
+a
+	)
+	this
+    ;
+	 x
+  =
+		(
+  a
+	)
+  new
+Foo
+		(
+ )
+;
+		x
+  =
+	 (
+a
+	)
+    (
+  b
+  )
+		+
+  c
+		;
+    x
+  =
+ k
+*
+		(
+	 a
+	)
+		!
+  b
+;
+    x
+ =
+k
+	 *
+		(
+	a
+	)
+		~
+		b
+  +
+	 1
+	 ;
+  x
+    =
+k
+	*
+(
+	a
+ )
+		(
+b
+		)
+	 +
+ c
+  *
+	 d
+	 ;
+  x
+ =
+	k
+	*
+	(
+ int
+	 )
+	-
+    b
+	+
+ c
+	*
+d
+		;
+    x
+		=
+k
+*
+	 (
+    a
+	.
+	b
+		)
+  ++
+	;
+    x
+	=
+ k
+  *
+	(
+ a
+	 )
+++
+    +
+  c
+		;
+	 x
+=
+k
+ *
+		(
+	a
+	 )
++
+	(
+    b
+    )
+		-
+  (
+  c
+		)
+    ;
+  x
+  =
+(
+		a
+	)
+	+
+(
+  b
+)
+  -
+  (
+c
+	)
+	*
+ d
+;
+		x
+=
+		(
+		a
+  )
+	(
+ b
+	 )
+ +
+c
+  ;
+x
+	=
+    (
+  a
+		)
++
+    (
+		b
+		)
+(
+c
+  )
+  ;
+		x
+	 =
+(
+		a
+ [
+]
+	)
+b
+    ;
+x
+		=
+	 k
+ *
+ (
+    a
+	 [
+	 ]
+    )
+	 b
++
+	c
+  ;
+	 x
+  =
+	k
+    *
+ (
+ a
+	 <
+		B
+    >
+	)
+c
++
+d
+		;
+	 x
+	 =
+		k
+  *
+(
+		a
+		<
+	B
+ >
+	 )
+	-
+ c
+  ;
+    x
+=
+    (
+	 a
+    )
+ ->
+ b
+	 +
+c
+;
+	 x
+	 =
+		k
+		*
+  (
+	(
+  a
+)
+	+
+    b
+ )
+	 ;
+	 x
+		=
+    (
+ a
+  -
+		b
+	)
+	+
+    c
+	;
+    x
+ =
+  -
+		(
+	a
+  )
+	+
+    b
+		;
+ x
+ =
+ ~
+	(
+  a
+	)
+    +
+  b
+;
+	 x
+	=
+  !
+(
+	a
+	 )
+    &&
+	b
+;
+x
+=
+  a
+ +
+	 (
+	 b
+	)
++
+    c
+		+
+  (
+  d
+	 )
+    ;
+ x
+		=
+		a
+ -
+(
+    b
+  )
+ -
+    c
+	-
+	(
+	 d
+)
+		+
+	 (
+		e
+	 )
+    -
+  f
+  ;
+ x
+  =
+		(
+    a
+)
+    <
+	(
+  b
+)
+	;
+		x
+=
+    (
+	a
+ )
+  >
+	 (
+ b
+	)
+  +
+	 1
+;
+    x
+ =
+		(
+    a
+    )
+	>>
+	1
+	 ;
+	 x
+		=
+	 a
+	 >>
+	 (
+	 b
+ )
+	+
+1
+  ;
+	x
+	=
+		a
+>>>
+	 (
+		b
+    )
+	-
+  1
+  ;
+		x
+		=
+  (
+a
+)
+	?
+(
+    b
+ )
+		:
+(
+  c
+    )
+	+
+	 1
+ ;
+	 x
+    =
+f
+	(
+(
+		a
+    )
+	-
+	1
+		,
+		(
+ b
+)
++
+	2
+	)
+;
+		x
+		=
+new
+  int
+	 [
+ (
+	a
+	)
+	 -
+	 1
+]
+    ;
+	 x
+		=
+	 new
+ int
+[
+    ]
+    {
+    (
+ a
+  )
+  +
+	1
+		,
+	(
+		b
+	 )
+	 -
+	2
+		}
+	;
+ x
+=
+	 arr
+	 [
+		(
+    a
+    )
+    +
+		1
+]
+  ;
+x
+ =
+    (
+	a
+		)
+  +
+1
+ +
+		(
+    b
+ )
+;
+	x
+		=
+		(
+    a
+		)
+ *
+ -
+	 1
+	 ;
+	x
+	 =
+	 (
+ a
+	)
+    -
+ -
+		1
+  ;
+	 x
+	 =
+	 (
+    a
+	 )
+    +
+		++
+ b
+	 ;
+	x
+=
+	(
+  a
+	 )
+    +
+	 b
+ ++
+	+
+  c
+		;
+x
+=
+(
+  a
+	)
+    +
+(
+		b
+ )
+	++
+  +
+	c
+	 ;
+x
+		=
+ (
+    a
+  )
+		+
+  (
+	 int
+		)
+	b
+    +
+		(
+    long
+  )
+ c
+ ;
+ x
+		=
+		(
+a
+	 )
+  +
+  (
+String
+)
+  b
+ ;
+	 x
+    =
+(
+    a
+		)
+ +
+	 (
+	b
+		.
+  c
+)
+	 +
+  d
+  .
+    e
+  ;
+	x
+  =
+	 (
+		a
+	 .
+	b
+.
+		c
+ )
+    +
+ d
+	 ;
+		x
+	=
+ (
+    a
+	.
+b
+	.
+    c
+	 )
+	-
+ (
+	d
+  .
+ e
+	)
+		;
+		}
+void
+	casts3
+    (
+  int
+  a
+    ,
+    int
+	b
+	,
+ Object
+  o
+		)
+		throws
+	Exception
+    {
+		x
+    =
+  (
+  T
+)
+	a
++
+  b
+ ;
+	x
+ =
+		(
+ T
+    )
+	 a
+	*
+ b
+	 ;
+ x
+	 =
+ (
+	 T
+ )
+  (
+ a
+    )
+    +
+    b
+		;
+	 x
+	=
+(
+	 T
+)
+    (
+  a
+  )
+	 *
+		b
+	 +
+    c
+		;
+  x
+    =
+(
+	 T
+	)
+  (
+	a
+)
+    instanceof
+B
+;
+  x
+	 =
+(
+	 T
+	)
+	(
+	a
+		)
+	?
+b
+ :
+	 c
+ ;
+x
+    =
+		(
+ T
+	)
+	 (
+  a
+ )
+	 ==
+  b
+;
+	 x
+ =
+ (
+	T
+	 )
+	(
+		a
+	)
+		&&
+	b
+  ;
+ x
+  =
+		(
+ T
+    )
+		f
+  (
+	)
+ +
+g
+	(
+	 )
+  ;
+		x
+		=
+	 (
+	T
+	 )
+		a
+    .
+	b
++
+	 c
+;
+ x
+	 =
+    (
+ T
+		)
+	 a
+	[
+0
+]
+ +
+  c
+		;
+	 x
+	 =
+    (
+ a
+  )
+ (
+		b
+	)
+ +
+	 c
+;
+ x
+ =
+    (
+ a
+)
+		(
+b
+    )
+		?
+  c
+	:
+d
+		;
+  x
+	=
+  k
+    *
+		(
+a
+  )
+    (
+		b
+		)
+?
+  c
+    :
+		d
+	;
+x
+	=
+ k
+	 *
+    (
+	 a
+	 )
+  (
+		b
+)
+		==
+    c
+ ;
+		x
+=
+ k
+    +
+	 (
+ a
+		)
+		(
+b
+  )
+*
+	 c
+ ;
+ x
+    =
+		k
+&&
+		(
+    a
+  )
+		(
+ b
+)
+  ||
+	 c
+  ;
+	 x
+	 =
+k
+ *
+	 (
+  a
+)
+ (
+b
+  )
+	 ;
+x
+		=
+		k
+  *
+ (
+a
+    )
+  (
+ b
+  )
+    *
+  c
+		;
+x
+    =
+  k
+		*
+	(
+  a
+    )
+(
+  b
+	)
+		+
+	 c
+		;
+	 x
+		=
+		k
+ *
+	(
+  a
+)
+(
+ b
+	)
+		-
+	 c
+;
+    x
+  =
+	 k
+		*
+	 (
+		T
+  )
+  (
+	b
+	 )
+  +
+    c
+	 *
+		d
+		;
+	 x
+ =
+k
+*
+ (
+  T
+		)
+b
+		+
+	 c
+ *
+d
+;
+		x
+ =
+k
+ *
+	(
+	 T
+	 )
+    f
+  (
+	 b
+		)
++
+		c
+	*
+    d
+		;
+x
+		=
+  k
+  *
+ (
+  int
+ )
+    (
+    b
+)
+	 +
+    c
+  *
+    d
+	 ;
+x
+		=
+  k
+	*
+	(
+int
+		)
+b
+		+
+		c
+	 *
+    d
+	 ;
+		x
+ =
+	k
+    +
+  (
+	 a
+ )
+  (
+ b
+	 )
+  +
+ c
+ *
+	d
+		;
+		x
+    =
+ (
+  k
+  )
+	(
+	 a
+	 )
+  (
+  b
+)
+  +
+  c
+ *
+  d
+  ;
+    x
+  =
+	k
+	 *
+    (
+    a
+  )
+	 (
+b
+ )
+	(
+	c
+	 )
+		+
+	d
+ ;
+ x
+=
+k
+ *
+	(
+ a
+	 )
+(
+		b
+ )
+(
+    c
+	)
+		+
+	d
+ *
+    e
+	;
+ x
+  =
+		k
+ *
+	 (
+		a
+)
+(
+    (
+		b
+)
+    )
+		+
+c
+	 *
+		d
+  ;
+	x
+		=
+    k
+		*
+ (
+	 a
+		)
+		(
+ (
+  b
+ )
++
+    1
+    )
+	 *
+ d
++
+		e
+  ;
+x
+	=
+  k
+	 *
+	 (
+		a
+		)
+    (
+b
+	 )
+		instanceof
+	C
+;
+		x
+	 =
+  k
+	*
+  (
+a
+		)
+    (
+    b
+ )
+ ?
+  c
+	 :
+	 d
+ ;
+x
+	=
+    k
+	 <
+    (
+    a
+	)
+		(
+b
+	 )
+ +
+ c
+;
+x
+    =
+	 k
+<
+ (
+ a
+	 )
+	(
+b
+    )
++
+ c
+	<
+	d
+;
+		x
+  =
+ foo
+	(
+  (
+    a
+)
+  (
+	 b
+		)
+	 +
+c
+ )
+  ;
+x
+ =
+		foo
+    (
+		k
+ *
+ (
+ a
+	)
+(
+ b
+    )
+ +
+	c
+		*
+d
+	,
+e
+	 )
+	;
+		return
+	 k
+	*
+(
+	a
+	 )
+	(
+		b
+	)
+    +
+ c
+    *
+  d
+		;
+    y
+		=
+	k
+ *
+ (
+	a
+	 )
+	 (
+	 b
+)
+ +
+    c
+	 *
+		d
+	;
+    y
++=
+	k
+*
+  (
+		a
+  )
+		(
+    b
+	 )
++
+		c
+ *
+	d
+		;
+    }
+	void
+  switches
+ (
+ int
+ a
+  ,
+		int
+	b
+    ,
+Object
+    o
+	)
+	throws
+		Exception
+	 {
+switch
+    (
+    o
+	 )
+{
+    case
+		A
+  ,
+  B
+    ->
+	 f
+	(
+		)
+		;
+		}
+  switch
+(
+ o
+	 )
+  {
+ case
+	Foo
+	.
+    A
+->
+	 f
+  (
+)
+;
+	 }
+	 switch
+	(
+ o
+)
+	 {
+		case
+    Foo
+ .
+  A
+  ,
+	 Foo
+	.
+		B
+ :
+    f
+		(
+    )
+  ;
+		}
+  switch
+		(
+		o
+		)
+ {
+	case
+  String
+	 s
+ when
+	 (
+	s
+    .
+	length
+    (
+)
+		>
+    1
+		)
+ ->
+    f
+		(
+)
+  ;
+	default
+  ->
+ g
+	(
+  )
+;
+}
+	switch
+	(
+  o
+	 )
+ {
+case
+	Point
+	 (
+		int
+	 x
+  ,
+	 int
+ y
+	)
+		when
+  x
+	>
+		0
+  ->
+    f
+		(
+	)
+    ;
+}
+switch
+(
+o
+    )
+	{
+  case
+Point
+(
+	 var
+	 x
+ ,
+		var
+    y
+    )
+	 ->
+ f
+	 (
+    )
+    ;
+	}
+	 switch
+		(
+o
+    )
+	 {
+case
+	 Point
+(
+		int
+ x
+    ,
+	 Point
+	(
+ int
+ y
+	 ,
+	var
+	 z
+    )
+  )
+		->
+ f
+ (
+)
+ ;
+  }
+switch
+(
+		o
+)
+{
+  case
+    Box
+ <
+	String
+    >
+ (
+	var
+    s
+    )
+	 ->
+	 f
+	(
+	 )
+		;
+		}
+switch
+		(
+		o
+  )
+		{
+		case
+	Box
+	<
+	?
+    >
+  (
+	 var
+	s
+    )
+	 ->
+    f
+(
+ )
+    ;
+    }
+		switch
+		(
+	 o
+	 )
+{
+	case
+		final
+	String
+	 s
+    ->
+	 f
+	(
+    )
+	 ;
+}
+switch
+  (
+	o
+		)
+		{
+  case
+	@
+  A
+ String
+		s
+	 ->
+		f
+    (
+  )
+	;
+	}
+	switch
+ (
+    o
+)
+		{
+	 case
+java
+ .
+ lang
+    .
+	String
+s
+	 ->
+	 f
+		(
+	)
+	;
+	}
+  switch
+(
+	 o
+ )
+ {
+		case
+List
+		<
+	?
+	 >
+  l
+		->
+    f
+	 (
+ )
+	 ;
+}
+		switch
+	(
+o
+ )
+{
+    case
+int
+	 [
+	 ]
+		a
+->
+		f
+	 (
+  )
+	 ;
+ }
+    switch
+		(
+	o
+)
+	 {
+  case
+String
+  [
+]
+a
+	when
+ a
+ .
+	 length
+	 >
+    0
+->
+		f
+(
+  )
+    ;
+	 }
+ switch
+	 (
+    o
+	)
+    {
+  case
+ null
+  ->
+  f
+ (
+  )
+	 ;
+    case
+    String
+    s
+	 ->
+		g
+ (
+)
+	;
+		default
+	 ->
+		h
+ (
+		)
+		;
+  }
+    switch
+	 (
+		o
+		)
+	{
+	case
+ null
+		,
+	 default
+ ->
+  f
+(
+  )
+		;
+    }
+	 switch
+	 (
+    o
+ )
+ {
+		default
+		->
+    f
+		(
+    )
+		;
+case
+  1
+		->
+    g
+  (
+)
+		;
+}
+	 switch
+(
+    o
+  )
+{
+    case
+	1
+  :
+	case
+	2
+	:
+ f
+  (
+	)
+  ;
+ break
+    ;
+	default
+	:
+		g
+    (
+		)
+	;
+ }
+	 switch
+    (
+	o
+	 )
+  {
+		case
+1
+	 :
+	 case
+	2
+    :
+ }
+  switch
+	 (
+		o
+  )
+  {
+	case
+	1
+  :
+	 {
+    f
+  (
+  )
+		;
+	 }
+	case
+ 2
+	:
+ g
+(
+)
+ ;
+	}
+	switch
+ (
+    o
+  )
+  {
+ case
+    'a'
+    ->
+    f
+  (
+ )
+ ;
+	case
+    "s"
+->
+	g
+	(
+)
+	 ;
+	 case
+ 1L
+	 ->
+    h
+	 (
+	)
+	;
+ }
+    switch
+  (
+ o
+)
+    {
+case
+		1
+ +
+2
+->
+	f
+	 (
+  )
+    ;
+    }
+ switch
+		(
+		o
+    )
+{
+	 case
+ A
+    .
+	 B
+	 .
+    C
+ ->
+ f
+ (
+ )
+;
+}
+	 switch
+		(
+    o
+)
+ {
+ case
+	 (
+ 1
+)
+	 ->
+f
+	(
+ )
+;
+ }
+    switch
+ (
+o
+  )
+		{
+	 case
+	1
+->
+	 {
+	 }
+}
+		switch
+	(
+	 o
+	)
+    {
+case
+1
+->
+		{
+    f
+ (
+		)
+    ;
+	 }
+ default
+  ->
+	{
+    }
+ }
+	 switch
+	 (
+    o
+    )
+{
+ case
+ 1
+    ->
+	 throw
+new
+		E
+  (
+    )
+	;
+ }
+	 switch
+		(
+    o
+    )
+{
+ case
+	1
+->
+  f
+    (
+	)
+    ;
+  default
+->
+ throw
+	 new
+	 E
+		(
+	)
+		;
+ }
+    switch
+  (
+    o
+    )
+		{
+  case
+	 1
+  ->
+a
+ =
+		1
+  ;
+  }
+ switch
+	(
+	 o
+  )
+{
+ case
+	 1
+	->
+	 a
+    ++
+ ;
+    }
+  switch
+ (
+	 o
+		)
+ {
+case
+		1
+ ->
+    new
+Foo
+	 (
+  )
+  ;
+ }
+    switch
+		(
+  o
+    )
+{
+	case
+	 1
+->
+(
+		a
+ )
+  .
+	 b
+	(
+    )
+ ;
+	 }
+		switch
+		(
+		o
+	 )
+		{
+ case
+	 1
+ ->
+		x
+		->
+		y
+ ;
+ }
+x
+	=
+    switch
+	 (
+    o
+	 )
+    {
+		case
+	1
+  ->
+	 1
+	;
+    default
+  ->
+2
+	;
+	 }
+;
+x
+    =
+	switch
+		(
+o
+	)
+  {
+    case
+    1
+->
+	 {
+	 yield
+1
+		;
+		}
+	 default
+->
+    2
+	 ;
+		}
+	;
+		x
+ =
+	 switch
+ (
+ o
+ )
+	 {
+  case
+ 1
+    :
+	yield
+		1
+ ;
+  default
+  :
+    yield
+    2
+	 ;
+}
+;
+  x
+=
+switch
+(
+ o
+	 )
+ {
+default
+	->
+		a
+		?
+	b
+		:
+ c
+;
+		}
+;
+ x
+    =
+ switch
+  (
+o
+)
+		{
+  default
+    ->
+	switch
+	 (
+	 p
+)
+		{
+ default
+->
+1
+		;
+		}
+		;
+}
+	 ;
+  x
+=
+ switch
+		(
+		o
+	)
+	{
+    default
+->
+		{
+  yield
+	switch
+    (
+  p
+	)
+		{
+		default
+  ->
+1
+		;
+  }
+;
+	 }
+  }
+ ;
+x
+  =
+	 switch
+		(
+		o
+	 )
+	{
+	 default
+  ->
+    (
+a
+  )
+;
+    }
+    ;
+ x
+ =
+		switch
+ (
+o
+		)
+ {
+ default
+	->
+	x
+    ->
+y
+;
+}
+;
+	f
+		(
+	 switch
+(
+		o
+  )
+	 {
+	 default
+->
+1
+ ;
+	 }
+    ,
+    2
+	)
+	 ;
+	return
+ switch
+(
+o
+)
+		{
+  default
+		->
+		1
+    ;
+  }
+ ;
+		return
+	(
+ switch
+	(
+ o
+	 )
+	{
+	 default
+    ->
+  1
+  ;
+  }
+		)
+;
+ yield
+1
+		;
+	yield
+	 (
+ 1
+  )
+	;
+		yield
+  a
+		?
+    b
+	 :
+    c
+	 ;
+  yield
+  -
+ 1
+;
+		yield
+	++
+ ;
+	 yield
+	 =
+1
+  ;
+    yield
+	.
+	foo
+  (
+    )
+		;
+ yield
+	 (
+		1
+	)
+  ;
+		int
+ yield
+		=
+	 1
+		;
+	switch
+ (
+	 o
+	 )
+  {
+	case
+	 1
+	 :
+  yield
+		=
+	2
+    ;
+}
+		x
+ =
+ switch
+		(
+  o
+    )
+{
+default
+ ->
+  {
+    yield
+ =
+	 2
+  ;
+	yield
+3
+	 ;
+		}
+	}
+ ;
+		switch
+ (
+ o
+    )
+	{
+	 case
+1
+		->
+    yield
+	 (
+		)
+;
+  }
+	 switch
+  (
+	o
+)
+    {
+	default
+  ->
+		f
+  (
+	)
+ ;
+	}
+    ;
+	 switch
+ (
+	 o
+ )
+	 {
+	case
+  1
+	:
+  f
+	 (
+)
+  ;
+ }
+	 ;
+}
+    /* Declarations*/
+  void
+m
+  (
+    Foo
+		this
+    )
+  {
+		}
+  void
+m
+(
+    Foo
+	 this
+	,
+		int
+		a
+ )
+		{
+}
+  void
+ m
+	(
+  @
+	A
+ Foo
+ this
+	 )
+	{
+	 }
+	 void
+	m
+	(
+		Outer
+	.
+Foo
+ Outer
+.
+	this
+    )
+	 {
+	}
+class
+ Inner
+    {
+		Inner
+	 (
+ Outer
+	 Outer
+	 .
+this
+	 )
+  {
+  }
+ }
+ void
+m
+  (
+ int
+  a
+    [
+	 ]
+		,
+		int
+ [
+]
+	b
+ [
+]
+    ,
+	 int
+	 ...
+  c
+)
+ {
+  }
+ void
+    m
+	(
+ final
+	@
+    A
+  int
+		a
+		,
+	 @
+	 B
+ final
+		long
+b
+	)
+    {
+}
+void
+  m
+(
+ @
+		A
+    int
+ @
+  B
+[
+	 ]
+a
+    )
+	{
+ }
+		void
+		m
+  (
+	 @
+	A
+	String
+@
+	B
+	...
+a
+		)
+    {
+}
+    void
+    m
+		(
+		java
+ .
+    lang
+.
+		@
+	A
+ String
+ a
+)
+		{
+    }
+	void
+  m
+  (
+Map
+.
+		Entry
+<
+	K
+  ,
+	V
+	>
+	e
+		)
+    {
+    }
+	 void
+	 m
+		(
+  Map
+	<
+  K
+    ,
+  V
+ >
+	.
+	Entry
+	 e
+)
+  {
+	}
+	 void
+    m
+    (
+ Outer
+ <
+String
+ >
+    .
+	Inner
+	 <
+ Integer
+	>
+  e
+)
+    {
+    }
+	<
+    T
+	 >
+    void
+	 m
+ (
+  )
+ {
+  }
+	<
+    T
+  ,
+    U
+		extends
+ T
+		>
+		void
+	m
+(
+)
+	 {
+    }
+		<
+    T
+    extends
+A
+  &
+	 B
+  >
+void
+ m
+ (
+)
+ {
+		}
+	<
+		@
+ A
+ T
+		>
+  void
+m
+  (
+)
+  {
+		}
+	 <
+T
+  extends
+    @
+		A
+		B
+	>
+		void
+ m
+	 (
+	 )
+    {
+	 }
+ <
+    T
+	 >
+  T
+m
+ (
+	 )
+{
+	return
+	null
+  ;
+	 }
+    <
+	 T
+    >
+  @
+A
+		T
+ m
+	 (
+    )
+{
+	return
+		null
+    ;
+		}
+<
+    T
+	 >
+	List
+		<
+		@
+    A
+    T
+	>
+  [
+	]
+    m
+    (
+)
+	{
+ return
+		null
+    ;
+  }
+  public
+	 @
+	 A
+	<
+	 T
+	>
+  void
+  m
+		(
+    )
+  {
+ }
+	@
+ A
+		<
+T
+    >
+ void
+  m
+(
+	)
+  {
+    }
+		int
+	 m
+(
+	)
+ [
+		]
+  {
+	return
+null
+;
+ }
+    int
+	[
+    ]
+ m
+ (
+ )
+  [
+ ]
+	{
+		return
+	null
+    ;
+	}
+		int
+ m
+	 (
+	)
+		@
+    A
+[
+  ]
+    {
+    return
+  null
+		;
+	 }
+	void
+  m
+	(
+    )
+	 throws
+A
+ {
+  }
+    void
+		m
+(
+  )
+	 throws
+ A
+  ,
+		B
+  .
+    C
+  ,
+	D
+.
+ E
+  .
+    F
+ {
+    }
+	void
+m
+	(
+	)
+  throws
+		@
+	A
+  B
+	{
+}
+		abstract
+void
+	m
+		(
+ )
+  ;
+ native
+	void
+ m
+  (
+ )
+		;
+  synchronized
+	 void
+	m
+		(
+    )
+		{
+}
+    strictfp
+void
+m
+(
+  )
+	{
+  }
+ default
+ void
+  m
+ (
+	)
+  {
+    }
+    public
+    static
+final
+  int
+    X
+    =
+ 1
+  ,
+		Y
+ [
+]
+	=
+ {
+ 2
+ }
+    ,
+Z
+	 ;
+	 int
+[
+    ]
+		a
+	,
+b
+[
+    ]
+	,
+	 c
+	;
+	@
+A
+	@
+    B
+(
+    1
+		)
+	@
+	C
+		(
+	x
+ =
+	 1
+	 )
+  @
+	D
+	 (
+ {
+ 1
+    ,
+  2
+		}
+  )
+  @
+	E
+	 (
+    @
+ F
+	 )
+  int
+ x
+	 ;
+@
+  A
+	(
+  value
+    =
+	 {
+	 }
+	)
+	 int
+	x
+    ;
+	 @
+	 A
+ (
+    {
+		}
+  )
+ int
+x
+	;
+		@
+	A
+	(
+	 x
+=
+ {
+1
+	,
+  }
+	)
+int
+    x
+	;
+	 @
+	 A
+(
+    x
+	 =
+    @
+	B
+  (
+	 y
+=
+ 1
+	 )
+		)
+	 int
+    x
+  ;
+	 @
+		A
+ (
+	 x
+  =
+  1
+	+
+  2
+		)
+  int
+    x
+    ;
+    @
+  A
+	(
+		x
+	 =
+ B
+  .
+    C
+    )
+	 int
+  x
+;
+    @
+    A
+	 (
+B
+  .
+	class
+	 )
+  int
+		x
+		;
+@
+	 A
+		(
+	x
+		=
+"s"
+	 +
+		"t"
+ )
+	int
+    x
+  ;
+    @
+A
+	 .
+  B
+  .
+		C
+int
+ x
+	 ;
+		@
+ A
+    .
+	 B
+ (
+		1
+  )
+  int
+		x
+	;
+	 int
+  x
+	 =
+  1
+  +
+  2
+    ,
+ y
+    =
+	 3
+ *
+ (
+	 4
++
+  5
+		)
+		;
+	 int
+		[
+    ]
+    x
+	=
+	{
+		}
+    ;
+ int
+	[
+	 ]
+	 x
+	 =
+  {
+		1
+    }
+    ;
+int
+	[
+ ]
+x
+	=
+{
+		1
+,
+    }
+ ;
+	 int
+	 [
+    ]
+  [
+  ]
+  x
+  =
+  {
+    {
+	 1
+ }
+	,
+	 {
+  2
+	,
+	3
+	}
+ }
+  ;
+ int
+	 [
+    ]
+x
+ =
+{
+	 1
+	 ,
+		2
+		}
+    ,
+		y
+	=
+	 {
+ }
+	 ;
+	 Object
+  x
+  =
+	 new
+ Object
+	 (
+	)
+{
+	 }
+		;
+    Runnable
+		x
+  =
+    (
+    )
+    ->
+ {
+}
+	 ;
+	List
+    <
+		String
+	>
+ x
+=
+		new
+ArrayList
+	<
+    >
+	(
+		)
+    ;
+	Map
+    <
+ String
+    ,
+    List
+  <
+ Integer
+>>
+		x
+	 ;
+Map
+		<
+    String
+		,
+  List
+    <
+	 Integer
+		>>
+    [
+  ]
+x
+		;
+  List
+		<
+		?
+  extends
+	Number
+ >
+  x
+		;
+ List
+<
+	 ?
+		super
+ Integer
+  >
+		x
+	 ;
+	 List
+	 <
+ ?
+  >
+	 x
+ ;
+	List
+ <
+	@
+A
+?
+	 >
+x
+	;
+	List
+	<
+		?
+	 extends
+    @
+ A
+  Number
+	>
+x
+	;
+Map
+    <
+	?
+	extends
+	 K
+    ,
+		?
+ super
+	V
+>
+  x
+		;
+  Outer
+    .
+Inner
+ x
+	 ;
+Outer
+	.
+    Inner
+	<
+A
+	>
+ x
+    ;
+Outer
+ <
+  A
+  >
+    .
+Inner
+x
+	 ;
+	Outer
+<
+	 A
+    >
+  .
+		Inner
+	<
+		B
+		>
+    x
+  ;
+  Outer
+	 <
+	 A
+	>
+  .
+		Inner
+    <
+		B
+	>
+	.
+	Deep
+  <
+	 C
+  >
+ x
+;
+	Outer
+	 <
+    A
+ >
+    .
+  Inner
+ <
+	B
+>
+		[
+		]
+	 x
+ ;
+@
+		A
+  Outer
+    .
+ @
+ B
+    Inner
+    x
+    ;
+	 a
+ .
+  b
+ .
+		@
+	A
+	C
+	 x
+	 ;
+	 a
+	.
+  @
+  A
+    b
+ .
+    C
+  x
+    ;
+  int
+@
+	 A
+  [
+		]
+ x
+	 ;
+	 int
+    @
+	A
+		[
+  ]
+		@
+B
+ [
+    ]
+    x
+		;
+  @
+	 A
+    int
+  @
+    B
+	[
+  ]
+	x
+	;
+		String
+    @
+A
+    [
+ ]
+  x
+	 [
+	]
+;
+		static
+	 {
+}
+{
+		}
+;
+    ;
+  ;
+	 class
+	 A
+  {
+  }
+class
+	 A
+		<
+	T
+ >
+		{
+	 }
+		class
+A
+  <
+	 T
+	 extends
+    B
+>
+	 extends
+    C
+	<
+  D
+		>
+implements
+		E
+    ,
+		F
+	 <
+G
+ >
+	 {
+ }
+  class
+	 A
+ extends
+B
+	 .
+C
+		{
+		}
+    class
+A
+    extends
+ B
+		<
+    C
+		>
+.
+D
+	<
+ E
+    >
+    {
+  }
+ class
+	 A
+implements
+B
+ .
+	 C
+ ,
+		D
+	<
+  E
+	>
+  .
+		F
+{
+	 }
+		class
+	 A
+	permits
+	B
+,
+	 C
+{
+}
+ sealed
+	 class
+  A
+ permits
+  B
+	 ,
+ C
+.
+    D
+		,
+	E
+		<
+F
+>
+ {
+    }
+	 sealed
+	 interface
+    A
+  extends
+ B
+		permits
+    C
+		{
+}
+	non-sealed
+	 class
+	 A
+  extends
+B
+		{
+  }
+	 final
+ class
+  A
+{
+	}
+abstract
+class
+	A
+ {
+		}
+ static
+ class
+	A
+ {
+	}
+    strictfp
+ class
+    A
+{
+  }
+		@
+A
+    class
+	A
+	{
+	}
+	 @
+ A
+  @
+		B
+	(
+		1
+)
+    public
+	class
+A
+    {
+	 }
+ interface
+		A
+{
+	}
+	interface
+	 A
+	 <
+  T
+>
+	extends
+		B
+	,
+C
+  <
+		D
+    >
+{
+    }
+  @
+    interface
+A
+	 {
+    }
+  @
+	 interface
+ A
+ {
+	 int
+x
+  (
+)
+	;
+		}
+	 @
+interface
+	A
+	 {
+  int
+  x
+ (
+	 )
+    default
+	 1
+  ;
+}
+ @
+  interface
+		A
+		{
+	 int
+	[
+		]
+	x
+(
+)
+    default
+	{
+    1
+,
+    2
+    }
+	 ;
+	 }
+ @
+    interface
+	 A
+	{
+ B
+		x
+    (
+    )
+	 default
+@
+	B
+ ;
+	 }
+    @
+interface
+	A
+		{
+	Class
+  <
+  ?
+		>
+		x
+  (
+)
+	default
+	 Object
+	 .
+    class
+  ;
+		}
+	@
+ interface
+    A
+		{
+		int
+	 x
+(
+ )
+default
+    1
+  ;
+String
+ y
+    (
+	)
+ ;
+  }
+@
+	 interface
+  A
+	 {
+	 int
+    X
+=
+  1
+		;
+		}
+@
+    interface
+		A
+{
+		class
+	 B
+{
+    }
+}
+    @
+    interface
+	A
+ {
+	 enum
+	 B
+  {
+    C
+}
+ }
+ @
+    interface
+    A
+    {
+	 @
+	 interface
+	B
+  {
+    }
+	 }
+		@
+  interface
+    A
+    {
+;
+		}
+	@
+  interface
+    A
+ {
+	int
+x
+ (
+    )
+  [
+ ]
+		;
+  }
+		@
+interface
+	A
+    {
+@
+ B
+  int
+    x
+(
+ )
+    ;
+		}
+    enum
+ A
+ {
+	 }
+    enum
+		A
+		{
+  B
+		}
+	 enum
+ A
+		{
+  B
+  ,
+	 }
+	 enum
+		A
+    {
+ B
+	 ,
+	C
+  }
+	 enum
+A
+		{
+  B
+		,
+		C
+  ,
+}
+enum
+		A
+	 {
+	 B
+  ,
+    C
+	;
+  }
+  enum
+  A
+{
+  ;
+}
+	 enum
+  A
+	 {
+	B
+ (
+	 1
+	)
+ }
+enum
+	A
+	{
+	B
+		(
+	 1
+		)
+		,
+ C
+	 (
+	2
+    ,
+		3
+	 )
+}
+		enum
+ A
+    {
+    B
+  {
+ }
+  }
+	 enum
+A
+		{
+B
+	 (
+	1
+  )
+ {
+		void
+		m
+		(
+	)
+{
+}
+	}
+}
+	enum
+  A
+    {
+	@
+	 C
+	B
+    }
+enum
+ A
+  {
+	 @
+	C
+ (
+ 1
+	)
+		@
+    D
+B
+	}
+    enum
+		A
+  {
+B
+		;
+	 int
+x
+	 ;
+		}
+  enum
+	A
+  implements
+	 B
+		,
+    C
+  {
+  }
+	 enum
+ A
+	 {
+	 B
+    ;
+    A
+		(
+ )
+    {
+		}
+}
+ record
+    A
+    (
+ )
+	 {
+	}
+    record
+	 A
+	(
+    int
+	 x
+		)
+{
+    }
+    record
+	 A
+    (
+	int
+	x
+  ,
+	int
+		y
+	)
+	 {
+  }
+ record
+ A
+ (
+  int
+		...
+	 x
+ )
+ {
+ }
+	record
+A
+(
+	 int
+		x
+	 ,
+		int
+  ...
+  y
+    )
+	 {
+    }
+		record
+    A
+    <
+	 T
+>
+  (
+	T
+x
+	 )
+ {
+		}
+	 record
+	A
+ (
+@
+		B
+ int
+  x
+	)
+    {
+  }
+	 record
+	 A
+(
+		@
+ B
+  @
+	C
+  (
+	 1
+  )
+	int
+	 x
+	,
+		@
+		D
+	 String
+	y
+)
+	{
+		}
+    record
+A
+		(
+int
+  x
+    )
+  implements
+		B
+  {
+    }
+  record
+  A
+(
+    int
+	 x
+		)
+{
+A
+	{
+	}
+ }
+ record
+	 A
+(
+  int
+x
+ )
+	 {
+A
+ {
+  this
+ .
+		x
+=
+ x
+;
+		}
+	}
+ record
+	 A
+	 (
+	int
+  x
+  )
+ {
+  public
+		A
+    {
+ }
+	}
+    record
+	A
+  (
+		int
+    x
+ )
+	 {
+  @
+	B
+    A
+    {
+		}
+ }
+record
+ A
+	(
+		int
+x
+ )
+	 {
+  A
+  (
+		int
+x
+	)
+{
+ this
+    .
+	 x
+ =
+x
+	;
+ }
+}
+	 record
+		A
+		(
+ List
+  <
+	 String
+    >
+ x
+    )
+	{
+	 }
+record
+	A
+ (
+int
+		[
+    ]
+	 x
+	)
+  {
+  }
+	record
+		A
+    (
+    @
+		B
+ int
+	@
+ C
+  [
+	]
+    x
+    )
+    {
+    }
+  record
+		A
+	 (
+  @
+B
+	 String
+    ...
+    x
+	)
+  {
+    }
+record
+	A
+  (
+ java
+  .
+	lang
+		.
+    @
+  B
+    String
+  x
+  )
+  {
+    }
+}

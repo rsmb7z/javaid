@@ -1,0 +1,1289 @@
+ package
+	demo
+;
+  import
+  java
+  .
+io
+.
+  *
+		;
+    class
+  Stmts
+{
+  static
+int
+  s
+  ;
+ int
+ i
+  ;
+  static
+{
+s
+ =
+1
+	;
+	}
+  static
+  {
+ }
+	{
+		i
+=
+2
+		;
+ }
+  {
+    }
+ ;
+		;
+		;
+	 int
+	 m
+  (
+int
+a
+  ,
+		int
+b
+ [
+		]
+ ,
+		final
+	 int
+	c
+ ,
+int
+...
+  d
+	)
+  throws
+  IOException
+	 {
+    int
+ x
+=
+	 1
+  ,
+    y
+	,
+z
+ [
+	]
+    =
+	 {
+	1
+}
+,
+    w
+  [
+  ]
+	[
+ ]
+		=
+new
+    int
+    [
+	 1
+		]
+[
+    1
+  ]
+    ;
+    final
+int
+		k
+    =
+ 2
+	 ;
+  @
+    SuppressWarnings
+		(
+ "x"
+    )
+	int
+ ann
+  =
+	 3
+	;
+    var
+v
+	 =
+	 1
+	;
+    final
+    var
+ fv
+    =
+ 2
+;
+		;
+  {
+    }
+{
+  int
+ inner
+	 ;
+}
+	outer
+  :
+ for
+	 (
+ int
+	i
+    =
+	0
+		,
+ j
+=
+  10
+;
+    i
+ <
+j
+	;
+  i
+ ++
+,
+  j
+	--
+		)
+	 {
+    inner
+  :
+    while
+ (
+		true
+ )
+ {
+	 if
+  (
+ i
+	>
+	 2
+  )
+	continue
+ outer
+	 ;
+	else
+if
+  (
+ i
+	>
+  3
+    )
+    break
+inner
+		;
+	else
+	 break
+ ;
+ do
+	 {
+	 x
+++
+ ;
+		}
+	 while
+	(
+		x
+  <
+  3
+		)
+		;
+    }
+  }
+ for
+	(
+ ;
+		;
+)
+	{
+  break
+ ;
+ }
+		for
+ (
+		int
+	i
+	 =
+0
+ ;
+ ;
+  )
+ {
+break
+		;
+	 }
+  for
+	 (
+  ;
+	x
+		<
+    3
+ ;
+	 )
+ {
+    x
+	++
+    ;
+  }
+for
+(
+  ;
+	 ;
+x
+++
+	)
+{
+	break
+	 ;
+ }
+	 for
+ (
+  x
+=
+		0
+  ;
+	 x
+	<
+	 3
+    ;
+    x
+    ++
+		)
+		;
+for
+  (
+ x
+  =
+    0
+		,
+		y
+    =
+	 1
+	;
+		;
+		)
+ break
+  ;
+for
+		(
+	final
+		int
+  q
+ :
+	 d
+    )
+	{
+    }
+ for
+  (
+	int
+		q
+	:
+    d
+	 )
+foo
+    (
+    )
+;
+		for
+    (
+  var
+ q
+    :
+	d
+	 )
+{
+  }
+  for
+	(
+    @
+	 Deprecated
+    final
+    String
+ q
+  :
+	strings
+	 (
+ )
+  )
+{
+ }
+		for
+  (
+  int
+ q
+    [
+ ]
+	:
+    new
+    int
+	[
+  1
+    ]
+  [
+	 1
+	]
+ )
+ {
+    }
+ for
+	(
+Map
+.
+		Entry
+ <
+  String
+		,
+  List
+    <
+String
+  >>
+		e
+  :
+	map
+		.
+		entrySet
+	(
+	)
+    )
+	 {
+  }
+	while
+ (
+	 x
+  <
+    3
+)
+    x
+    ++
+	 ;
+ while
+  (
+	x
+<
+    3
+	 )
+	{
+	 x
+		++
+    ;
+ }
+    do
+ x
+    ++
+		;
+	 while
+ (
+	x
+	 <
+	 3
+	)
+    ;
+	do
+ {
+	 x
+++
+		;
+  }
+	 while
+    (
+	 x
+		<
+3
+ )
+;
+		if
+		(
+  x
+    >
+		1
+	)
+foo
+(
+	 )
+;
+	 if
+ (
+x
+    >
+ 1
+)
+ foo
+ (
+ )
+	;
+    else
+	 bar
+ (
+)
+;
+if
+(
+x
+ >
+ 1
+  )
+	{
+foo
+		(
+	)
+	;
+	}
+  else
+    if
+  (
+	 x
+	>
+	2
+)
+{
+	bar
+ (
+	)
+;
+}
+		else
+{
+    baz
+	(
+ )
+	 ;
+	 }
+    if
+	(
+	x
+		>
+  1
+ )
+ ;
+		else
+		;
+	 if
+(
+	 (
+ x
+	 >
+    1
+  )
+  )
+	{
+    }
+switch
+ (
+	x
+	 )
+{
+	 }
+  switch
+(
+x
+		)
+ {
+ default
+	 :
+    }
+  switch
+	 (
+  x
+	 )
+	 {
+ case
+		1
+:
+	 }
+    switch
+  (
+		x
+  )
+ {
+case
+ 1
+		:
+ case
+2
+	 :
+    }
+  switch
+ (
+	 x
+	)
+		{
+  case
+		1
+		:
+	case
+    2
+:
+foo
+ (
+    )
+;
+ break
+		;
+	case
+ 3
+    :
+    {
+    bar
+  (
+		)
+ ;
+ }
+ case
+	4
+    ,
+	5
+ :
+ break
+;
+ default
+  :
+	 baz
+	(
+	 )
+    ;
+    }
+    switch
+    (
+	 x
+	 )
+	{
+  case
+	1
+		->
+    foo
+	(
+)
+	 ;
+		case
+	2
+,
+	3
+->
+	{
+		bar
+ (
+ )
+ ;
+    }
+ case
+  4
+->
+ throw
+	new
+RuntimeException
+	 (
+		)
+    ;
+		default
+	 ->
+	{
+    }
+    }
+  int
+		r
+	=
+	 switch
+(
+x
+    )
+{
+		case
+  1
+  ->
+  10
+;
+	case
+	 2
+    ->
+		{
+ yield
+  20
+	;
+	 }
+  default
+    ->
+  throw
+	 new
+    IllegalStateException
+	(
+		)
+  ;
+	 }
+    ;
+	r
+		=
+switch
+(
+	 x
+  )
+{
+    case
+	1
+ :
+yield
+	 1
+		;
+ case
+2
+  :
+    {
+		yield
+2
+	;
+    }
+default
+	 :
+	 yield
+    3
+	 ;
+	}
+  ;
+		String
+sw
+ =
+  switch
+    (
+str
+    )
+    {
+case
+"a"
+	,
+	 "b"
+    ->
+ "x"
+		;
+default
+    ->
+"y"
+	;
+ }
+	 ;
+		switch
+		(
+	 e
+  )
+ {
+ case
+ A
+  ->
+	 foo
+	 (
+  )
+    ;
+	case
+	B
+->
+ bar
+  (
+		)
+;
+}
+	switch
+    (
+    e
+  )
+  {
+ case
+ A
+		:
+	 foo
+	(
+	 )
+  ;
+  break
+    ;
+ case
+    B
+	 :
+ bar
+    (
+ )
+  ;
+}
+	 switch
+	 (
+		o
+	)
+	 {
+ case
+null
+	,
+		default
+  ->
+	 foo
+    (
+ )
+	 ;
+		}
+	switch
+	(
+ o
+    )
+    {
+	 case
+	null
+    :
+ default
+    :
+  foo
+(
+	 )
+;
+	 }
+ foo
+		(
+	switch
+(
+	 x
+	 )
+	{
+		default
+->
+1
+	;
+ }
+	 )
+	;
+	 r
+	=
+	1
+	+
+	switch
+		(
+	x
+  )
+  {
+	default
+->
+ 1
+;
+    }
+  +
+	 2
+    ;
+	 yield2
+		:
+	 for
+ (
+	 ;
+    ;
+	 )
+{
+    break
+ yield2
+	 ;
+ }
+	 try
+	{
+	foo
+		(
+    )
+	;
+  }
+  catch
+	 (
+	Exception
+ e
+ )
+		{
+    }
+	try
+    {
+	 foo
+(
+	)
+	 ;
+ }
+	 catch
+	(
+	 IOException
+ |
+	 RuntimeException
+    e
+	 )
+    {
+		bar
+    (
+)
+	 ;
+	 }
+	 finally
+		{
+  baz
+	(
+  )
+	 ;
+  }
+	 try
+    {
+	 foo
+	 (
+ )
+    ;
+	}
+	finally
+ {
+}
+try
+(
+	InputStream
+in
+	 =
+open
+ (
+	)
+)
+		{
+}
+  try
+    (
+InputStream
+ in
+	 =
+  open
+    (
+  )
+	;
+	 OutputStream
+  out
+  =
+	open
+    (
+    )
+		;
+  )
+	{
+	}
+    try
+	 (
+	final
+    var
+	 in
+	=
+		open
+(
+		)
+		)
+	 {
+		}
+try
+  (
+  in
+  )
+{
+    }
+ try
+ (
+ this
+	.
+		in
+	;
+    Other
+    .
+	 out
+)
+    {
+		}
+try
+  (
+		in
+		;
+  var
+o
+    =
+ open
+  (
+)
+ )
+		{
+	}
+	 catch
+		(
+	 Exception
+    e
+	)
+{
+ }
+	 finally
+    {
+		}
+	 try
+{
+ }
+	catch
+    (
+  final
+ Exception
+  e
+    )
+    {
+}
+  try
+ {
+	}
+	catch
+	(
+		@
+    Deprecated
+ Exception
+  e
+		)
+	 {
+		}
+try
+    {
+	 }
+ catch
+		(
+  java
+	 .
+		io
+	 .
+ IOException
+ |
+java
+    .
+		lang
+	 .
+RuntimeException
+	 e
+		)
+	{
+}
+synchronized
+ (
+		this
+)
+		{
+	 x
+    ++
+    ;
+ }
+		assert
+  x
+ >
+		0
+ ;
+ assert
+ x
+    >
+  0
+	 :
+"msg"
+  ;
+ assert
+		(
+    x
+	>
+		0
+	)
+ :
+  (
+ "msg"
+		)
+    ;
+  throw
+new
+RuntimeException
+	 (
+"x"
+	 )
+	;
+    }
+ void
+    ret
+	 (
+ )
+		{
+	return
+ ;
+		}
+	 int
+ ret2
+ (
+		)
+ {
+	 return
+ 1
+		;
+    }
+    int
+ret3
+    (
+  )
+    {
+		return
+    (
+ 1
+	)
+	 ;
+	 }
+  int
+		ret4
+(
+  )
+{
+  return
+	 switch
+(
+	 i
+)
+	 {
+		default
+    ->
+  1
+ ;
+	}
+  ;
+ }
+    void
+ thr
+		(
+	)
+  throws
+	 Exception
+    {
+ throw
+ new
+ Exception
+ (
+	 )
+  ;
+	}
+		void
+  yields
+	(
+	)
+ {
+    int
+ yield
+  =
+1
+ ;
+ yield
+		=
+	2
+;
+		}
+	void
+ records
+  (
+  )
+	 {
+  int
+	 record
+		=
+  1
+  ;
+	int
+  sealed
+		=
+ 2
+  ;
+		int
+		permits
+ =
+		3
+ ;
+ int
+when
+	=
+    4
+  ;
+int
+  module
+=
+	5
+    ;
+  int
+	open
+	=
+    6
+    ;
+	 int
+  with
+    =
+ 7
+  ;
+	 int
+	 to
+		=
+		8
+;
+int
+	 var
+	 =
+    9
+  ;
+	}
+		void
+    unnamed
+    (
+    )
+  {
+  int
+		_
+	=
+ 1
+		;
+    foo
+    (
+    _
+    ->
+1
+    )
+ ;
+    try
+	{
+    }
+	 catch
+  (
+	 Exception
+	_
+		)
+		{
+    }
+ for
+	(
+	 int
+ _
+		:
+		new
+  int
+    [
+ 1
+	]
+)
+ {
+	 }
+}
+		void
+	sync
+	 (
+  )
+  {
+  synchronized
+	(
+	this
+		)
+{
+	}
+		}
+		void
+	 lbl
+	(
+    )
+  {
+a
+	:
+	b
+  :
+		c
+		:
+		foo
+	 (
+	 )
+	;
+}
+	void
+	 localTypes
+  (
+)
+	{
+	 class
+    A
+		{
+}
+	final
+	class
+	B
+	 {
+  }
+ abstract
+    class
+  C
+{
+}
+ static
+ class
+D
+    {
+	 }
+ interface
+ E
+	{
+ }
+ enum
+F
+  {
+	X
+}
+    record
+    G
+(
+ int
+		a
+		)
+{
+	 }
+ @
+  Deprecated
+	 class
+ H
+{
+    }
+  sealed
+	 interface
+    I
+  permits
+  J
+{
+    }
+	 final
+    class
+	 J
+ implements
+		I
+ {
+	}
+}
+void
+empty
+ (
+)
+{
+}
+	void
+    empty2
+    (
+    )
+ {
+;
+  }
+ void
+empty3
+ (
+ )
+		{
+	;
+    ;
+ }
+	abstract
+void
+	 abs
+  (
+	)
+  ;
+  native
+	void
+  nat
+ (
+  )
+;
+    }

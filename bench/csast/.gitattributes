@@ -1,0 +1,2 @@
+# Line endings are part of the test input (CRLF and lone CR snippets): never convert them.
+* -text

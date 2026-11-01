@@ -58,6 +58,9 @@ pub fn run(cfg: &Config, ext: &str, src: &[u8], out: &mut Vec<Diagnostic>) {
     if let Some(m) = cfg.newline_at_end_of_file.as_ref().filter(|m| reads(&m.extensions)) {
         newline_at_end_of_file(cfg, m.separator, src, out);
     }
+    if let Some(m) = cfg.multi_file_regexp_header.as_ref().filter(|m| reads(&m.extensions)) {
+        multi_file_regexp_header(cfg, m, src, out);
+    }
     let size = cfg.file_length.as_ref().filter(|m| reads(&m.extensions));
     if let Some(m) = size {
         let count = lines(src).count();
@@ -130,4 +133,28 @@ fn newline_at_end_of_file(cfg: &Config, separator: LineSeparator, src: &[u8], ou
         _ => return,
     };
     out.push(Diagnostic { rule: cfg.display("NewlineAtEndOfFile"), line: 1, col: 1, message });
+}
+
+/// `MultiFileRegexpHeader`: the file's first lines must match, line by line, one of the header
+/// files. When none does, only the first header file is held against the file: its length, or the
+/// first line that does not match (both probed).
+fn multi_file_regexp_header(cfg: &Config, m: &crate::config::MultiFileRegexpHeader, src: &[u8], out: &mut Vec<Diagnostic>) {
+    let file: Vec<&[u8]> = lines(src).collect();
+    let mismatch = |patterns: &[crate::config::Format]| -> Option<usize> {
+        let n = patterns.len().min(file.len());
+        (0..n).find(|&i| !patterns[i].matches(file[i])).or((file.len() < patterns.len()).then_some(n))
+    };
+    if m.headers.iter().any(|(_, p)| mismatch(p).is_none()) {
+        return;
+    }
+    let (first_name, first) = &m.headers[0];
+    let message = if first.len() > file.len() {
+        format!("Header is missing or too short based on configured header templates '{first_name}'. File must match one of them.")
+    } else {
+        let at = mismatch(first).unwrap_or(0);
+        let shown = if first[at].source.is_empty() { "^$" } else { first[at].source.as_str() };
+        format!("Header mismatch, expected line content was '{shown}'. File must match one of the configured header templates: '{}'.", m.names)
+    };
+    let line = if first.len() > file.len() { 1 } else { mismatch(first).unwrap_or(0) as u32 + 1 };
+    out.push(Diagnostic { rule: cfg.display("MultiFileRegexpHeader"), line, col: 0, message });
 }

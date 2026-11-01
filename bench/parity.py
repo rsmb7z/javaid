@@ -19,7 +19,7 @@ import sys
 
 # Checkstyle plain format. The column is optional: some messages (Javadoc parse errors) have none.
 CS = re.compile(r"^\[(?:WARN|ERROR|INFO)\] (?P<file>.*?):(?P<line>\d+)(?::\d+)?: (?P<msg>.*) \[(?P<rule>\w+)\]$")
-JV = re.compile(r"^(?P<file>.*?):(?P<line>\d+):\d+: (?P<rule>\w+): (?P<msg>.*)$")
+JV = re.compile(r"^(?P<file>.*?):(?P<line>\d+)(?::\d+)?: (?P<rule>\w+): (?P<msg>.*)$")
 # PMD text format: <file>:<line>:<TAB><Rule>:<TAB><message>  (no column)
 PMD = re.compile(r"^(?P<file>.*?):(?P<line>\d+):\t(?P<rule>\w+):\t(?P<msg>.*)$")
 PMD_TO_JAVAID = {

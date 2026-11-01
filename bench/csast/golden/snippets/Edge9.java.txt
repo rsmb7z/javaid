@@ -1,0 +1,8 @@
+COMPILATION_UNIT -> COMPILATION_UNIT [4:3]
+`--CLASS_DEF -> CLASS_DEF [4:3]
+    |--MODIFIERS -> MODIFIERS [4:3]
+    |--LITERAL_CLASS -> class [4:3]
+    |--IDENT -> A [4:9]
+    `--OBJBLOCK -> OBJBLOCK [4:11]
+        |--LCURLY -> { [4:11]
+        `--RCURLY -> } [4:13]

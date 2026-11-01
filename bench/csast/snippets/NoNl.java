@@ -1,0 +1,1 @@
+class NoNl { int x; }

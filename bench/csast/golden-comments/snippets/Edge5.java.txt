@@ -1,0 +1,8 @@
+COMPILATION_UNIT -> COMPILATION_UNIT [1:4]
+`--PACKAGE_DEF -> package [1:4]
+    |--ANNOTATIONS -> ANNOTATIONS [1:1]
+    |   `--ANNOTATION -> ANNOTATION [1:1]
+    |       |--AT -> @ [1:1]
+    |       `--IDENT -> A [1:2]
+    |--IDENT -> a [1:12]
+    `--SEMI -> ; [1:13]

@@ -1,0 +1,1 @@
+import module a.b; class A {}
