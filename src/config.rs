@@ -28,6 +28,11 @@ pub const REGISTRY: &[Module] = &[
     Module { name: "FinalClass", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "HideUtilityClassConstructor", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "InterfaceIsType", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "HiddenField", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "RedundantModifier", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "DeclarationOrder", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "DesignForExtension", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "VisibilityModifier", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "EmptyBlock", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "NeedBraces", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "EqualsHashCode", family: "coding and blocks", multi: false, own_name: false },
@@ -57,6 +62,10 @@ pub const REGISTRY: &[Module] = &[
     Module { name: "FileLength", family: "text", multi: false, own_name: false },
     Module { name: "LineLength", family: "text", multi: false, own_name: false },
     Module { name: "RegexpSingleline", family: "text", multi: true, own_name: true },
+    Module { name: "BeforeExecutionExclusionFileFilter", family: "filters", multi: true, own_name: true },
+    Module { name: "SuppressionFilter", family: "filters", multi: true, own_name: true },
+    Module { name: "SuppressionXpathFilter", family: "filters", multi: true, own_name: true },
+    Module { name: "DescendantToken", family: "coding and blocks", multi: true, own_name: true },
     Module { name: "TodoComment", family: "text", multi: true, own_name: true },
     Module { name: "ArrayTypeStyle", family: "modifiers and small checks", multi: false, own_name: false },
     Module { name: "EmptyStatement", family: "modifiers and small checks", multi: false, own_name: false },
@@ -357,6 +366,44 @@ const RIGHT_CURLY_ACCEPTED: &str = "LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY,
     LITERAL_CASE, LITERAL_DEFAULT";
 
 #[derive(Clone, Debug)]
+pub struct DesignForExtension {
+    pub ignored_annotations: Vec<String>,
+    pub required_javadoc_phrase: Format,
+}
+
+#[derive(Clone, Debug)]
+pub struct DeclarationOrder {
+    pub ignore_modifiers: bool,
+    pub ignore_constructors: bool,
+}
+
+#[derive(Clone, Debug)]
+pub struct RedundantModifier {
+    pub jdk_version: u32,
+}
+
+#[derive(Clone, Debug)]
+pub struct HiddenField {
+    pub ignore_format: Option<Format>,
+    pub ignore_constructor_parameter: bool,
+    pub ignore_setter: bool,
+    pub setter_can_return_its_class: bool,
+    pub ignore_abstract_methods: bool,
+}
+
+#[derive(Clone, Debug)]
+pub struct VisibilityModifier {
+    pub package_allowed: bool,
+    pub protected_allowed: bool,
+    pub allow_public_final_fields: bool,
+    pub public_member_pattern: Format,
+    /// Annotation names, as written: the canonical names and the short name of each.
+    pub ignore_annotations: Vec<String>,
+}
+
+const VISIBILITY_IGNORED_ANNOTATIONS: &str = "org.junit.Rule, org.junit.ClassRule, com.google.common.annotations.VisibleForTesting";
+
+#[derive(Clone, Debug)]
 pub struct FinalParameters {
     pub tokens: TokenSet,
     pub ignore_primitive_types: bool,
@@ -552,6 +599,20 @@ pub struct FallThrough {
     pub relief: Format,
 }
 
+/// `DescendantToken` as the bundled configurations use it: commas in a `for` header.
+#[derive(Clone, Debug)]
+pub struct DescendantToken {
+    pub name: &'static str,
+    pub for_init: bool,
+    pub for_iterator: bool,
+    pub min_depth: u32,
+    pub max_depth: u32,
+    pub min_number: u32,
+    pub max_number: u32,
+    pub minimum_message: Option<String>,
+    pub maximum_message: Option<String>,
+}
+
 #[derive(Clone, Debug)]
 pub struct TodoComment {
     pub name: &'static str,
@@ -571,6 +632,7 @@ pub struct Config {
     pub line_length: Option<LineLength>,
     pub regexp_singleline: Vec<RegexpSingleline>,
     pub todo_comments: Vec<TodoComment>,
+    pub descendant_tokens: Vec<DescendantToken>,
     pub array_type_style: bool,
     pub upper_ell: bool,
     pub empty_statement: bool,
@@ -596,6 +658,11 @@ pub struct Config {
     pub hide_utility_class_constructor: bool,
     /// `InterfaceIsType`: whether marker interfaces are allowed.
     pub interface_is_type: Option<bool>,
+    pub visibility_modifier: Option<VisibilityModifier>,
+    pub hidden_field: Option<HiddenField>,
+    pub declaration_order: Option<DeclarationOrder>,
+    pub design_for_extension: Option<DesignForExtension>,
+    pub redundant_modifier: Option<RedundantModifier>,
     pub right_curly: Option<RightCurly>,
     pub method_length: Option<MethodLength>,
     pub parameter_number: Option<ParameterNumber>,
@@ -614,6 +681,10 @@ pub struct Config {
     pub left_curly: Vec<LeftCurly>,
     /// Filters that remove findings (see `suppress`). None are implemented yet.
     pub filters: Vec<String>,
+    /// `BeforeExecutionExclusionFileFilter`: files whose path matches are not read at all.
+    pub file_excludes: Vec<Format>,
+    /// The elements of every `SuppressionFilter` file.
+    pub suppressions: Vec<crate::suppress::Suppression>,
     /// The Checker's own `fileExtensions`, if the configuration sets one.
     pub checker_extensions: Option<Vec<String>>,
     /// The Checker's `tabWidth`: how far a tab advances when a line is measured. Default 8.
@@ -637,6 +708,7 @@ impl Default for Config {
             line_length: None,
             regexp_singleline: Vec::new(),
             todo_comments: Vec::new(),
+            descendant_tokens: Vec::new(),
             array_type_style: false,
             upper_ell: false,
             empty_statement: false,
@@ -660,6 +732,11 @@ impl Default for Config {
             final_parameters: None,
             hide_utility_class_constructor: false,
             interface_is_type: None,
+            visibility_modifier: None,
+            hidden_field: None,
+            declaration_order: None,
+            design_for_extension: None,
+            redundant_modifier: None,
             right_curly: None,
             method_length: None,
             parameter_number: None,
@@ -675,6 +752,8 @@ impl Default for Config {
             separator_wrap: Vec::new(),
             left_curly: Vec::new(),
             filters: Vec::new(),
+            file_excludes: Vec::new(),
+            suppressions: Vec::new(),
             checker_extensions: None,
             tab_width: 8,
             ids: Vec::new(),
@@ -1126,6 +1205,72 @@ impl Config {
                 p.finish()?;
                 self.hide_utility_class_constructor = true;
             }
+            "DesignForExtension" => {
+                let ignored_annotations = match p.take("ignoredAnnotations") {
+                    None => ["Test", "Before", "After", "BeforeClass", "AfterClass"].map(String::from).to_vec(),
+                    Some(v) => v.split(',').map(|a| a.trim().to_string()).filter(|a| !a.is_empty()).collect(),
+                };
+                let phrase = p.take("requiredJavadocPhrase").unwrap_or_else(|| ".*".to_string());
+                let required_javadoc_phrase = Format::new(&phrase)?;
+                p.finish()?;
+                self.design_for_extension = Some(DesignForExtension { ignored_annotations, required_javadoc_phrase });
+            }
+            "DeclarationOrder" => {
+                let ignore_modifiers = p.bool("ignoreModifiers", false)?;
+                let ignore_constructors = p.bool("ignoreConstructors", false)?;
+                p.finish()?;
+                self.declaration_order = Some(DeclarationOrder { ignore_modifiers, ignore_constructors });
+            }
+            "RedundantModifier" => {
+                p.expect_default(
+                    "tokens",
+                    "METHOD_DEF, VARIABLE_DEF, ANNOTATION_FIELD_DEF, INTERFACE_DEF, CTOR_DEF, CLASS_DEF, ENUM_DEF, RESOURCE, ANNOTATION_DEF, RECORD_DEF, \
+                     PATTERN_VARIABLE_DEF, LITERAL_CATCH, LAMBDA",
+                )?;
+                let jdk_version = match p.take("jdkVersion") {
+                    None => 22,
+                    Some(v) => v
+                        .trim()
+                        .trim_start_matches("1.")
+                        .parse()
+                        .map_err(|_| format!("property jdkVersion: '{}' is not a Java version", v.trim()))?,
+                };
+                p.finish()?;
+                self.redundant_modifier = Some(RedundantModifier { jdk_version });
+            }
+            "HiddenField" => {
+                p.expect_default("tokens", "VARIABLE_DEF, PARAMETER_DEF, PATTERN_VARIABLE_DEF, LAMBDA, RECORD_COMPONENT_DEF")?;
+                let ignore_format = p.take("ignoreFormat").map(|v| Format::new(&v)).transpose()?;
+                let ignore_constructor_parameter = p.bool("ignoreConstructorParameter", false)?;
+                let ignore_setter = p.bool("ignoreSetter", false)?;
+                let setter_can_return_its_class = p.bool("setterCanReturnItsClass", false)?;
+                let ignore_abstract_methods = p.bool("ignoreAbstractMethods", false)?;
+                p.finish()?;
+                self.hidden_field =
+                    Some(HiddenField { ignore_format, ignore_constructor_parameter, ignore_setter, setter_can_return_its_class, ignore_abstract_methods });
+            }
+            "VisibilityModifier" => {
+                p.expect_default("allowPublicImmutableFields", "false")?;
+                // Only read when immutable fields are allowed, which is refused above.
+                p.take("immutableClassCanonicalNames");
+                p.expect_default("tokens", "VARIABLE_DEF")?;
+                let package_allowed = p.bool("packageAllowed", false)?;
+                let protected_allowed = p.bool("protectedAllowed", false)?;
+                let allow_public_final_fields = p.bool("allowPublicFinalFields", false)?;
+                let pattern = p.take("publicMemberPattern").unwrap_or_else(|| "^serialVersionUID$".to_string());
+                let public_member_pattern = Format::new(&pattern)?;
+                let list = p.take("ignoreAnnotationCanonicalNames").unwrap_or_else(|| VISIBILITY_IGNORED_ANNOTATIONS.to_string());
+                let mut ignore_annotations = Vec::new();
+                for name in list.split(',').map(|n| n.split_whitespace().collect::<String>()).filter(|n| !n.is_empty()) {
+                    if let Some(short) = name.rsplit('.').next().filter(|s| *s != name) {
+                        ignore_annotations.push(short.to_string());
+                    }
+                    ignore_annotations.push(name);
+                }
+                p.finish()?;
+                self.visibility_modifier =
+                    Some(VisibilityModifier { package_allowed, protected_allowed, allow_public_final_fields, public_member_pattern, ignore_annotations });
+            }
             "InterfaceIsType" => {
                 let allow = p.bool("allowMarkerInterfaces", true)?;
                 p.finish()?;
@@ -1277,6 +1422,65 @@ impl Config {
                 });
                 p.finish()?;
                 self.avoid_star_import = Some(AvoidStarImport { allow_class_imports, allow_static_member_imports, excludes });
+            }
+            "BeforeExecutionExclusionFileFilter" => {
+                // Without a pattern the filter accepts every file.
+                let pattern = p.take("fileNamePattern");
+                p.finish()?;
+                if let Some(pattern) = pattern {
+                    self.file_excludes.push(Format::new(&pattern)?);
+                }
+            }
+            "SuppressionFilter" | "SuppressionXpathFilter" => {
+                let file = p.take("file");
+                let optional = p.bool("optional", false)?;
+                p.finish()?;
+                let Some(file) = file else { return Ok(()) };
+                let text = match std::fs::read_to_string(&file) {
+                    Ok(t) => t,
+                    Err(_) if optional => return Ok(()),
+                    Err(e) => return Err(format!("cannot read the suppressions file '{file}': {e}")),
+                };
+                if module == "SuppressionXpathFilter" {
+                    return Err(format!("the suppressions file '{file}' exists, and XPath suppressions are not implemented yet"));
+                }
+                let (found, unsupported) = crate::suppress::parse_suppressions(&text)?;
+                if let Some(first) = unsupported.first() {
+                    return Err(format!("the suppressions file '{file}' has <{first}> elements, which are not implemented yet"));
+                }
+                self.suppressions.extend(found);
+            }
+            "DescendantToken" => {
+                // Without `tokens` Checkstyle's module looks at nothing.
+                let Some(tokens) = p.take("tokens") else {
+                    p.finish()?;
+                    return Ok(());
+                };
+                let (mut for_init, mut for_iterator) = (false, false);
+                for t in tokens.split(',').map(str::trim).filter(|t| !t.is_empty()) {
+                    match t {
+                        "FOR_INIT" => for_init = true,
+                        "FOR_ITERATOR" => for_iterator = true,
+                        other => return Err(format!("tokens: {other} is not supported yet (only FOR_INIT and FOR_ITERATOR)")),
+                    }
+                }
+                match p.take("limitedTokens").as_deref().map(str::trim) {
+                    Some("COMMA") => {}
+                    _ => return Err("property limitedTokens: only COMMA is supported yet".to_string()),
+                }
+                p.expect_default("sumTokenCounts", "false")?;
+                let max_depth = match p.take("maximumDepth") {
+                    Some(v) => v.trim().parse::<u32>().ok().filter(|d| *d <= 2).ok_or("property maximumDepth: only 0 to 2 is supported yet")?,
+                    None => return Err("property maximumDepth: a value of 2 or less is required for now".to_string()),
+                };
+                let min_depth = p.usize("minimumDepth", 0)? as u32;
+                let min_number = p.usize("minimumNumber", 0)? as u32;
+                let max_number = p.usize("maximumNumber", i32::MAX as usize)? as u32;
+                let minimum_message = p.take("minimumMessage");
+                let maximum_message = p.take("maximumMessage");
+                p.finish()?;
+                let name = id.map_or("DescendantToken", leak);
+                self.descendant_tokens.push(DescendantToken { name, for_init, for_iterator, min_depth, max_depth, min_number, max_number, minimum_message, maximum_message });
             }
             "TodoComment" => {
                 let format = p.format("TODO:")?;

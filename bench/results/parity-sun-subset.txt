@@ -13,6 +13,7 @@ FileTabCharacter                  9440     9440    9440         0        0     1
 FinalClass                        1681     1681    1681         0        0     100.0%
 FinalParameters                 102539   102539  102539         0        0     100.0%
 GenericWhitespace                   55       55      55         0        0     100.0%
+HiddenField                      15637    15637   15637         0        0     100.0%
 HideUtilityClassConstructor         46       46      46         0        0     100.0%
 IllegalImport                       12       12      12         0        0     100.0%
 InnerAssignment                    242      242     242         0        0     100.0%
@@ -38,12 +39,14 @@ OperatorWrap                      5224     5224    5224         0        0     1
 ParameterName                       21       21      21         0        0     100.0%
 ParameterNumber                    194      194     194         0        0     100.0%
 ParenPad                           116      116     116         0        0     100.0%
+RedundantModifier                 1910     1910    1910         0        0     100.0%
 RegexpSingleline                   113      113     113         0        0     100.0%
 RightCurly                        9640     9640    9640         0        0     100.0%
 StaticVariableName                  23       23      23         0        0     100.0%
 TodoComment                        240      240     240         0        0     100.0%
 TypeName                            31       31      31         0        0     100.0%
 UnusedImports                     1440     1440    1440         0        0     100.0%
+VisibilityModifier                5731     5731    5731         0        0     100.0%
 WhitespaceAfter                   2415     2415    2415         0        0     100.0%
 WhitespaceAround                  8531     8531    8531         0        0     100.0%
-TOTAL                           544329   544329  544329         0        0     100.0%
+TOTAL                           567607   567607  567607         0        0     100.0%

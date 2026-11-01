@@ -52,6 +52,7 @@
     </module>
     <module name="WhitespaceAround" />
     <module name="ModifierOrder" />
+    <module name="RedundantModifier" />
     <module name="AvoidNestedBlocks" />
     <module name="EmptyBlock" />
     <module name="LeftCurly" />
@@ -60,6 +61,7 @@
     <module name="EmptyStatement" />
     <module name="EqualsHashCode" />
     <module name="FallThrough" />
+    <module name="HiddenField" />
     <module name="IllegalInstantiation" />
     <module name="InnerAssignment" />
     <module name="MagicNumber" />
@@ -71,6 +73,7 @@
     <module name="FinalClass" />
     <module name="HideUtilityClassConstructor" />
     <module name="InterfaceIsType" />
+    <module name="VisibilityModifier" />
     <module name="ArrayTypeStyle" />
     <module name="FinalParameters" />
     <module name="TodoComment" />

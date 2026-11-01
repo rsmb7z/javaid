@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+    "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+<suppressions>
+  <suppress checks="MagicNumber" files="[\\/]guava-tests[\\/]"/>
+  <suppress checks="WhitespaceAround" files="Test\.java$"/>
+  <suppress id="hidden" files="[\\/]spring-core[\\/]"/>
+  <suppress checks="FinalParameters" message="'a[a-z]*'"/>
+  <suppress checks="LineLength" lines="1-60"/>
+  <suppress checks="MagicNumber" columns="1-20" files="[\\/]spring-web[\\/]"/>
+  <suppress files="[\\/]spring-aop[\\/]" checks="[Pp]arameter"/>
+  <suppress checks="com\.puppycrawl\.tools\.checkstyle\.checks\.whitespace\." files="[\\/]spring-beans[\\/]"/>
+  <suppress checks="TabCharacter" files="."/>
+  <suppress id="nomatch" files="."/>
+</suppressions>

@@ -53,6 +53,16 @@ where it is possible, makes a small edit that stays valid Java:
   * EmptyStatement (only with --stray)  a second `;` put after a statement that ends a line
   * EmptyForIteratorPad (only with --for-pad)  a blank added after, or taken from, the `;` that ends a `for`
     header with no update
+  * RedundantModifier, VisibilityModifier (only with --modifiers)  `final` put on a private or static method, `public` or
+    `abstract` on a bodiless member, `final` on the first parameter of a bodiless method or on a try resource, `static`
+    on a nested enum, interface or record, `strictfp` on a method, `private` on a field turned into nothing,
+    `protected` or `public`, and `static final` into `static`
+  * DescendantToken (only with --commas)  a `for (int i = 0; c; i++)` header gains one to three more variables in its init
+    and update clauses
+  * DeclarationOrder (only with --order)  two neighbouring one-line declarations swap places, or a one-line field moves
+    below the next member
+  * HiddenField (only with --hidden)  a parameter, local variable or lambda parameter is renamed to the name of a field
+    of the same file
   * ParenPad (only with --parens)  `(x)` -> `( x )` on code lines, `foo(x)` -> `foo( x)`, `foo(x )`
 
 Checkstyle and javaid are then run on the *same* mutated tree, so whatever they disagree about is a
@@ -616,6 +626,126 @@ def edit_classes(text, rng, rate):
     return "\n".join(out)
 
 
+METHOD_MODS = r"(?:(?:public|protected|private|static|final|abstract|synchronized|default|native)\s+)"
+METHOD_LINE = re.compile(r"^(?P<indent>\s+)(?P<mods>" + METHOD_MODS + r"*)(?P<head>(?:<[^>()]+>\s+)?[\w<>\[\],.?]+\s+\w+)\((?P<params>[^()]*)\)(?P<tail>\s*(?:throws [\w., ]+)?\s*)(?P<end>[{;])\s*$")
+FIELD_LINE = re.compile(r"^(?P<indent>\s+)(?P<mods>" + METHOD_MODS + r"+)(?P<rest>[\w<>\[\],.? ]+?\s\w+\s*(?:=.*)?;)\s*$")
+NESTED_TYPE = re.compile(r"^(?P<indent>\s+)(?P<mods>(?:(?:public|protected|private|abstract|final)\s+)*)(?P<kind>enum|interface|record)\s+[A-Z]")
+TRY_RESOURCE = re.compile(r"\btry \((?!final )(?=[A-Z])")
+
+
+STATEMENT_WORDS = ("return ", "new ", "else ", "yield ", "assert ", "throw ", "case ", "break ", "continue ")
+
+
+def edit_modifiers(text, rng, rate):
+    """Add modifiers the language implies, and loosen field visibility, on `rate * 8` of the lines that take one."""
+    out = []
+    for line in text.split("\n"):
+        if line.lstrip().startswith(("*", "//", "/*")) or rng.random() >= rate * 8:
+            out.append(line)
+            continue
+        m = METHOD_LINE.match(line)
+        # A line that continues the one before (`<T extends X>` on its own line) takes no modifier.
+        if m and (line.lstrip().startswith(STATEMENT_WORDS) or (not m["mods"] and out and out[-1].rstrip().endswith((">", ",", "(", "&")))):
+            m = None
+        f = FIELD_LINE.match(line)
+        n = NESTED_TYPE.match(line)
+        if m and m["end"] == ";":
+            # a member without a body: an interface or abstract method
+            choice = rng.choice(["public", "abstract", "param", "param"])
+            if choice == "param" and m["params"].strip() and "final " not in m["params"]:
+                params = re.sub(r"^(\s*)", r"\1final ", m["params"], count=1)
+                line = f"{m['indent']}{m['mods']}{m['head']}({params}){m['tail']};"
+            elif choice != "param" and choice not in m["mods"]:
+                line = f"{m['indent']}{choice} {line.lstrip()}"
+        elif m:
+            choice = rng.choice(["final", "final", "strictfp"])
+            if choice not in m["mods"] and ("private" in m["mods"] or "static" in m["mods"] or choice == "strictfp"):
+                line = f"{m['indent']}{m['mods']}{choice} {m['head']}({m['params']}){m['tail']}{m['end']}"
+        elif f and not METHOD_LINE.match(line):
+            mods = f["mods"]
+            choice = rng.choice(["none", "protected", "public", "unfinal"])
+            if choice == "unfinal":
+                mods = mods.replace("static final ", "static ").replace("final static ", "static ")
+            elif "private " in mods:
+                mods = mods.replace("private ", "" if choice == "none" else choice + " ", 1)
+            line = f"{f['indent']}{mods}{f['rest']}"
+        elif n and "static" not in n["mods"] and n["kind"] != "interface" or n and n["kind"] == "interface" and "static" not in n["mods"]:
+            line = f"{n['indent']}{n['mods']}static {line.lstrip()[len(n['mods']):]}"
+        elif TRY_RESOURCE.search(line):
+            line = TRY_RESOURCE.sub("try (final ", line, count=1)
+        out.append(line)
+    return "\n".join(out)
+
+
+ONE_LINE_MEMBER = re.compile(r"^(?P<indent>\s+)(?:(?:public|protected|private|static|final|volatile|transient)\s+)*[\w<>\[\],.?]+\s+\w+\s*(?:=[^;{}]*)?;\s*$")
+
+
+def reorder_members(text, rng, rate):
+    """Swap neighbouring one-line fields, on `rate * 8` of them."""
+    lines = text.split("\n")
+    i = 0
+    while i + 1 < len(lines):
+        a, b = ONE_LINE_MEMBER.match(lines[i]), ONE_LINE_MEMBER.match(lines[i + 1])
+        if a and b and a["indent"] == b["indent"] and not lines[i].lstrip().startswith(STATEMENT_WORDS) and not lines[i + 1].lstrip().startswith(STATEMENT_WORDS) \
+                and rng.random() < rate * 8:
+            lines[i], lines[i + 1] = lines[i + 1], lines[i]
+            i += 1
+        i += 1
+    return "\n".join(lines)
+
+
+FOR_HEADER = re.compile(r"^(?P<head>\s*for \()(?P<init>(?:final )?int \w+ = [^;,()]+)(?P<mid>; [^;]*; )(?P<var>\w+)\+\+(?P<tail>\) .*)$")
+
+
+def add_for_variables(text, rng, rate):
+    """Give a `for` header more variables, on `rate * 8` of those that have the simple counting shape."""
+    out = []
+    for line in text.split("\n"):
+        m = FOR_HEADER.match(line)
+        if m and rng.random() < rate * 8:
+            extra = rng.randint(1, 3)
+            names = [f"zz{k}" for k in range(extra)]
+            init = m["init"] + "".join(f", {n} = {k}" for k, n in enumerate(names))
+            update = m["var"] + "++" + "".join(f", {n}++" for n in names)
+            line = f"{m['head']}{init}{m['mid']}{update}{m['tail']}"
+        out.append(line)
+    return "\n".join(out)
+
+
+FIELD_NAME = re.compile(r"^\s+(?:(?:public|protected|private|static|final|volatile|transient)\s+)+[\w<>\[\],.? ]+?\s(\w+)\s*(?:=.*)?;\s*$")
+LOCAL_DECL = re.compile(r"^(?P<head>\s+(?:final )?(?:[A-Z]\w*(?:<[^>()]*>)?|int|long|boolean|double|char)(?:\[\])* )(?P<name>[a-z]\w*)(?P<tail> =.*)$")
+LAMBDA_PARAM = re.compile(r"(?P<pre>[(,=] ?)(?P<name>[a-z]\w*) ->")
+
+
+def rename_to_fields(text, rng, rate):
+    """Give a parameter, local variable or lambda parameter the name of a field of the same file."""
+    lines = text.split("\n")
+    fields = sorted({m.group(1) for l in lines for m in [FIELD_NAME.match(l)] if m})
+    if not fields:
+        return text
+    out = []
+    for line in lines:
+        if line.lstrip().startswith(("*", "//", "/*")) or rng.random() >= rate * 8:
+            out.append(line)
+            continue
+        new = rng.choice(fields)
+        m = METHOD_LINE.match(line)
+        if m and line.lstrip().startswith(STATEMENT_WORDS):
+            m = None
+        if m and m["params"].strip() and "<" not in m["params"]:
+            parts = m["params"].split(", ")
+            i = rng.randrange(len(parts))
+            parts[i] = re.sub(r"(\w+)$", new, parts[i], count=1) if re.search(r"\s\w+$", parts[i]) else parts[i]
+            line = f"{m['indent']}{m['mods']}{m['head']}({', '.join(parts)}){m['tail']}{m['end']}"
+        elif LOCAL_DECL.match(line) and not FIELD_NAME.match(line):
+            d = LOCAL_DECL.match(line)
+            line = f"{d['head']}{new}{d['tail']}"
+        elif LAMBDA_PARAM.search(line):
+            line = LAMBDA_PARAM.sub(lambda d: f"{d['pre']}{new} ->", line, count=1)
+        out.append(line)
+    return "\n".join(out)
+
+
 CHAINED = re.compile(r"^(\s*)\} (else\b.*|catch\b.*|finally\b.*)$")
 
 
@@ -731,6 +861,10 @@ def main():
     ap.add_argument("--for-pad", action="store_true", help="only pad the end of for headers (a separate pass)")
     ap.add_argument("--imports", action="store_true", help="only add redundant and illegal imports (a separate pass)")
     ap.add_argument("--classes", action="store_true", help="only change class and constructor modifiers (a separate pass)")
+    ap.add_argument("--modifiers", action="store_true", help="only add redundant modifiers and loosen field visibility (a separate pass)")
+    ap.add_argument("--commas", action="store_true", help="only give for headers more variables (a separate pass)")
+    ap.add_argument("--order", action="store_true", help="only swap neighbouring one-line fields (a separate pass)")
+    ap.add_argument("--hidden", action="store_true", help="only rename declarations to the names of fields (a separate pass)")
     ap.add_argument("--rcurly", action="store_true", help="only move closing braces (a separate pass)")
     ap.add_argument("--empty", action="store_true", help="only empty blocks (a separate pass)")
     ap.add_argument("--eof", action="store_true", help="only change how files end (a separate pass)")
@@ -766,6 +900,14 @@ def main():
                 new = add_imports(text, rng, a.rate)
             elif a.classes:
                 new = edit_classes(text, rng, a.rate)
+            elif a.modifiers:
+                new = edit_modifiers(text, rng, a.rate)
+            elif a.commas:
+                new = add_for_variables(text, rng, a.rate)
+            elif a.order:
+                new = reorder_members(text, rng, a.rate)
+            elif a.hidden:
+                new = rename_to_fields(text, rng, a.rate)
             elif a.rcurly:
                 new = move_right_curlies(text, rng, a.rate)
             elif a.empty:

@@ -97,6 +97,75 @@ const CASES: &[(&str, &str)] = &[
     ("ClsProbe.java", "interfaceistype"),
     ("ClsProbe.java", "interfaceistype-allow"),
     ("ClsProbe2.java", "finalclass"),
+    // VisibilityModifier
+    ("VisProbe.java", "vis-default"),
+    ("VisProbe.java", "vis-pkg"),
+    ("VisProbe.java", "vis-prot"),
+    ("VisProbe.java", "vis-pubfinal"),
+    ("VisProbe.java", "vis-pattern"),
+    ("VisProbe.java", "vis-ignore"),
+    ("VisProbe.java", "vis-all"),
+    // HiddenField
+    ("HidProbe.java", "hid-default"),
+    ("HidProbe.java", "hid-format"),
+    ("HidProbe.java", "hid-ctor"),
+    ("HidProbe.java", "hid-setter"),
+    ("HidProbe.java", "hid-setter-class"),
+    ("HidProbe.java", "hid-abstract"),
+    ("HidProbe.java", "hid-all"),
+    ("HidProbe2.java", "hid-default"),
+    ("HidProbe2.java", "hid-format"),
+    ("HidProbe2.java", "hid-ctor"),
+    ("HidProbe2.java", "hid-setter"),
+    ("HidProbe2.java", "hid-setter-class"),
+    ("HidProbe2.java", "hid-abstract"),
+    ("HidProbe2.java", "hid-all"),
+    // RedundantModifier
+    ("RedundantProbe.java", "red-default"),
+    ("RedundantProbe.java", "red-jdk8"),
+    ("RedundantProbe.java", "red-jdk17"),
+    ("RedundantProbe.java", "red-jdk21"),
+    ("RedundantProbe2.java", "red-default"),
+    ("RedundantProbe2.java", "red-jdk8"),
+    ("RedundantProbe2.java", "red-jdk17"),
+    ("RedundantProbe2.java", "red-jdk21"),
+    // DeclarationOrder
+    ("DoProbe.java", "do-default"),
+    ("DoProbe.java", "do-ctor"),
+    ("DoProbe.java", "do-mods"),
+    ("DoProbe.java", "do-both"),
+    ("DoProbe2.java", "do-default"),
+    ("DoProbe2.java", "do-ctor"),
+    ("DoProbe2.java", "do-mods"),
+    ("DoProbe2.java", "do-both"),
+    // DesignForExtension
+    ("DfeProbe.java", "dfe-default"),
+    ("DfeProbe.java", "dfe-ann"),
+    ("DfeProbe.java", "dfe-noann"),
+    ("DfeProbe.java", "dfe-phrase"),
+    ("DfeProbe.java", "dfe-phrase2"),
+    // DescendantToken
+    ("DescProbe.java", "desc-sun"),
+    ("DescProbe.java", "desc-depth1"),
+    ("DescProbe.java", "desc-max0"),
+    ("DescProbe.java", "desc-init"),
+    ("DescProbe.java", "desc-min"),
+    ("DescProbe.java", "desc-nomsg"),
+    ("DescProbe.java", "desc-mindepth"),
+    ("DescProbe.java", "desc-mininit"),
+    ("DescProbe2.java", "desc-sun"),
+    ("DescProbe2.java", "desc-depth1"),
+    ("DescProbe2.java", "desc-max0"),
+    ("DescProbe2.java", "desc-init"),
+    ("DescProbe2.java", "desc-min"),
+    ("DescProbe2.java", "desc-nomsg"),
+    ("DescProbe2.java", "desc-mindepth"),
+    ("DescProbe2.java", "desc-mininit"),
+    // SuppressionFilter
+    ("HidProbe.java", "filter-probe"),
+    ("HidProbe2.java", "filter-probe"),
+    ("MagicProbe.java", "filter-probe"),
+    ("MagicProbe2.java", "filter-probe"),
     // RightCurly
     ("RcSwitchProbe.java", "rightcurly-switch"),
     ("RcProbe.java", "rightcurly"),
@@ -684,7 +753,8 @@ fn findings(root: &Path, probe: &str, config: &str, grammar: Grammar) -> Result<
         return Err(format!("oracle config must be fully supported: {:?}", loaded.skipped));
     }
 
-    let mut src = std::fs::read(root.join("bench/oracle/probes").join(probe)).unwrap();
+    let path = root.join("bench/oracle/probes").join(probe);
+    let mut src = std::fs::read(&path).unwrap();
     let ext = Path::new(probe).extension().and_then(|e| e.to_str()).unwrap();
     let mut out: Vec<Diagnostic> = Vec::new();
     let mut syntax_errors = false;
@@ -697,6 +767,11 @@ fn findings(root: &Path, probe: &str, config: &str, grammar: Grammar) -> Result<
     } else {
         lint_text(&loaded.config, ext, &src, &mut out);
     }
+    // What `main` does after the rules: the file filters.
+    if javaid::suppress::file_excluded(&loaded.config, &path) {
+        out.clear();
+    }
+    javaid::suppress::by_file(&loaded.config, &path, &src, &mut out);
     let mut rows: Vec<(u32, &str)> = out.iter().map(|d| (d.line, d.rule)).collect();
     rows.sort();
     Ok((rows.iter().map(|(l, r)| format!("{l} {r}")).collect(), syntax_errors))

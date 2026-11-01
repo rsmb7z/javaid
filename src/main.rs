@@ -1,6 +1,7 @@
 use clap::Parser as ClapParser;
 use javaid::config::{module_names, Config};
 use javaid::engine::{self, Diagnostic};
+use javaid::suppress;
 use javaid::syntax::{self, Grammar, Syntax};
 use rayon::prelude::*;
 use std::io::{BufWriter, Write};
@@ -115,6 +116,11 @@ fn check_file(parser: &mut tree_sitter::Parser, syn: &Syntax, mode: Mode, explai
         Ok(s) => s,
         Err(e) => return FileResult { io_error: Some(e.to_string()), ..Default::default() },
     };
+    if let Mode::Lint(cfg) = mode {
+        if suppress::file_excluded(cfg, path) {
+            return FileResult { bytes: src.len(), ..Default::default() };
+        }
+    }
     let mut result = FileResult { bytes: src.len(), ..Default::default() };
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
     if ext != "java" {
@@ -122,6 +128,7 @@ fn check_file(parser: &mut tree_sitter::Parser, syn: &Syntax, mode: Mode, explai
         if let Mode::Lint(cfg) = mode {
             engine::lint_text(cfg, ext, &src, &mut result.diagnostics);
             result.diagnostics.sort_by_key(|d| (d.line, d.col));
+            suppress::by_file(cfg, path, &src, &mut result.diagnostics);
         }
         return result;
     }
@@ -148,6 +155,7 @@ fn check_file(parser: &mut tree_sitter::Parser, syn: &Syntax, mode: Mode, explai
             // Checkstyle reports in line order; the walk finds things in document order and the
             // line-based modules afterwards, so put them in order. Stable, so ties keep their order.
             result.diagnostics.sort_by_key(|d| (d.line, d.col));
+            suppress::by_file(cfg, path, &src, &mut result.diagnostics);
         }
     }
     result

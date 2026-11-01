@@ -3,8 +3,12 @@
 pub mod blocks;
 pub mod coding;
 pub mod comments;
+pub mod declorder;
+pub mod descendant;
 pub mod design;
+pub mod extension;
 pub mod fallthrough;
+pub mod hidden;
 pub mod importcheck;
 pub mod imports;
 pub mod magic;
@@ -12,6 +16,7 @@ pub mod misc;
 pub mod modifiers;
 pub mod naming;
 pub mod pad;
+pub mod redundant;
 pub mod size;
 pub mod statements;
 pub mod text;
@@ -33,6 +38,7 @@ pub struct State<'a> {
     pub imports: imports::State<'a>,
     pub statements: statements::State,
     pub design: design::State,
+    pub declorder: declorder::State,
     pub importcheck: importcheck::State,
     /// End of the `package` or `import` declaration being walked into. Only the padding rules look
     /// inside one; to every other rule it is a leaf, as before.
@@ -60,6 +66,7 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
         return true;
     }
     imports::leave_scopes(&mut st.imports, node);
+    declorder::on_node(cx, &mut st.declorder, node);
     let kind = cx.syn.kind(node);
     if kind.pad_token {
         whitespace::on_token(cx, node);
@@ -112,6 +119,7 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
         Act::Method => {
             naming::on_method(cx, node);
             size::on_method_like(cx, node);
+            extension::on_method(cx, node);
         }
         Act::Constructor => {
             size::on_method_like(cx, node);
@@ -119,18 +127,22 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
         }
         Act::Field => {
             naming::on_field(cx, node);
+            design::on_visibility(cx, node);
             coding::on_declaration(cx, node);
         }
         Act::LocalVar => {
             naming::on_local_var(cx, node);
+            hidden::on_local(cx, node);
             coding::on_declaration(cx, node);
         }
         Act::Param => {
             naming::on_param(cx, node);
+            hidden::on_param(cx, node);
             design::on_final_parameter(cx, node);
         }
         Act::CatchParam => {
             naming::on_catch_param(cx, node);
+            hidden::on_param(cx, node);
             design::on_final_parameter(cx, node);
         }
         Act::TypeParam => naming::on_type_param(cx, node),
@@ -146,19 +158,35 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
             statements::on_semicolon(cx, &mut st.statements, node);
             misc::on_empty_statement(cx, node);
         }
-        Act::Lambda => naming::on_lambda(cx, node),
-        Act::InstanceOf => naming::on_instanceof(cx, node),
-        Act::TypePattern => naming::on_type_pattern(cx, node),
-        Act::RecordPatternComponent => naming::on_record_pattern_component(cx, node),
+        Act::Lambda => {
+            naming::on_lambda(cx, node);
+            hidden::on_lambda(cx, node);
+        }
+        Act::InstanceOf => {
+            naming::on_instanceof(cx, node);
+            hidden::on_instanceof(cx, node);
+        }
+        Act::TypePattern => {
+            naming::on_type_pattern(cx, node);
+            hidden::on_pattern(cx, node);
+        }
+        Act::RecordPatternComponent => {
+            naming::on_record_pattern_component(cx, node);
+            hidden::on_pattern(cx, node);
+        }
         Act::Catch => blocks::on_catch(cx, node),
         Act::If => {
             blocks::on_if(cx, node);
             coding::on_simplify_return(cx, node);
         }
         Act::While => blocks::on_loop(cx, node, "while"),
-        Act::For => blocks::on_loop(cx, node, "for"),
+        Act::For => {
+            blocks::on_loop(cx, node, "for");
+            descendant::on_for(cx, node);
+        }
         Act::EnhancedFor => {
             design::on_final_parameter(cx, node);
+            hidden::on_enhanced_for(cx, node);
             blocks::on_loop(cx, node, "for");
             naming::on_enhanced_for(cx, node);
         }
@@ -169,7 +197,10 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
             magic::on_number(cx, node);
         }
         Act::FloatLiteral => magic::on_number(cx, node),
-        Act::Modifiers => modifiers::on_modifiers(cx, node),
+        Act::Modifiers => {
+            modifiers::on_modifiers(cx, node);
+            redundant::on_modifiers(cx, node);
+        }
         Act::Annotation => whitespace::on_annotation(cx, node),
         Act::Block => blocks::on_block(cx, node),
         Act::Assignment => coding::on_assignment(cx, node),

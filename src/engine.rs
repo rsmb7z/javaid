@@ -160,5 +160,4 @@ pub fn lint(syn: &Syntax, cfg: &Config, tree: &Tree, src: &[u8], out: &mut Vec<D
     }
     rules::finish(&mut cx, &mut st);
     lint_text(cfg, "java", src, cx.out);
-    crate::suppress::apply(cfg, src, cx.out);
 }

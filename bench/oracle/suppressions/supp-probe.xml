@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+    "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+<suppressions>
+  <suppress id="hid" lines="12-40"/>
+  <suppress checks="FinalParameters" message="'a'" files="HidProbe\.java"/>
+  <suppress checks="HiddenField" columns="1-20" lines="60-100"/>
+  <suppress checks="MagicNumber" files="MagicProbe2" lines="1-20"/>
+  <suppress checks="com\.puppycrawl\.tools\.checkstyle\.checks\.coding\." files="HidProbe2"/>
+</suppressions>

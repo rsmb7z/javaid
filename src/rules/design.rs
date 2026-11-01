@@ -1,4 +1,5 @@
-//! Class-design modules: `FinalClass`, `HideUtilityClassConstructor` and `InterfaceIsType`.
+//! Class-design modules: `FinalClass`, `HideUtilityClassConstructor`, `InterfaceIsType` and
+//! `VisibilityModifier`.
 
 use crate::engine::Ctx;
 use crate::rules::util::has_modifier;
@@ -333,4 +334,53 @@ pub fn on_final_parameter(cx: &mut Ctx, node: Node) {
     };
     let at = anchor.start_position();
     cx.diag_at("FinalParameters", at.row as u32 + 1, at.column as u32 + 1, format!("Parameter {text} should be final."));
+}
+
+/// A field that is not private needs a reason: `static final`, a waiver in the configuration, or an
+/// ignored annotation. Fields of an interface or annotation type are constants and never reported;
+/// a class nested in one is checked like any other. Local and anonymous classes are checked too.
+pub fn on_visibility(cx: &mut Ctx, field: Node) {
+    let Some(opts) = &cx.cfg.visibility_modifier else { return };
+    if cx.parent().is_some_and(|p| matches!(p.kind(), "interface_body" | "annotation_type_body")) {
+        return;
+    }
+    let mut scope = "package";
+    let mut is_static = false;
+    let mut is_final = false;
+    let mut ignored = false;
+    if let Some(mods) = field.children(&mut field.walk()).find(|c| c.kind() == "modifiers") {
+        for m in mods.children(&mut mods.walk()) {
+            match m.kind() {
+                "marker_annotation" | "annotation" => {
+                    let name = m.child_by_field_id(cx.syn.f.name).map(|n| cx.text(n).iter().filter(|b| !b.is_ascii_whitespace()).map(|b| *b as char).collect::<String>());
+                    ignored |= name.is_some_and(|n| opts.ignore_annotations.contains(&n));
+                }
+                _ => match cx.text(m) {
+                    b"public" => scope = "public",
+                    b"protected" => scope = "protected",
+                    b"private" => scope = "private",
+                    b"static" => is_static = true,
+                    b"final" => is_final = true,
+                    _ => {}
+                },
+            }
+        }
+    }
+    if ignored || scope == "private" || (is_static && is_final) {
+        return;
+    }
+    let (package_allowed, protected_allowed, final_public) = (opts.package_allowed, opts.protected_allowed, opts.allow_public_final_fields);
+    let mut cur = field.walk();
+    for d in field.children_by_field_id(cx.syn.f.declarator, &mut cur) {
+        let Some(name) = d.child_by_field_id(cx.syn.f.name) else { continue };
+        let text = cx.text(name);
+        let allowed = (package_allowed && scope == "package")
+            || (protected_allowed && scope == "protected")
+            || (scope == "public" && opts.public_member_pattern.matches(text))
+            || (final_public && is_final); // whatever the scope: `final int x;` passes too
+        if !allowed {
+            let msg = format!("Variable '{}' must be private and have accessor methods.", String::from_utf8_lossy(text));
+            cx.diag("VisibilityModifier", name, msg);
+        }
+    }
 }
