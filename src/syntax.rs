@@ -47,8 +47,12 @@ pub enum Act {
     Dimensions,
     IntegerLiteral,
     Modifiers,
+    /// An annotation, which `WhitespaceAfter` looks at when it is not a declaration's modifier.
+    Annotation,
     /// The `;` that ends a statement: the only unnamed token a rule looks at.
     Semi,
+    /// A `(` or `)`, which `ParenPad` looks at.
+    Paren,
     /// A `switch`, which is a statement or an expression depending on where it sits.
     Switch,
 }
@@ -62,9 +66,11 @@ pub struct KindInfo {
     pub documented: bool,
     /// A statement or declaration that `OneStatementPerLine` looks at.
     pub statement: bool,
+    /// An unnamed token whose padding some rule checks: punctuation, and the keywords that take a parenthesis or a block.
+    pub pad_token: bool,
 }
 
-const NONE: KindInfo = KindInfo { act: Act::None, is_block: false, is_if: false, documented: false, statement: false };
+const NONE: KindInfo = KindInfo { act: Act::None, is_block: false, is_if: false, documented: false, statement: false, pad_token: false };
 
 /// Grammar field ids, resolved once.
 pub struct Fields {
@@ -99,8 +105,20 @@ impl Syntax {
         // Scan ids rather than looking names up: one name can map to several ids (aliases).
         for id in 0..language.node_kind_count() as u16 {
             if !language.node_kind_is_named(id) {
-                if language.node_kind_for_id(id) == Some(";") {
-                    info[id as usize].act = Act::Semi;
+                let kind = language.node_kind_for_id(id);
+                info[id as usize].pad_token = matches!(
+                    kind,
+                    Some(
+                        "," | ";" | "." | "..." | "::" | "++" | "--" | ":" | "->" | "if" | "else" | "while" | "do" | "for" | "finally" | "return" | "yield"
+                            | "catch" | "switch" | "synchronized" | "try" | "case" | "when" | "assert" | "instanceof" | "[" | "]" | "{" | "}" | "?" | "=" | "+=" | "-=" | "*="
+                            | "/=" | "%=" | "<<=" | ">>=" | ">>>=" | "&=" | "|=" | "^=" | "+" | "-" | "*" | "/" | "%" | "<<" | ">>" | ">>>" | "&"
+                            | "|" | "^" | "<" | ">" | "<=" | ">=" | "==" | "!=" | "&&" | "||"
+                    )
+                );
+                match kind {
+                    Some(";") => info[id as usize].act = Act::Semi,
+                    Some("(" | ")") => info[id as usize].act = Act::Paren,
+                    _ => {}
                 }
                 continue;
             }
@@ -134,6 +152,7 @@ impl Syntax {
                 "block_comment" | "line_comment" => Act::Comment,
                 "dimensions" => Act::Dimensions,
                 "modifiers" => Act::Modifiers,
+                "annotation" | "marker_annotation" => Act::Annotation,
                 "switch_expression" => Act::Switch,
                 "decimal_integer_literal" | "hex_integer_literal" | "octal_integer_literal" | "binary_integer_literal" => Act::IntegerLiteral,
                 _ => Act::None,

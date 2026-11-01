@@ -29,7 +29,21 @@
     <module name="UnusedImports">
       <property name="processJavadoc" value="false" />
     </module>
+    <module name="GenericWhitespace" />
+    <module name="MethodParamPad" />
+    <module name="NoWhitespaceBefore" />
+    <module name="OperatorWrap" />
+    <module name="ParenPad" />
+    <module name="SeparatorWrap">
+      <property name="tokens" value="COMMA" />
+      <property name="option" value="EOL" />
+    </module>
+    <module name="WhitespaceAfter">
+      <property name="tokens" value="COMMA, SEMI, TYPECAST, LITERAL_YIELD, ELLIPSIS, LITERAL_CASE" />
+    </module>
+    <module name="WhitespaceAround" />
     <module name="ModifierOrder" />
+    <module name="LeftCurly" />
     <module name="NeedBraces" />
     <module name="EqualsHashCode" />
     <module name="FallThrough" />

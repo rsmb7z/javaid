@@ -1,7 +1,7 @@
 # javaid
 
 A fast Java linter written in Rust, built to **reproduce Checkstyle's findings exactly**. It is a
-v0.1 preview (see [CHANGELOG.md](CHANGELOG.md)): 33 modules, a `checkstyle.xml` reader, no cache, no
+v0.1 preview (see [CHANGELOG.md](CHANGELOG.md)): 42 modules, a `checkstyle.xml` reader, no cache, no
 fixes. The goal is a drop-in for Checkstyle configurations; today it runs the modules it has and
 lists, by name, every one it skips. The project began with one question, answered with evidence:
 
@@ -22,6 +22,7 @@ table), and processes files in parallel with one reused parser per thread.
 | imports | `UnusedImports`, including Javadoc references (`processJavadoc`); `AvoidStarImport` |
 | modifiers and small checks | `ModifierOrder`, `ArrayTypeStyle`, `UpperEll` |
 | text, per line or per comment | `FileTabCharacter`, `LineLength`, `RegexpSingleline`, `TodoComment` |
+| whitespace and wrapping | `ParenPad`, `MethodParamPad`, `NoWhitespaceBefore`, `WhitespaceAfter`, `WhitespaceAround`, `GenericWhitespace`, `OperatorWrap`, `SeparatorWrap`, `LeftCurly` |
 | naming | `TypeName`, `MethodName`, `MemberName`, `ConstantName`, `StaticVariableName`, `ParameterName`, `LocalVariableName`, `LocalFinalVariableName`, `PackageName`, `ClassTypeParameterName`, `InterfaceTypeParameterName`, `MethodTypeParameterName`, `RecordTypeParameterName`, `CatchParameterName`, `LambdaParameterName`, `PatternVariableName`, `RecordComponentName` |
 
 The four text modules need no syntax tree. They also read the files a Checker-level `fileExtensions`
@@ -49,7 +50,7 @@ Output is `path:line:col: Module: message`. Exit status is 1 if anything was rep
 cannot honour, is listed on stderr with the reason, and that module does not run:
 
 ```
-javaid: google_checks.xml: running 29 module(s), skipped 77
+javaid: google_checks.xml: running 44 module(s), skipped 62
   skipped SuppressWarningsFilter: not implemented
   skipped SuppressionFilter: not implemented
   ...
@@ -59,9 +60,9 @@ javaid: google_checks.xml: running 29 module(s), skipped 77
 
 A property it cannot honour reads `skipped NeedBraces: unsupported property: allowSingleLineStatement`.
 `${property}` placeholders take their `default` as Checkstyle does; one with no default skips just
-that module. The reader is checked, not assumed: the 29 instances javaid runs from Checkstyle's
-`google_checks.xml` and the 24 from `sun_checks.xml` give exactly Checkstyle's findings on Guava and
-Spring Framework, XML and properties files included (1,015,904 of 1,015,904 and 328,439 of 328,439).
+that module. The reader is checked, not assumed: the 44 instances javaid runs from Checkstyle's
+`google_checks.xml` and the 33 from `sun_checks.xml` give exactly Checkstyle's findings on Guava and
+Spring Framework, XML and properties files included (1,025,538 of 1,025,538 and 345,358 of 345,358).
 
 By default javaid follows symlinked directories, as Checkstyle does (`--no-follow-symlinks` turns
 that off).
@@ -120,12 +121,15 @@ one file (Checkstyle 4.0 ms), at 733 MB. See [FINDINGS.md](FINDINGS.md) section 
 
 ## Known limits
 
-- **33 modules.** Checkstyle 14.4 has 243 rule modules; its two bundled configs name 128 distinct
+- **42 modules.** Checkstyle 14.4 has 243 rule modules; its two bundled configs name 128 distinct
   modules, filters included. javaid runs every instance of the modules it implements, which is
-  29 of the 106 in `google_checks.xml` and 24 of the 73 in `sun_checks.xml`, and
-  says which it skips and why. Most of what is missing is whitespace and wrapping, Javadoc style,
-  `Indentation` and the suppression filters, so nothing is claimed about their speed and javaid is
-  **not yet a drop-in for those configs**.
+  44 of the 106 in `google_checks.xml` and 33 of the 73 in `sun_checks.xml`, and
+  says which it skips and why. Most of what is missing is Javadoc style, `Indentation`, the
+  suppression filters and the rest of the whitespace family (`SingleSpaceSeparator`,
+  `EmptyLineSeparator`, `RightCurly` and a few more), so javaid is **not yet a drop-in for those
+  configs**. The speed figures below were measured with the first 33 modules. A
+  42-module run on a loaded machine gave 6-9x per core and about 50x on all threads against
+  Checkstyle, with identical findings (FINDINGS.md section 8); a quiet re-run is still to do.
 - **Syntax-only.** No type resolution, so nothing that needs symbol or type information. This
   matches Checkstyle, which is also purely syntactic.
 - **Grammar.** The default is the maintained fork `tree-sitter-java-orchard`. Upstream
@@ -140,9 +144,9 @@ one file (Checkstyle 4.0 ms), at 733 MB. See [FINDINGS.md](FINDINGS.md) section 
 - **Checkstyle's Javadoc-parser diagnostics are not imitated.** At default settings Checkstyle
   prints "Javadoc comment ... has parse error" for odd Javadoc under the `UnusedImports` name; those
   are not unused-import findings and javaid does not produce them.
-- **Properties not honoured yet** include `tokens` that differ from a module's default (except on
-  `TypeName`, which takes one instance per type kind), a second instance of a module other than
-  `TypeName`, `RegexpSingleline` and `TodoComment`, and custom `<message>` templates: those are
+- **Properties not honoured yet** include a second instance of a module other than `TypeName`,
+  `RegexpSingleline`, `TodoComment`, `OperatorWrap`, `SeparatorWrap` and `LeftCurly`, and custom
+  `<message>` templates: those are
   listed as notes and javaid prints its own wording, which changes the text of a finding and not
   whether or where it is reported. Specifically refused, by name: `ArrayTypeStyle javaStyle=false`,
   `ModifierOrder modifiersOrder`, `FallThrough reliefPattern` other than the default, and

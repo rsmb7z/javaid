@@ -3,6 +3,7 @@
 //! The rule is *never skip silently*. A module javaid does not implement, or a property it cannot
 //! honour, is reported by name with the reason, and that module does not run.
 
+use crate::rules::tokens::{parse_tokens, TokenSet};
 use regex::bytes::{Regex, RegexBuilder};
 
 /// One implemented module. This table is the single source of truth for which modules exist and
@@ -53,6 +54,15 @@ pub const REGISTRY: &[Module] = &[
     Module { name: "MultipleVariableDeclarations", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "OneStatementPerLine", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "FallThrough", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "ParenPad", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "MethodParamPad", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "NoWhitespaceBefore", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "WhitespaceAfter", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "WhitespaceAround", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "GenericWhitespace", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "OperatorWrap", family: "whitespace and wrapping", multi: true, own_name: true },
+    Module { name: "SeparatorWrap", family: "whitespace and wrapping", multi: true, own_name: true },
+    Module { name: "LeftCurly", family: "whitespace and wrapping", multi: true, own_name: true },
 ];
 
 /// Every module name, in registry order.
@@ -264,6 +274,136 @@ pub struct OneStatementPerLine {
 }
 
 #[derive(Clone, Debug)]
+pub struct ParenPad {
+    /// The constructs whose parentheses are checked.
+    pub tokens: TokenSet,
+    /// `option=space`: padding is required, not forbidden.
+    pub space: bool,
+}
+
+/// The tokens `ParenPad` checks when `tokens` is not set.
+const PAREN_PAD_TOKENS: &str = "ANNOTATION, ANNOTATION_FIELD_DEF, CTOR_CALL, CTOR_DEF, DOT, ENUM_CONSTANT_DEF, EXPR, LITERAL_CATCH, \
+    LITERAL_DO, LITERAL_FOR, LITERAL_IF, LITERAL_NEW, LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_WHILE, METHOD_CALL, METHOD_DEF, \
+    QUESTION, RESOURCE_SPECIFICATION, SUPER_CTOR_CALL, LAMBDA, RECORD_DEF, RECORD_PATTERN_DEF";
+
+#[derive(Clone, Debug)]
+pub struct MethodParamPad {
+    pub tokens: TokenSet,
+    /// `allowLineBreaks`: the `(` may start a line.
+    pub allow_line_breaks: bool,
+    pub space: bool,
+}
+
+const METHOD_PARAM_PAD_TOKENS: &str =
+    "CTOR_DEF, CTOR_CALL, LITERAL_NEW, METHOD_CALL, METHOD_DEF, SUPER_CTOR_CALL, ENUM_CONSTANT_DEF, RECORD_DEF, RECORD_PATTERN_DEF";
+
+#[derive(Clone, Debug)]
+pub struct NoWhitespaceBefore {
+    pub tokens: TokenSet,
+    /// `allowLineBreaks`: a token that starts its line is fine.
+    pub allow_line_breaks: bool,
+}
+
+const NO_WHITESPACE_BEFORE_TOKENS: &str = "COMMA, SEMI, POST_INC, POST_DEC, ELLIPSIS, LABELED_STAT";
+/// What javaid models beyond the defaults.
+const NO_WHITESPACE_BEFORE_ACCEPTED: &str = "COMMA, SEMI, POST_INC, POST_DEC, ELLIPSIS, LABELED_STAT, DOT, METHOD_REF";
+
+#[derive(Clone, Debug)]
+pub struct WhitespaceAfter {
+    pub tokens: TokenSet,
+}
+
+const WHITESPACE_AFTER_TOKENS: &str = "COMMA, SEMI, TYPECAST, LITERAL_IF, LITERAL_ELSE, LITERAL_WHILE, LITERAL_DO, LITERAL_FOR, LITERAL_FINALLY, \
+    LITERAL_RETURN, LITERAL_YIELD, LITERAL_CATCH, DO_WHILE, ELLIPSIS, LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_CASE, LAMBDA, LITERAL_WHEN";
+/// What the module accepts beyond its defaults.
+const WHITESPACE_AFTER_ACCEPTED: &str = concat!(
+    "COMMA, SEMI, TYPECAST, LITERAL_IF, LITERAL_ELSE, LITERAL_WHILE, LITERAL_DO, LITERAL_FOR, LITERAL_FINALLY, ",
+    "LITERAL_RETURN, LITERAL_YIELD, LITERAL_CATCH, DO_WHILE, ELLIPSIS, LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_TRY, ",
+    "LITERAL_CASE, LAMBDA, LITERAL_WHEN, ANNOTATIONS, SINGLE_LINE_COMMENT"
+);
+
+#[derive(Clone, Debug)]
+pub struct WhitespaceAround {
+    pub tokens: TokenSet,
+    pub allow_empty_constructors: bool,
+    pub allow_empty_methods: bool,
+    pub allow_empty_types: bool,
+    pub allow_empty_loops: bool,
+    pub allow_empty_lambdas: bool,
+    pub allow_empty_catches: bool,
+    pub allow_empty_switch_block_statements: bool,
+    /// Leave the `:` of an enhanced `for` alone. On by default.
+    pub ignore_enhanced_for_colon: bool,
+}
+
+const WHITESPACE_AROUND_TOKENS: &str = "ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN, BXOR, BXOR_ASSIGN, COLON, DIV, DIV_ASSIGN, \
+    DO_WHILE, EQUAL, GE, GT, LAMBDA, LAND, LCURLY, LE, LITERAL_CATCH, LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, \
+    LITERAL_RETURN, LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, LOR, LT, MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, \
+    PLUS, PLUS_ASSIGN, QUESTION, RCURLY, SL, SLIST, SL_ASSIGN, SR, SR_ASSIGN, STAR, STAR_ASSIGN, LITERAL_ASSERT, TYPE_EXTENSION_AND, LITERAL_WHEN";
+/// What the module accepts beyond its defaults.
+const WHITESPACE_AROUND_ACCEPTED: &str = "ASSIGN, ARRAY_INIT, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN, BXOR, BXOR_ASSIGN, COLON, DIV, DIV_ASSIGN, \
+    DO_WHILE, EQUAL, GE, GT, LAMBDA, LAND, LCURLY, LE, LITERAL_CATCH, LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, \
+    LITERAL_RETURN, LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, LOR, LT, MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, \
+    PLUS, PLUS_ASSIGN, QUESTION, RCURLY, SL, SLIST, SL_ASSIGN, SR, SR_ASSIGN, STAR, STAR_ASSIGN, LITERAL_ASSERT, TYPE_EXTENSION_AND, LITERAL_WHEN, \
+    WILDCARD_TYPE, GENERIC_START, GENERIC_END, ELLIPSIS";
+
+/// One `OperatorWrap` instance. A configuration may hold several, each under its own `id`.
+#[derive(Clone, Debug)]
+pub struct OperatorWrap {
+    pub name: &'static str,
+    pub tokens: TokenSet,
+    /// `option=eol`: the operator ends its line. Otherwise (`nl`, the default) it starts the next.
+    pub end_of_line: bool,
+}
+
+const OPERATOR_WRAP_TOKENS: &str = "QUESTION, COLON, EQUAL, NOT_EQUAL, DIV, PLUS, MINUS, STAR, MOD, SR, BSR, GE, GT, SL, LE, LT, BXOR, BOR, LOR, BAND, \
+    LAND, TYPE_EXTENSION_AND, LITERAL_INSTANCEOF";
+/// What the module accepts beyond its defaults.
+const OPERATOR_WRAP_ACCEPTED: &str = "QUESTION, COLON, EQUAL, NOT_EQUAL, DIV, PLUS, MINUS, STAR, MOD, SR, BSR, GE, GT, SL, LE, LT, BXOR, BOR, LOR, BAND, \
+    LAND, TYPE_EXTENSION_AND, LITERAL_INSTANCEOF, ASSIGN, DIV_ASSIGN, PLUS_ASSIGN, MINUS_ASSIGN, STAR_ASSIGN, MOD_ASSIGN, SR_ASSIGN, BSR_ASSIGN, \
+    SL_ASSIGN, BXOR_ASSIGN, BOR_ASSIGN, BAND_ASSIGN, METHOD_REF, LAMBDA";
+
+/// One `SeparatorWrap` instance. A configuration may hold several, each under its own `id`.
+#[derive(Clone, Debug)]
+pub struct SeparatorWrap {
+    pub name: &'static str,
+    pub tokens: TokenSet,
+    /// `option=eol` (the default): the separator ends its line. Otherwise (`nl`) it starts the next.
+    pub end_of_line: bool,
+}
+
+const SEPARATOR_WRAP_TOKENS: &str = "DOT, COMMA";
+/// What the module accepts beyond its defaults.
+const SEPARATOR_WRAP_ACCEPTED: &str = "DOT, COMMA, SEMI, ELLIPSIS, ARRAY_DECLARATOR, RBRACK, METHOD_REF, LPAREN, RPAREN";
+
+/// `LeftCurly`'s `option`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CurlyOption {
+    /// The brace ends the line of the declaration and something follows on the next. The default.
+    Eol,
+    /// The brace starts its line.
+    Nl,
+    /// The brace starts its line when the declaration spans lines, and stays on it otherwise.
+    Nlow,
+    /// The brace starts its line unless the block ends on the line it opens.
+    NlOrSingleline,
+}
+
+/// One `LeftCurly` instance. A configuration may hold several, each under its own `id`.
+#[derive(Clone, Debug)]
+pub struct LeftCurly {
+    pub name: &'static str,
+    pub tokens: TokenSet,
+    pub option: CurlyOption,
+    /// Leave the braces of an enum without annotations alone when a line break follows them. On by default.
+    pub ignore_enums: bool,
+}
+
+const LEFT_CURLY_TOKENS: &str = "ANNOTATION_DEF, CLASS_DEF, CTOR_DEF, ENUM_CONSTANT_DEF, ENUM_DEF, INTERFACE_DEF, LAMBDA, LITERAL_CASE, LITERAL_CATCH, \
+    LITERAL_DEFAULT, LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_TRY, \
+    LITERAL_WHILE, METHOD_DEF, OBJBLOCK, STATIC_INIT, RECORD_DEF, COMPACT_CTOR_DEF, SWITCH_RULE";
+
+#[derive(Clone, Debug)]
 pub struct FallThrough {
     /// Hold the last case group to the same rule; it falls out of the switch, not into a case.
     pub check_last_case_group: bool,
@@ -297,6 +437,15 @@ pub struct Config {
     pub multiple_variable_declarations: bool,
     pub one_statement_per_line: Option<OneStatementPerLine>,
     pub fall_through: Option<FallThrough>,
+    pub paren_pad: Option<ParenPad>,
+    pub method_param_pad: Option<MethodParamPad>,
+    pub no_whitespace_before: Option<NoWhitespaceBefore>,
+    pub whitespace_after: Option<WhitespaceAfter>,
+    pub whitespace_around: Option<WhitespaceAround>,
+    pub generic_whitespace: bool,
+    pub operator_wrap: Vec<OperatorWrap>,
+    pub separator_wrap: Vec<SeparatorWrap>,
+    pub left_curly: Vec<LeftCurly>,
     /// Filters that remove findings (see `suppress`). None are implemented yet.
     pub filters: Vec<String>,
     /// The Checker's own `fileExtensions`, if the configuration sets one.
@@ -328,6 +477,15 @@ impl Default for Config {
             multiple_variable_declarations: false,
             one_statement_per_line: None,
             fall_through: None,
+            paren_pad: None,
+            method_param_pad: None,
+            no_whitespace_before: None,
+            whitespace_after: None,
+            whitespace_around: None,
+            generic_whitespace: false,
+            operator_wrap: Vec::new(),
+            separator_wrap: Vec::new(),
+            left_curly: Vec::new(),
             filters: Vec::new(),
             checker_extensions: None,
             tab_width: 8,
@@ -342,6 +500,15 @@ fn parse_extensions(list: &str) -> Vec<String> {
 }
 
 impl Config {
+    /// Do any of the enabled rules look at tokens inside `import` and `package` declarations?
+    pub fn looks_inside_declarations(&self) -> bool {
+        self.paren_pad.is_some()
+            || self.no_whitespace_before.is_some()
+            || self.whitespace_after.is_some()
+            || !self.operator_wrap.is_empty()
+            || !self.separator_wrap.is_empty()
+    }
+
     /// What Checkstyle prints in brackets for a module's findings: its `id` if it has one.
     pub fn display(&self, module: &'static str) -> &'static str {
         self.ids.iter().find(|(m, _)| *m == module).map_or(module, |(_, id)| id)
@@ -441,6 +608,51 @@ impl Props {
         match self.take(name) {
             None => Ok(default),
             Some(v) => v.trim().parse().map_err(|_| format!("property {name}: expected a non-negative integer, got '{}'", v.trim())),
+        }
+    }
+
+    /// The `tokens` property: `default` when it is absent, and only tokens in `accepted` otherwise.
+    /// Checkstyle refuses a token its module does not accept (TYPECAST has a module of its own,
+    /// TypecastParenPad); javaid also refuses the ones it has not modelled, by name.
+    fn tokens(&mut self, default: &str, accepted: &str) -> Result<TokenSet, String> {
+        let list = self.take("tokens");
+        let tokens = parse_tokens(list.as_deref().unwrap_or(default)).map_err(|t| format!("tokens: {t} is not a token javaid knows"))?;
+        let allowed = parse_tokens(accepted)?;
+        if let Some(list) = list.filter(|_| !tokens.is_subset_of(allowed)) {
+            let name = list.split(',').map(str::trim).find(|n| parse_tokens(n).is_ok_and(|t| !t.is_subset_of(allowed))).unwrap_or("?");
+            return Err(format!("tokens: {name} is not supported by this module"));
+        }
+        Ok(tokens)
+    }
+
+    /// `option`: `nospace` (the default) or `space`; true for `space`.
+    fn pad_option(&mut self) -> Result<bool, String> {
+        match self.take("option").as_deref().map(str::trim) {
+            None | Some("nospace") => Ok(false),
+            Some("space") => Ok(true),
+            Some(other) => Err(format!("property option: expected nospace or space, got '{other}'")),
+        }
+    }
+
+    /// `option` of the wrap modules: `nl` or `eol`, in any case, and `default_eol` when absent;
+    /// true for `eol`.
+    fn wrap_option(&mut self, default_eol: bool) -> Result<bool, String> {
+        match self.take("option").map(|v| v.trim().to_ascii_lowercase()).as_deref() {
+            None => Ok(default_eol),
+            Some("nl") => Ok(false),
+            Some("eol") => Ok(true),
+            Some(other) => Err(format!("property option: expected nl or eol, got '{other}'")),
+        }
+    }
+
+    /// `option` of `LeftCurly`, in any case.
+    fn curly_option(&mut self) -> Result<CurlyOption, String> {
+        match self.take("option").map(|v| v.trim().to_ascii_lowercase()).as_deref() {
+            None | Some("eol") => Ok(CurlyOption::Eol),
+            Some("nl") => Ok(CurlyOption::Nl),
+            Some("nlow") => Ok(CurlyOption::Nlow),
+            Some("nl_or_singleline") => Ok(CurlyOption::NlOrSingleline),
+            Some(other) => Err(format!("property option: expected eol, nl, nlow or nl_or_singleline, got '{other}'")),
         }
     }
 
@@ -615,6 +827,79 @@ impl Config {
                 }
                 p.finish()?;
                 self.fall_through = Some(FallThrough { check_last_case_group, relief: Format::new(DEFAULT_RELIEF)? });
+            }
+            "ParenPad" => {
+                let tokens = p.tokens(PAREN_PAD_TOKENS, PAREN_PAD_TOKENS)?;
+                let space = p.pad_option()?;
+                p.finish()?;
+                self.paren_pad = Some(ParenPad { tokens, space });
+            }
+            "MethodParamPad" => {
+                let allow_line_breaks = p.bool("allowLineBreaks", false)?;
+                let tokens = p.tokens(METHOD_PARAM_PAD_TOKENS, METHOD_PARAM_PAD_TOKENS)?;
+                let space = p.pad_option()?;
+                p.finish()?;
+                self.method_param_pad = Some(MethodParamPad { tokens, allow_line_breaks, space });
+            }
+            "NoWhitespaceBefore" => {
+                let allow_line_breaks = p.bool("allowLineBreaks", false)?;
+                let tokens = p.tokens(NO_WHITESPACE_BEFORE_TOKENS, NO_WHITESPACE_BEFORE_ACCEPTED)?;
+                p.finish()?;
+                self.no_whitespace_before = Some(NoWhitespaceBefore { tokens, allow_line_breaks });
+            }
+            "WhitespaceAfter" => {
+                let tokens = p.tokens(WHITESPACE_AFTER_TOKENS, WHITESPACE_AFTER_ACCEPTED)?;
+                p.finish()?;
+                self.whitespace_after = Some(WhitespaceAfter { tokens });
+            }
+            "OperatorWrap" => {
+                let end_of_line = p.wrap_option(false)?;
+                let tokens = p.tokens(OPERATOR_WRAP_TOKENS, OPERATOR_WRAP_ACCEPTED)?;
+                p.finish()?;
+                let name = id.map_or("OperatorWrap", leak);
+                self.operator_wrap.push(OperatorWrap { name, tokens, end_of_line });
+            }
+            "SeparatorWrap" => {
+                let end_of_line = p.wrap_option(true)?;
+                let tokens = p.tokens(SEPARATOR_WRAP_TOKENS, SEPARATOR_WRAP_ACCEPTED)?;
+                p.finish()?;
+                let name = id.map_or("SeparatorWrap", leak);
+                self.separator_wrap.push(SeparatorWrap { name, tokens, end_of_line });
+            }
+            "LeftCurly" => {
+                let option = p.curly_option()?;
+                let ignore_enums = p.bool("ignoreEnums", true)?;
+                let tokens = p.tokens(LEFT_CURLY_TOKENS, LEFT_CURLY_TOKENS)?;
+                p.finish()?;
+                let name = id.map_or("LeftCurly", leak);
+                self.left_curly.push(LeftCurly { name, tokens, option, ignore_enums });
+            }
+            "GenericWhitespace" => {
+                p.finish()?;
+                self.generic_whitespace = true;
+            }
+            "WhitespaceAround" => {
+                let allow_empty_constructors = p.bool("allowEmptyConstructors", false)?;
+                let allow_empty_methods = p.bool("allowEmptyMethods", false)?;
+                let allow_empty_types = p.bool("allowEmptyTypes", false)?;
+                let allow_empty_loops = p.bool("allowEmptyLoops", false)?;
+                let allow_empty_lambdas = p.bool("allowEmptyLambdas", false)?;
+                let allow_empty_catches = p.bool("allowEmptyCatches", false)?;
+                let allow_empty_switch_block_statements = p.bool("allowEmptySwitchBlockStatements", false)?;
+                let ignore_enhanced_for_colon = p.bool("ignoreEnhancedForColon", true)?;
+                let tokens = p.tokens(WHITESPACE_AROUND_TOKENS, WHITESPACE_AROUND_ACCEPTED)?;
+                p.finish()?;
+                self.whitespace_around = Some(WhitespaceAround {
+                    tokens,
+                    allow_empty_constructors,
+                    allow_empty_methods,
+                    allow_empty_types,
+                    allow_empty_loops,
+                    allow_empty_lambdas,
+                    allow_empty_catches,
+                    allow_empty_switch_block_statements,
+                    ignore_enhanced_for_colon,
+                });
             }
             "OneStatementPerLine" => {
                 let treat_try_resources_as_statement = p.bool("treatTryResourcesAsStatement", false)?;
@@ -947,6 +1232,13 @@ mod tests {
         assert!(refused(r#"<module name="ArrayTypeStyle"><property name="javaStyle" value="false"/></module>"#)[0].contains("javaStyle"));
         assert!(refused(r#"<module name="ModifierOrder"><property name="modifiersOrder" value="public, static"/></module>"#)[0].contains("modifiersOrder"));
         assert!(refused(r#"<module name="FallThrough"><property name="reliefPattern" value="fall"/></module>"#)[0].contains("reliefPattern"));
+        assert!(refused(r#"<module name="ParenPad"><property name="tokens" value="NOPE"/></module>"#)[0].contains("NOPE"));
+        assert!(refused(r#"<module name="ParenPad"><property name="tokens" value="COMMA"/></module>"#)[0].contains("COMMA is not supported"));
+        assert!(refused(r#"<module name="ParenPad"><property name="option" value="maybe"/></module>"#)[0].contains("option"));
+        assert!(refused(r#"<module name="OperatorWrap"><property name="option" value="maybe"/></module>"#)[0].contains("expected nl or eol"));
+        assert!(refused(r#"<module name="OperatorWrap"><property name="tokens" value="COMMA"/></module>"#)[0].contains("COMMA is not supported"));
+        assert!(refused(r#"<module name="SeparatorWrap"><property name="tokens" value="LITERAL_IF"/></module>"#)[0].contains("LITERAL_IF is not supported"));
+        assert!(refused(r#"<module name="LeftCurly"><property name="option" value="maybe"/></module>"#)[0].contains("expected eol, nl, nlow"));
         assert!(refused(r#"<module name="AvoidStarImport"><property name="maxAllowedStarImports" value="2"/></module>"#)[0].contains("maxAllowedStarImports"));
         // ...while the defaults, spelled out, are fine.
         for fine in [

@@ -8,9 +8,13 @@ pub mod imports;
 pub mod misc;
 pub mod modifiers;
 pub mod naming;
+pub mod pad;
 pub mod statements;
 pub mod text;
+pub mod tokens;
 pub mod util;
+pub mod whitespace;
+pub mod wrap;
 
 #[cfg(test)]
 mod tests;
@@ -24,12 +28,36 @@ use tree_sitter::Node;
 pub struct State<'a> {
     pub imports: imports::State<'a>,
     pub statements: statements::State,
+    /// End of the `package` or `import` declaration being walked into. Only the padding rules look
+    /// inside one; to every other rule it is a leaf, as before.
+    pub inert_end: usize,
 }
 
 /// Called for every node in document order. Returns whether to descend into its children.
 pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
+    if node.start_byte() < st.inert_end {
+        let kind = cx.syn.kind(node);
+        match kind.act {
+            Act::Paren => {
+                whitespace::on_paren(cx, node);
+                wrap::on_paren(cx, node);
+            }
+            Act::Annotation => whitespace::on_annotation(cx, node),
+            Act::Comment => whitespace::on_comment(cx, node),
+            _ => {}
+        }
+        if kind.pad_token {
+            whitespace::on_token(cx, node);
+            wrap::on_token(cx, node);
+        }
+        return true;
+    }
     imports::leave_scopes(&mut st.imports, node);
     let kind = cx.syn.kind(node);
+    if kind.pad_token {
+        whitespace::on_token(cx, node);
+        wrap::on_token(cx, node);
+    }
     if kind.documented {
         imports::on_documented(cx, &mut st.imports, node);
     }
@@ -41,17 +69,18 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
         Act::Comment => {
             imports::on_comment(cx, &mut st.imports, node);
             comments::on_comment(cx, node);
+            whitespace::on_comment(cx, node);
         }
         Act::Ident => imports::on_ident(cx, &mut st.imports, node),
         Act::Import => {
             imports::on_star_import(cx, node);
             imports::on_import(cx, &mut st.imports, node);
-            return false;
+            return enter_for_padding(cx, st, node);
         }
         Act::Package => {
             naming::on_package(cx, node);
             imports::on_package(cx, &mut st.imports, node);
-            return false;
+            return enter_for_padding(cx, st, node);
         }
         Act::TypeDecl => naming::on_type_decl(cx, node),
         Act::TypeBody => {
@@ -74,6 +103,10 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
             naming::on_resource(cx, node);
             statements::on_resource(cx, node);
         }
+        Act::Paren => {
+            whitespace::on_paren(cx, node);
+            wrap::on_paren(cx, node);
+        }
         Act::Semi => statements::on_semicolon(cx, &mut st.statements, node),
         Act::Lambda => naming::on_lambda(cx, node),
         Act::InstanceOf => naming::on_instanceof(cx, node),
@@ -91,12 +124,23 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
         Act::Dimensions => misc::on_dimensions(cx, node),
         Act::IntegerLiteral => misc::on_integer_literal(cx, node),
         Act::Modifiers => modifiers::on_modifiers(cx, node),
+        Act::Annotation => whitespace::on_annotation(cx, node),
         Act::Switch => {
             coding::on_switch(cx, node);
             fallthrough::on_switch(cx, node);
         }
     }
     true
+}
+
+/// Imports and the package declaration are leaves to most rules. The padding rules still need
+/// their tokens (`import a . b ;`) and the annotations on a package, so descend when one is on.
+fn enter_for_padding(cx: &Ctx, st: &mut State, node: Node) -> bool {
+    if cx.cfg.looks_inside_declarations() {
+        st.inert_end = node.end_byte();
+        return true;
+    }
+    false
 }
 
 /// Called once after the walk, for rules that decide at the end of the file.

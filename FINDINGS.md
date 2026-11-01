@@ -28,10 +28,12 @@ with nothing else of mine running.
   Checkstyle findings (Guava 8,650; Spring 1,810), same file, line and rule, with zero extras
   (section 3). 1,440 of those were `UnusedImports` findings under a *non-default* Checkstyle
   setting (`processJavadoc=false`). **Phase 1 closed that gap** (section 8): `UnusedImports` now
-  also matches at Checkstyle's defaults, 17 naming modules match on 10,771 of 10,771 findings, and
-  twelve more modules bring it to 33. Run on the instances javaid implements from Checkstyle's
-  own Google and Sun configs, it matches **1,015,904 of 1,015,904** and **328,439 of 328,439**
-  findings, and on mutated copies of both corpora (edited so the rare rules fire) **43,410 of 43,410**.
+  also matches at Checkstyle's defaults, 17 naming modules match on 10,771 of 10,771 findings,
+  twelve more modules bring it to 33 and the nine whitespace and wrapping modules to 42 (round 3,
+  section 8). Run on the instances javaid implements from Checkstyle's own Google and Sun configs,
+  it matches **1,025,538 of 1,025,538** and **345,358 of 345,358** findings, and on mutated copies
+  of both corpora (edited so the rare rules fire) **43,410 of 43,410** for the 33 and more than
+  **6 million** findings for the whitespace family (round 3).
 - **Speedup, honestly stated.** About 10x single-threaded and 58-76x with all threads against
   Checkstyle; 3.7-4.8x single-threaded and 14-18x multi-threaded against PMD. Against PMD on one
   thread the win is modest. The big wins are one-file latency (about 185x and 380x as shipped),
@@ -42,10 +44,11 @@ with nothing else of mine running.
   matches javaid on one file (Checkstyle 4.0 ms against 3.2 ms), and it holds 733 MB doing so.
   **Speed is a head start, not a moat** (section 6).
 - **What it does not show.** The spike measured five cheap syntactic rules; Phase 1 has raised
-  that to 33 modules (section 8) but not to whitespace and wrapping, indentation or Javadoc-style
-  rules. Checkstyle's own `google_checks.xml` names 88 distinct modules and javaid runs 29 of its
-  106 instances; `sun_checks.xml` has 73 and javaid runs 24. What javaid runs from those two configs
-  matches Checkstyle exactly, but about 73% and 67% of their instances do not run at all. Cold
+  that to 42 modules (section 8) but not to indentation or Javadoc-style rules. The speed numbers
+  below were taken with 33 modules; a 42-module run on a loaded machine is in section 8 (6-9x per
+  core, about 50x on all threads, same findings). Checkstyle's own `google_checks.xml` names 88 distinct modules and javaid runs 44 of
+  its 106 instances; `sun_checks.xml` has 73 and javaid runs 33. What javaid runs from those two
+  configs matches Checkstyle exactly, but about 58% and 55% of their instances do not run at all. Cold
   runs only: Checkstyle and PMD have incremental caches that were not used, and javaid has none yet.
 - **Cheapest extra win found:** Checkstyle 14.4.0 needs **Java 21** to run; PMD 7.29's CLI needs
   Java 8. A native binary needs no JDK at all (section 4.4).
@@ -477,7 +480,7 @@ Phase 1 (2-3 weeks, public), in this order:
    Every port is accepted only at zero diff against Checkstyle on the oracle corpora.
    **Naming done** (17 modules); the remaining families are next.
 3. A `checkstyle.xml` reader that runs the supported modules and **lists the unsupported ones
-   explicitly**, never skipping silently. **Done for the 21 modules** (section 8).
+   explicitly**, never skipping silently. **Done for the 42 modules** (section 8).
 4. A content-hash cache, so repeat runs are incremental and the comparison with Checkstyle's and
    PMD's caches becomes fair.
 5. SARIF and GitHub annotations, release binaries, a pre-commit hook and a GitHub Action.
@@ -508,8 +511,8 @@ wherever a linter runs, and the evidence points to two places.
 - **Inner loop (pre-commit, editor save, AI-agent hook): about 3 ms per file.** Real, but it is the
   one place where JVM startup fixes and warm daemons narrow the gap (section 2.5).
 
-What stands between it and a CI step today (updated after Phase 1, section 8): it implements 21
-modules, and about 85% of the instances in Checkstyle's two bundled configs belong to modules it
+What stands between it and a CI step today (updated after round 3, section 8): it implements 42
+modules, and about 57% of the instances in Checkstyle's two bundled configs belong to modules it
 lacks; and there is no GitHub Action, SARIF output or cache yet. The `checkstyle.xml` reader exists
 and `UnusedImports` matches Checkstyle's defaults. Until the rest is there it is a fast first-pass
 gate that complements Checkstyle and does not replace it.
@@ -572,15 +575,16 @@ components, and none of the odd Javadoc layouts.
 | 1. Javadoc-reference scan for `UnusedImports` | done | At Checkstyle's defaults: 1 of 1 real findings on both corpora. Two probe files with 39 Javadoc forms are identical. |
 | 2. Naming family, 17 modules | done | **10,771 of 10,771** findings, zero extras, at default settings. Five probe files (143 construct-level findings) identical, including three non-default options. |
 | 2b. Twelve more modules (round 2) | done | `FileTabCharacter`, `LineLength`, `RegexpSingleline`, `TodoComment`, `ArrayTypeStyle`, `UpperEll`, `AvoidStarImport`, `MissingSwitchDefault`, `ModifierOrder`, `MultipleVariableDeclarations`, `OneStatementPerLine`, `FallThrough`. 65 more probe-and-config pairs identical, and **43,410 of 43,410** findings on mutated copies of both corpora (section "Mutation testing" below). |
-| 3. `checkstyle.xml` reader | done for the 33 modules | Every property that appears on an implemented module in Checkstyle's bundled Google and Sun configs is honoured; anything else is listed by name with the reason and does not run. Run on those configs' implemented instances, Checkstyle and javaid agree on **1,015,904 of 1,015,904** (Google, 29 instances) and **328,439 of 328,439** (Sun, 24 instances) findings. |
+| 2c. Nine whitespace and wrapping modules (round 3) | done | `ParenPad`, `MethodParamPad`, `NoWhitespaceBefore`, `WhitespaceAfter`, `WhitespaceAround`, `GenericWhitespace`, `OperatorWrap`, `SeparatorWrap`, `LeftCurly`. 452 probe-and-config pairs now identical (375 of them new, the 375 in the table below), and zero extras and zero misses on every corpus and mutated-corpus run listed under "Round 3" below. |
+| 3. `checkstyle.xml` reader | done for the 42 modules | Every property that appears on an implemented module in Checkstyle's bundled Google and Sun configs is honoured; anything else is listed by name with the reason and does not run. Run on those configs' implemented instances, Checkstyle and javaid agree on **1,025,538 of 1,025,538** (Google, 44 instances) and **345,358 of 345,358** (Sun, 33 instances) findings. |
 | 4. Content-hash cache | not started | |
 | 5. SARIF, release binaries, pre-commit hook, GitHub Action | not started | |
 | 6. Publish the benchmark and harness | not done | The harness is in `bench/`; there is no release yet. |
 
-33 modules are implemented in total: the 21 of round 1 (the 4 spike modules and the 17 naming
-modules) and the 12 of round 2, which takes the roadmap past its "about 25". `cargo test` runs 33
-unit tests and an integration test that replays 77 probe-and-config pairs recorded from Checkstyle
-(`bench/oracle/probes`), under both grammars.
+42 modules are implemented in total: the 21 of round 1 (the 4 spike modules and the 17 naming
+modules), the 12 of round 2, which takes the roadmap past its "about 25", and the 9 of round 3.
+`cargo test` runs 37 unit tests and an integration test that replays 452 probe-and-config pairs
+recorded from Checkstyle (`bench/oracle/probes`), under both grammars.
 
 ### What the oracle taught this time
 
@@ -718,8 +722,8 @@ drop-in, and why:
 
 | config | module instances | run | skipped: module not implemented | skipped: implemented but not honoured |
 |---|---:|---:|---:|---:|
-| `google_checks.xml` | 106 | 29 | 77 | 0 |
-| `sun_checks.xml` | 73 | 24 | 49 | 0 |
+| `google_checks.xml` | 106 | 44 | 62 | 0 |
+| `sun_checks.xml` | 73 | 33 | 40 | 0 |
 
 It was 10 of the Google instances at the start of Phase 1, with 8 more that javaid implemented but
 could not honour. That list was the work of round 1: `tokens` on `NeedBraces` and on `TypeName`
@@ -729,16 +733,16 @@ could not honour. That list was the work of round 1: `tokens` on `NeedBraces` an
 `EmptyCatchBlock`, and suppression filters whose `${...}` placeholder has a default. Round 2 added
 the file-level modules, which brought `fileExtensions`, ids, two instances of `TodoComment` and
 patterns with a backreference. Each is handled, and each was checked against Checkstyle instead of
-assumed. About 73% of the Google instances and 67% of the Sun ones still belong to modules javaid
-does not implement. Two limits remain on the ones that do run:
+assumed. After round 3, about 58% of the Google instances and 55% of the Sun ones still belong to
+modules javaid does not implement. Two limits remain on the ones that do run:
 
 - **Custom messages are not applied.** `google_checks.xml` words 14 of its naming messages and both
   `TodoComment`s its own way. javaid prints its own wording and lists each one as a `note` on
   stderr. The text differs; whether and where a finding is reported does not, and the comparison
   keys on file, line and rule (or the id).
-- **One instance per module**, except `TypeName` (one per type kind), `RegexpSingleline` and
-  `TodoComment`. A second instance of any other module is skipped by name. Neither bundled config
-  needs one.
+- **One instance per module**, except `TypeName` (one per type kind), `RegexpSingleline`,
+  `TodoComment`, `OperatorWrap`, `SeparatorWrap` and `LeftCurly`, whose findings carry the instance's
+  `id`. A second instance of any other module is skipped by name. Neither bundled config needs one.
 
 "Run" is only worth something if it means "agrees". `bench/oracle/config-parity.sh` cuts a bundled
 config down to the instances javaid implements without editing any of them (`make-subset.py`), and
@@ -747,8 +751,8 @@ config names included:
 
 | subset of | instances | Checkstyle's findings | javaid |
 |---|---:|---:|---|
-| `google_checks.xml` | 29 | 1,015,904 | **1,015,904 of 1,015,904**, no extras |
-| `sun_checks.xml` | 24 | 328,439 | **328,439 of 328,439**, no extras |
+| `google_checks.xml` | 44 | 1,025,538 | **1,025,538 of 1,025,538**, no extras |
+| `sun_checks.xml` | 33 | 345,358 | **345,358 of 345,358**, no extras |
 
 After round 1 these were 16 instances with 1,188 findings and 12 with 11,658. The Google subset is
 dominated by `FileTabCharacter` (934,099: Google asks for every line, in Java, XML and properties
@@ -773,7 +777,7 @@ from the metadata in the jar):
 | suppression filters | 15 | 3 |
 | everything else (annotation, imports, blocks, naming, indentation, sizes, design, modifier, regexp, header) | 16 | 17 |
 
-Thirteen rule modules that javaid lacks now appear in *both* bundled configs, which makes them the
+Written before round 3, which implemented the nine whitespace modules in this list: thirteen rule modules that javaid lacked then appeared in *both* bundled configs, which makes them the
 likeliest to matter to a team: `GenericWhitespace`, `MethodParamPad`, `NoWhitespaceBefore`,
 `OperatorWrap`, `ParenPad`, `SeparatorWrap`, `WhitespaceAfter`, `WhitespaceAround` and `LeftCurly`
 (whitespace and wrapping, nine), `JavadocMethod`, `MissingJavadocMethod` and
@@ -786,6 +790,62 @@ are where zero diff gets expensive, as the `ArrayTypeStyle` column rule showed i
 Javadoc modules need a real Javadoc parser and tag semantics, of which the `UnusedImports` scan is
 only the first thin slice. `Indentation` re-implements a layout engine and is the likeliest never to
 reach zero diff.
+
+### Round 3: the whitespace and wrapping family
+
+The judgement above said these nine modules were token-adjacency rules whose cost would sit in
+generics, lambdas, annotations and array initialisers. That held: `WhitespaceAround` took more
+probing than the other eight together, and the two things that decided it were which token a
+brace or a colon is. The method did not change: a probe file written before any code, one oracle
+config per token (and per option), the golden findings recorded from Checkstyle 14.4.0, the test
+watched failing, the code written, then the corpora and mutated copies of them. Each module is its
+own commit, so any of them can be lifted out alone.
+
+| module | probe-and-config pairs | corpus and mutation run |
+|---|---:|---|
+| `ParenPad` | 33 | identical on every config |
+| `MethodParamPad` | 13 | 100% on four configs; 118,073 findings at the defaults and 1,846,582 with `option=space` |
+| `NoWhitespaceBefore` | 18 | 100% on 11 configs, 21,458 findings at the defaults |
+| `WhitespaceAfter` | 28 | 100% on 21 configs (9,779 at the defaults); 13,241 of 13,241 on Google's selection, with blanks taken out of comments and annotations |
+| `WhitespaceAround` | 67 | 100% on the configs rerun after the last fix |
+| `GenericWhitespace` | 1 (183 findings) | 55 of 55 on the corpora; 7,591 of 7,591 on a copy with blanks put round angle brackets |
+| `OperatorWrap` | 76 (a probe of 269 findings under all tokens) | 55,988 of 55,988 across four instances, operators moved across line breaks |
+| `SeparatorWrap` | 28 (all nine tokens, both options, a probe of every kind of parenthesis) | 1,735,000 of 1,735,000 across six instances, separators moved across line breaks |
+| `LeftCurly` | 111 (all four options; 1,323 constructs) | 1,093,513 of 1,093,513 across seven instances, braces moved to and from lines of their own |
+
+What the oracle taught this time:
+
+- **Reading the check beat probing it, for three of the modules.** `OperatorWrap` looked like a text
+  rule until `x = new` at the end of a line was flagged and `x = new Foo` was not. The bytecode of
+  the check (`javap -c` on the jar) showed it compares the lines of nodes in Checkstyle's tree, and
+  that the tree puts a prefix operator, `new` and a cast's `(` above the operand they introduce.
+  `LeftCurly` was read from Checkstyle's published source, then confirmed by 59 configs;
+  `SeparatorWrap` turned out to be the text rule `OperatorWrap` is not. Both source and bytecode
+  were used as a reference for behaviour; the code in javaid is its own.
+- **Defaults that differ between siblings.** `OperatorWrap`'s option defaults to `nl`,
+  `SeparatorWrap`'s and `LeftCurly`'s to `eol`. A config generator that assumed one default wrote a
+  config that was, by accident, the other, and the probe showed it.
+- **Checkstyle reports a finding once.** A brace reached by two of an instance's tokens (the block
+  of `case 1 -> {` belongs to both the switch rule and the `case`) is one finding. javaid now
+  does the same per instance.
+- **Tokens the first version of a module did not know.** Google's `WhitespaceAfter` names
+  `ANNOTATIONS` and `SINGLE_LINE_COMMENT`, which 14.4 accepts; without them the module was skipped
+  from the very config it was written for. Both were probed. The corpus run then found 146 extra
+  findings (Spring's `@Caching(cacheable = { @Cacheable("a"), ... })`: an annotation that is the
+  value of another is not in a list of annotations), now a probe line.
+- **A mutation can invalidate itself.** The first comment-and-annotation pass turned `@Foo Bar`
+  into `@FooBar`, Checkstyle aborted on those files and javaid reported 10,775 findings it had no
+  twin for. The numbers above are from the corrected pass; a run that reports a large "extra" count
+  with a non-empty Checkstyle stderr should be read as a broken mutation first.
+- **Still approximate.** `LeftCurly` places the first statement after a brace by Checkstyle's rule
+  for expression statements (its root operator, a call's `(`); other nodes are placed at their
+  first token. A brace followed on its own line by a statement that begins before and ends after a
+  line break is the only shape known to differ, and none appears in either corpus.
+
+The scripts: `bench/oracle/make-*-configs.py` write the oracle configs, `bench/oracle/mutate_corpus.py`
+has one pass per module (`--generics`, `--wrap`, `--separators`, `--curly`, `--comments`, `--around`,
+`--before-punct`, `--after-punct`, `--before-paren`, `--parens`), and `bench/oracle/config-parity.sh`
+runs a bundled config through both tools.
 
 ### Speed with 21 modules
 
@@ -890,6 +950,39 @@ about 210x on one file, and 15x and 14x fewer CPU-seconds on one thread.
 - **Memory is still 19-67 MB** against Checkstyle's 3.3 GB at its default JVM size (0.7 GB with a
   512 MB heap, slower on Spring, section 2.1).
 - **Not measured at 33 modules:** PMD, the 2-core CI runner and a warm resident JVM.
+
+### Speed with 42 modules
+
+`bench/phase3-bench.sh`, the same method as the 33-module run, on `bench/oracle/phase3.xml` (the 33
+plus the nine whitespace and wrapping modules at their defaults). **This run was not quiet**: the
+machine is shared and its load average stayed between 8 and 10 for the whole run (the script waited
+ten minutes for it to fall below 2.5 and went ahead), so every absolute time is inflated and the
+spread is wide. javaid's parse-only baseline was 3.75 s on Guava against 2.70 s in the quiet run
+and Checkstyle took 38.9 s against 35.9 s. Read the ratios, not the seconds.
+
+| | Guava | Spring |
+|---|---:|---:|
+| javaid, 42 modules, 1 thread (median; fastest) | 6.41 s (4.67 s) | 8.58 s (7.68 s) |
+| javaid, 42 modules, all threads | 0.78 s | 1.54 s |
+| Checkstyle, 42 modules, default JVM | 38.9 s | 78.2 s |
+| per core | 6.1x | 9.1x |
+| all threads | 50x | 51x |
+| memory | 21-61 MB against 3.3 GB | 35-69 MB against 3.3 GB |
+| one file | 5.3 ms against 0.83 s (155x) | |
+
+Both corpora are identical to Checkstyle at 42 modules: **28,534 of 28,534** (Guava) and **118,215
+of 118,215** (Spring) findings, none extra (`bench/results/parity-phase3.txt`).
+
+What the nine modules cost: timed alone, one thread, fastest of five interleaved runs on Guava,
+against a 2.9-3.1 s floor that includes parsing: `WhitespaceAround` +0.2 to +0.4 s,
+`OperatorWrap` +0.2, `SeparatorWrap` +0.1 to +0.2, `LeftCurly` +0.06 to +0.25, and
+`ParenPad`, `MethodParamPad`, `NoWhitespaceBefore`, `WhitespaceAfter` and `GenericWhitespace` none
+that I could measure. The cost is mostly that a module which looks at tokens makes the walker
+hand it every operator and punctuation token. I tried to cut it (no allocation until a finding,
+the right-hand side read only for `nl`) and an interleaved A/B showed no difference, so I dropped
+the change. Per core the ratio against Checkstyle moved from 8.8x and 9.1x at 33 modules to
+6.1x and 9.1x at 42 in this loaded run, so the Guava drop may be partly noise; a quiet re-run
+would settle it and I did not get one.
 
 ## 7. Reproduce
 

@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!-- All 42 modules javaid implements: the 33 of phase2.xml and the nine whitespace and wrapping modules
+     at their defaults. Given to Checkstyle and to javaid, the two outputs must be identical, which
+     bench/phase3-bench.sh checks. The 33 of phase2.xml: the 21 of phase1.xml at their defaults, and the 12 added since
+     at Google's settings where those differ from the default and would make a million findings
+     (FileTabCharacter reports the first tab only, LineLength allows 100 columns). Given to
+     Checkstyle and to javaid, the two outputs must be identical, which bench/phase2-bench.sh checks. -->
+<module name="Checker">
+  <property name="charset" value="UTF-8"/>
+  <property name="severity" value="warning"/>
+  <property name="fileExtensions" value="java"/>
+  <module name="FileTabCharacter"/>
+  <module name="RegexpSingleline">
+    <property name="format" value="\s+$"/>
+    <property name="message" value="Trailing whitespace is not allowed"/>
+  </module>
+  <module name="LineLength">
+    <property name="max" value="100"/>
+    <property name="ignorePattern" value="^package.*|^import.*|href\s*=\s*&quot;[^&quot;]*&quot;|http://|https://|ftp://"/>
+  </module>
+  <module name="TreeWalker">
+    <module name="EmptyCatchBlock"/>
+    <module name="NeedBraces"/>
+    <module name="EqualsHashCode"/>
+    <module name="UnusedImports"/>
+    <module name="TypeName"/>
+    <module name="MethodName"/>
+    <module name="MemberName"/>
+    <module name="ConstantName"/>
+    <module name="StaticVariableName"/>
+    <module name="ParameterName"/>
+    <module name="LocalVariableName"/>
+    <module name="LocalFinalVariableName"/>
+    <module name="PackageName"/>
+    <module name="ClassTypeParameterName"/>
+    <module name="InterfaceTypeParameterName"/>
+    <module name="MethodTypeParameterName"/>
+    <module name="RecordTypeParameterName"/>
+    <module name="CatchParameterName"/>
+    <module name="LambdaParameterName"/>
+    <module name="PatternVariableName"/>
+    <module name="RecordComponentName"/>
+    <module name="TodoComment"/>
+    <module name="ArrayTypeStyle"/>
+    <module name="UpperEll"/>
+    <module name="AvoidStarImport"/>
+    <module name="MissingSwitchDefault"/>
+    <module name="ModifierOrder"/>
+    <module name="MultipleVariableDeclarations"/>
+    <module name="OneStatementPerLine"/>
+    <module name="FallThrough"/>
+    <module name="ParenPad"/>
+    <module name="MethodParamPad"/>
+    <module name="NoWhitespaceBefore"/>
+    <module name="WhitespaceAfter"/>
+    <module name="WhitespaceAround"/>
+    <module name="GenericWhitespace"/>
+    <module name="OperatorWrap"/>
+    <module name="SeparatorWrap"/>
+    <module name="LeftCurly"/>
+  </module>
+</module>
