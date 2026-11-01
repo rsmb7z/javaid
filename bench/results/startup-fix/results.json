@@ -1,0 +1,229 @@
+{
+ "A": [
+  {
+   "wall_median": 0.5870426326291636,
+   "wall_min": 0.5465665049850941,
+   "wall_max": 0.6210847480688244,
+   "rss_mb": 176.271484375,
+   "cpu": 2.3521,
+   "rcs": [
+    0
+   ],
+   "tool": "checkstyle",
+   "variant": "JDK 21 as shipped",
+   "cache_warning": false
+  },
+  {
+   "wall_median": 0.5520598029252142,
+   "wall_min": 0.5357079789973795,
+   "wall_max": 0.6335052140057087,
+   "rss_mb": 162.716796875,
+   "cpu": 2.2122295000000003,
+   "rcs": [
+    0
+   ],
+   "tool": "checkstyle",
+   "variant": "JDK 25",
+   "cache_warning": false
+  },
+  {
+   "wall_median": 0.367678961600177,
+   "wall_min": 0.3244724851101637,
+   "wall_max": 0.38358638412319124,
+   "rss_mb": 167.236328125,
+   "cpu": 2.0516164999999997,
+   "rcs": [
+    0
+   ],
+   "tool": "checkstyle",
+   "variant": "JDK 25 + AOT cache",
+   "cache_warning": false
+  },
+  {
+   "wall_median": 0.30345560738351196,
+   "wall_min": 0.2992382540833205,
+   "wall_max": 0.3067566631361842,
+   "rss_mb": 137.828125,
+   "cpu": 0.643084,
+   "rcs": [
+    0
+   ],
+   "tool": "checkstyle",
+   "variant": "JDK 25 + AOT cache + C1-only JIT + SerialGC",
+   "cache_warning": false
+  },
+  {
+   "wall_median": 1.2063192160567269,
+   "wall_min": 1.188944109948352,
+   "wall_max": 1.255497087026015,
+   "rss_mb": 215.951171875,
+   "cpu": 4.254818,
+   "rcs": [
+    0
+   ],
+   "tool": "pmd",
+   "variant": "JDK 21 as shipped",
+   "cache_warning": false
+  },
+  {
+   "wall_median": 1.2549953844863921,
+   "wall_min": 1.2247408039402217,
+   "wall_max": 1.3106992079410702,
+   "rss_mb": 241.873046875,
+   "cpu": 4.4132065,
+   "rcs": [
+    0
+   ],
+   "tool": "pmd",
+   "variant": "JDK 25",
+   "cache_warning": false
+  },
+  {
+   "wall_median": 0.8076583773363382,
+   "wall_min": 0.7834019879810512,
+   "wall_max": 0.8596511310897768,
+   "rss_mb": 235.29296875,
+   "cpu": 4.5180264999999995,
+   "rcs": [
+    0
+   ],
+   "tool": "pmd",
+   "variant": "JDK 25 + AOT cache",
+   "cache_warning": false
+  },
+  {
+   "wall_median": 0.7087183248950168,
+   "wall_min": 0.6960163698531687,
+   "wall_max": 0.7228296450339258,
+   "rss_mb": 184.685546875,
+   "cpu": 1.4363835,
+   "rcs": [
+    0
+   ],
+   "tool": "pmd",
+   "variant": "JDK 25 + AOT cache + C1-only JIT + SerialGC",
+   "cache_warning": false
+  },
+  {
+   "wall_median": 0.0031725630396977067,
+   "wall_min": 0.0029703329782932997,
+   "wall_max": 0.003805618965998292,
+   "rss_mb": 14.1484375,
+   "cpu": 0.004347,
+   "rcs": [
+    0
+   ],
+   "tool": "javaid",
+   "variant": "native binary",
+   "cache_warning": false
+  }
+ ],
+ "B": [
+  {
+   "wall_median": 30.461357108084485,
+   "wall_min": 30.374963543843478,
+   "wall_max": 30.49356952100061,
+   "rss_mb": 3258.99609375,
+   "cpu": 49.75703,
+   "rcs": [
+    0
+   ],
+   "tool": "checkstyle",
+   "variant": "Checkstyle, JDK 21 as shipped"
+  },
+  {
+   "wall_median": 29.41011872398667,
+   "wall_min": 29.18101483792998,
+   "wall_max": 29.4345336870756,
+   "rss_mb": 2849.01953125,
+   "cpu": 47.148809,
+   "rcs": [
+    0
+   ],
+   "tool": "checkstyle",
+   "variant": "Checkstyle, JDK 25 + AOT cache"
+  },
+  {
+   "wall_median": 16.263083474943414,
+   "wall_min": 16.090382853057235,
+   "wall_max": 16.33746067294851,
+   "rss_mb": 882.94140625,
+   "cpu": 64.88865,
+   "rcs": [
+    4
+   ],
+   "tool": "pmd",
+   "variant": "PMD 1 thread, JDK 21 as shipped"
+  },
+  {
+   "wall_median": 14.346675731940195,
+   "wall_min": 14.098050372907892,
+   "wall_max": 14.545606022002175,
+   "rss_mb": 987.40234375,
+   "cpu": 57.125765,
+   "rcs": [
+    4
+   ],
+   "tool": "pmd",
+   "variant": "PMD 1 thread, JDK 25 + AOT cache"
+  },
+  {
+   "wall_median": 7.712186989141628,
+   "wall_min": 7.3216514070518315,
+   "wall_max": 7.854972822126001,
+   "rss_mb": 1302.4140625,
+   "cpu": 97.990642,
+   "rcs": [
+    4
+   ],
+   "tool": "pmd",
+   "variant": "PMD 16 threads, JDK 21 as shipped"
+  },
+  {
+   "wall_median": 6.299345795996487,
+   "wall_min": 6.291706444928423,
+   "wall_max": 6.310524306027219,
+   "rss_mb": 1486.1796875,
+   "cpu": 81.37233599999999,
+   "rcs": [
+    4
+   ],
+   "tool": "pmd",
+   "variant": "PMD 16 threads, JDK 25 + AOT cache"
+  },
+  {
+   "wall_median": 3.182016565464437,
+   "wall_min": 3.1434997520409524,
+   "wall_max": 3.2599355669226497,
+   "rss_mb": 17.40625,
+   "cpu": 3.1816625,
+   "rcs": [
+    1
+   ],
+   "tool": "javaid",
+   "variant": "javaid, 1 thread"
+  },
+  {
+   "wall_median": 0.4114370064344257,
+   "wall_min": 0.40164423594251275,
+   "wall_max": 0.4232821031473577,
+   "rss_mb": 52.65234375,
+   "cpu": 5.8122405,
+   "rcs": [
+    1
+   ],
+   "tool": "javaid",
+   "variant": "javaid, 16 threads"
+  }
+ ],
+ "C": [
+  {
+   "mode": "checkstyle",
+   "line": "checkstyle iterations=400 first=293.9ms tenth=12.8ms warm_median=4.00ms warm_min=3.51ms warm_p95=5.93ms peak_rss=733MB"
+  },
+  {
+   "mode": "pmd",
+   "line": "pmd iterations=150 first=1089.7ms tenth=66.4ms warm_median=29.01ms warm_min=24.88ms warm_p95=35.38ms peak_rss=713MB violations_last=0"
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<ruleset name="javaid-floor"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+  <description>One cheap rule: forces PMD to parse every file but does almost no rule work.</description>
+  <rule ref="category/java/errorprone.xml/EmptyCatchBlock">
+    <properties>
+      <property name="allowCommentedBlocks" value="true"/>
+      <property name="allowExceptionNameRegex" value="^$"/>
+    </properties>
+  </rule>
+</ruleset>

@@ -1,0 +1,24 @@
+### javaid vs Checkstyle 14.4.0 on the instances of sun's configuration that javaid implements (Guava and Spring Framework)
+rule                         reference   javaid   agree  only-ref  only-jv  agreement
+ArrayTypeStyle                       5        5       5         0        0     100.0%
+ConstantName                      1138     1138    1138         0        0     100.0%
+EqualsHashCode                      72       72      72         0        0     100.0%
+FallThrough                          1        1       1         0        0     100.0%
+FileTabCharacter                  9440     9440    9440         0        0     100.0%
+LineLength                      306738   306738  306738         0        0     100.0%
+LocalFinalVariableName              30       30      30         0        0     100.0%
+LocalVariableName                  129      129     129         0        0     100.0%
+MemberName                          73       73      73         0        0     100.0%
+MethodName                        8593     8593    8593         0        0     100.0%
+MissingSwitchDefault               142      142     142         0        0     100.0%
+ModifierOrder                       58       58      58         0        0     100.0%
+MultipleVariableDeclarations        42       42      42         0        0     100.0%
+NeedBraces                         108      108     108         0        0     100.0%
+OneStatementPerLine                  2        2       2         0        0     100.0%
+ParameterName                       21       21      21         0        0     100.0%
+RegexpSingleline                   113      113     113         0        0     100.0%
+StaticVariableName                  23       23      23         0        0     100.0%
+TodoComment                        240      240     240         0        0     100.0%
+TypeName                            31       31      31         0        0     100.0%
+UnusedImports                     1440     1440    1440         0        0     100.0%
+TOTAL                           328439   328439  328439         0        0     100.0%

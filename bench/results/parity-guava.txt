@@ -1,0 +1,15 @@
+### guava: javaid vs Checkstyle 14.4.0 (oracle)
+rule               checkstyle   javaid   agree  only-cs  only-jv  agreement
+EmptyCatchBlock           158      158     158        0        0     100.0%
+EqualsHashCode             68       68      68        0        0     100.0%
+MethodName               8004     8004    8004        0        0     100.0%
+NeedBraces                 60       60      60        0        0     100.0%
+UnusedImports             360      360     360        0        0     100.0%
+
+### guava: javaid vs PMD 7.29.0
+rule               checkstyle   javaid   agree  only-cs  only-jv  agreement
+EmptyCatchBlock           158      158     158        0        0     100.0%
+EqualsHashCode             56       68       0       56       68       0.0%
+MethodName               8006     8004    8004        2        0     100.0%
+NeedBraces                 60       60      56        4        4      87.5%
+UnusedImports              32      360       3       29      357       0.8%

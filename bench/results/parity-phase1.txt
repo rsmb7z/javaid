@@ -1,0 +1,39 @@
+### guava: javaid vs Checkstyle 14.4.0, 21 modules at default settings
+rule                         reference   javaid   agree  only-ref  only-jv  agreement
+CatchParameterName                  44       44      44         0        0     100.0%
+ClassTypeParameterName             135      135     135         0        0     100.0%
+ConstantName                       387      387     387         0        0     100.0%
+EmptyCatchBlock                    158      158     158         0        0     100.0%
+EqualsHashCode                      68       68      68         0        0     100.0%
+InterfaceTypeParameterName          68       68      68         0        0     100.0%
+LocalVariableName                   44       44      44         0        0     100.0%
+MethodName                        8004     8004    8004         0        0     100.0%
+MethodTypeParameterName            286      286     286         0        0     100.0%
+NeedBraces                          60       60      60         0        0     100.0%
+TypeName                            10       10      10         0        0     100.0%
+UnusedImports                        1        1       1         0        0     100.0%
+TOTAL                             9265     9265    9265         0        0     100.0%
+ignored 4 reference finding(s) matching /has parse error/
+
+### spring-framework: javaid vs Checkstyle 14.4.0, 21 modules at default settings
+rule                         reference   javaid   agree  only-ref  only-jv  agreement
+CatchParameterName                 125      125     125         0        0     100.0%
+ClassTypeParameterName              32       32      32         0        0     100.0%
+ConstantName                       751      751     751         0        0     100.0%
+EmptyCatchBlock                     89       89      89         0        0     100.0%
+EqualsHashCode                       4        4       4         0        0     100.0%
+InterfaceTypeParameterName          15       15      15         0        0     100.0%
+LambdaParameterName                  7        7       7         0        0     100.0%
+LocalFinalVariableName              30       30      30         0        0     100.0%
+LocalVariableName                   85       85      85         0        0     100.0%
+MemberName                          73       73      73         0        0     100.0%
+MethodName                         589      589     589         0        0     100.0%
+MethodTypeParameterName              8        8       8         0        0     100.0%
+NeedBraces                          48       48      48         0        0     100.0%
+ParameterName                       21       21      21         0        0     100.0%
+PatternVariableName                 10       10      10         0        0     100.0%
+RecordComponentName                  3        3       3         0        0     100.0%
+StaticVariableName                  23       23      23         0        0     100.0%
+TypeName                            21       21      21         0        0     100.0%
+TOTAL                             1934     1934    1934         0        0     100.0%
+

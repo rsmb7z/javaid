@@ -1,0 +1,21 @@
+javaid, 1 thread, Guava, `-q --stats` (parse + lint time, no discovery or output), two configs run
+alternately 14 times each so that a changing load hits both alike. Machine load average was 4-6
+(another project's tests were running), so absolute times are a little above an idle machine's.
+
+                             min      median     max
+ 21 modules (phase1.xml)    3.273 s    3.331 s   4.134 s
+ 33 modules (phase2.xml)    3.377 s    3.429 s   5.809 s
+ the twelve added modules   +0.104 s (+3.2%) by minimum, +0.098 s by median
+
+Before the optimisation the same comparison, taken on a quiet machine but one config after the
+other, not interleaved:
+
+ 21 modules                 3.276 s (median of 5)
+ 33 modules                 3.621 s (median of 5)
+ the twelve added modules   +0.345 s (+10.5%)
+
+Per module alone, before the optimisation (each over parse + walk with no rule, which is 2.783 s;
+every module pays a fixed 0.08 s for the walk to call any rule at all, so differences between
+modules are the useful part): OneStatementPerLine +0.515, ModifierOrder +0.268,
+MultipleVariableDeclarations +0.265, FallThrough +0.247, MissingSwitchDefault +0.195, and 0.08-0.10
+for each of the seven others.

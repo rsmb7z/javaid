@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<ruleset name="javaid-spike"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+  <description>PMD twins of the five rules javaid implements in the feasibility spike.</description>
+
+  <rule ref="category/java/errorprone.xml/EmptyCatchBlock">
+    <properties>
+      <property name="allowCommentedBlocks" value="true"/>
+      <property name="allowExceptionNameRegex" value="^$"/>
+    </properties>
+  </rule>
+  <rule ref="category/java/codestyle.xml/ControlStatementBraces"/>
+  <rule ref="category/java/errorprone.xml/OverrideBothEqualsAndHashcode"/>
+  <rule ref="category/java/codestyle.xml/UnnecessaryImport"/>
+  <rule ref="category/java/codestyle.xml/MethodNamingConventions"/>
+</ruleset>

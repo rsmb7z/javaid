@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!-- A TypeName that nothing satisfies, so every type is reported: the line number of its name is
+     what is under test, with CR, CRLF, form feed and mixed line terminators. -->
+<module name="Checker">
+  <property name="charset" value="UTF-8"/>
+  <property name="severity" value="warning"/>
+  <property name="fileExtensions" value="java"/>
+  <module name="TreeWalker">
+    <module name="TypeName"><property name="format" value="^NOPE$"/></module>
+  </module>
+</module>

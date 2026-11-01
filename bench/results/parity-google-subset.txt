@@ -1,0 +1,26 @@
+### javaid vs Checkstyle 14.4.0 on the instances of google's configuration that javaid implements (Guava and Spring Framework)
+rule                         reference   javaid   agree  only-ref  only-jv  agreement
+ArrayTypeStyle                       5        5       5         0        0     100.0%
+ClassTypeParameterName              35       35      35         0        0     100.0%
+EmptyCatchBlock                    247      247     247         0        0     100.0%
+FallThrough                          1        1       1         0        0     100.0%
+FileTabCharacter                934099   934099  934099         0        0     100.0%
+InterfaceTypeParameterName          14       14      14         0        0     100.0%
+LambdaParameterName                 45       45      45         0        0     100.0%
+LineLength                       79029    79029   79029         0        0     100.0%
+LocalFinalVariableName              30       30      30         0        0     100.0%
+LocalVariableName                  479      479     479         0        0     100.0%
+MethodTypeParameterName             24       24      24         0        0     100.0%
+MissingSwitchDefault               142      142     142         0        0     100.0%
+ModifierOrder                       58       58      58         0        0     100.0%
+MultipleVariableDeclarations        42       42      42         0        0     100.0%
+NeedBraces                         108      108     108         0        0     100.0%
+OneStatementPerLine                  3        3       3         0        0     100.0%
+PackageName                          9        9       9         0        0     100.0%
+ParameterName                      150      150     150         0        0     100.0%
+PatternVariableName                 14       14      14         0        0     100.0%
+RecordComponentName                  3        3       3         0        0     100.0%
+TodoFormat                        1224     1224    1224         0        0     100.0%
+TypeName                            30       30      30         0        0     100.0%
+noTrailingWhitespace               113      113     113         0        0     100.0%
+TOTAL                          1015904  1015904 1015904         0        0     100.0%

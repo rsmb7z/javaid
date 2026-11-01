@@ -1,0 +1,125 @@
+{
+ "env": {
+  "date": "2026-11-01 02:27:17 PKT",
+  "kernel": "7.0.0-38-generic",
+  "cpu": "Intel(R) Core(TM) i7-10700 CPU @ 2.90GHz",
+  "logical_cpus": 16,
+  "mem": "62Gi",
+  "governor": "powersave",
+  "java": [
+   "openjdk version \"21.0.12.1\" 2026-08-18",
+   "OpenJDK Runtime Environment (build 21.0.12.1+1-1-24.04.4-Ubuntu)"
+  ],
+  "checkstyle": "checkstyle-14.4.0-all.jar",
+  "pmd": [
+   "\u2588\u2588\u2588\u2588                            \u2588\u2588\u2588\u2588"
+  ],
+  "tuned_single": "-XX:+UseSerialGC -Xmx512m",
+  "tuned_multi": "-XX:+UseParallelGC",
+  "lowmem_multi": "-XX:+UseSerialGC",
+  "ci_cores": 0,
+  "corpora": {
+   "spring-framework": {
+    "commit": "ed4e0f8",
+    "java_files": 9293,
+    "bytes": 53674435
+   }
+  }
+ },
+ "results": {
+  "spring-framework": [
+   {
+    "key": "cs-spike",
+    "label": "Checkstyle 5 rules, default JVM",
+    "tool": "checkstyle",
+    "role": "cs",
+    "result": {
+     "wall": {
+      "median": 47.33021432091482,
+      "min": 47.18373955809511,
+      "max": 48.17788620200008
+     },
+     "rss": {
+      "median": 3220.51953125,
+      "min": 3219.875,
+      "max": 3249.05859375
+     },
+     "cpu": {
+      "median": 71.761741,
+      "min": 70.74272500000001,
+      "max": 73.782763
+     },
+     "rcs": [
+      0
+     ],
+     "samples": [
+      {
+       "wall": 48.17788620200008,
+       "rss_mb": 3249.05859375,
+       "cpu": 73.782763,
+       "rc": 0
+      },
+      {
+       "wall": 47.18373955809511,
+       "rss_mb": 3219.875,
+       "cpu": 70.74272500000001,
+       "rc": 0
+      },
+      {
+       "wall": 47.33021432091482,
+       "rss_mb": 3220.51953125,
+       "cpu": 71.761741,
+       "rc": 0
+      }
+     ]
+    }
+   },
+   {
+    "key": "cs-spike-tuned",
+    "label": "Checkstyle 5 rules, tuned JVM",
+    "tool": "checkstyle",
+    "role": "cs_tuned",
+    "result": {
+     "wall": {
+      "median": 67.56933715892956,
+      "min": 62.50205247406848,
+      "max": 68.4421229949221
+     },
+     "rss": {
+      "median": 712.40234375,
+      "min": 692.03125,
+      "max": 718.38671875
+     },
+     "cpu": {
+      "median": 79.912508,
+      "min": 73.68129,
+      "max": 80.223924
+     },
+     "rcs": [
+      0
+     ],
+     "samples": [
+      {
+       "wall": 62.50205247406848,
+       "rss_mb": 718.38671875,
+       "cpu": 73.68129,
+       "rc": 0
+      },
+      {
+       "wall": 68.4421229949221,
+       "rss_mb": 692.03125,
+       "cpu": 80.223924,
+       "rc": 0
+      },
+      {
+       "wall": 67.56933715892956,
+       "rss_mb": 712.40234375,
+       "cpu": 79.912508,
+       "rc": 0
+      }
+     ]
+    }
+   }
+  ]
+ }
+}

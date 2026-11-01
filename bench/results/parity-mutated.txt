@@ -1,0 +1,11 @@
+### javaid vs Checkstyle 14.4.0 on a mutated copy of Guava and Spring Framework (bench/oracle/mutate_corpus.py, seed 7 and 11, rate 0.06)
+rule                         reference   javaid   agree  only-ref  only-jv  agreement
+ArrayTypeStyle                     287      287     287         0        0     100.0%
+AvoidStarImport                  13156    13156   13156         0        0     100.0%
+FallThrough                        107      107     107         0        0     100.0%
+MissingSwitchDefault               172      172     172         0        0     100.0%
+ModifierOrder                     3086     3086    3086         0        0     100.0%
+MultipleVariableDeclarations      3407     3407    3407         0        0     100.0%
+OneStatementPerLine              22317    22317   22317         0        0     100.0%
+UpperEll                           878      878     878         0        0     100.0%
+TOTAL                            43410    43410   43410         0        0     100.0%
