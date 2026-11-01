@@ -55,6 +55,18 @@ pub enum Act {
     Paren,
     /// A `switch`, which is a statement or an expression depending on where it sits.
     Switch,
+    /// A `{ ... }` block, which `AvoidNestedBlocks` looks at.
+    Block,
+    /// An assignment used as an expression, which `InnerAssignment` looks at.
+    Assignment,
+    /// `true` or `false`, which `SimplifyBooleanExpression` looks at.
+    BooleanLiteral,
+    /// A constructor, which `MethodLength` and `ParameterNumber` look at.
+    Constructor,
+    /// `new X(...)`, which `FinalClass` looks at for anonymous classes.
+    New,
+    /// A floating-point literal, which `MagicNumber` looks at.
+    FloatLiteral,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -110,7 +122,7 @@ impl Syntax {
                     kind,
                     Some(
                         "," | ";" | "." | "..." | "::" | "++" | "--" | ":" | "->" | "if" | "else" | "while" | "do" | "for" | "finally" | "return" | "yield"
-                            | "catch" | "switch" | "synchronized" | "try" | "case" | "when" | "assert" | "instanceof" | "[" | "]" | "{" | "}" | "?" | "=" | "+=" | "-=" | "*="
+                            | "catch" | "switch" | "synchronized" | "try" | "case" | "when" | "assert" | "instanceof" | "[" | "]" | "!" | "~" | "@" | "{" | "}" | "?" | "=" | "+=" | "-=" | "*="
                             | "/=" | "%=" | "<<=" | ">>=" | ">>>=" | "&=" | "|=" | "^=" | "+" | "-" | "*" | "/" | "%" | "<<" | ">>" | ">>>" | "&"
                             | "|" | "^" | "<" | ">" | "<=" | ">=" | "==" | "!=" | "&&" | "||"
                     )
@@ -154,6 +166,12 @@ impl Syntax {
                 "modifiers" => Act::Modifiers,
                 "annotation" | "marker_annotation" => Act::Annotation,
                 "switch_expression" => Act::Switch,
+                "block" => Act::Block,
+                "assignment_expression" => Act::Assignment,
+                "true" | "false" => Act::BooleanLiteral,
+                "constructor_declaration" | "compact_constructor_declaration" => Act::Constructor,
+                "object_creation_expression" => Act::New,
+                "decimal_floating_point_literal" | "hex_floating_point_literal" => Act::FloatLiteral,
                 "decimal_integer_literal" | "hex_integer_literal" | "octal_integer_literal" | "binary_integer_literal" => Act::IntegerLiteral,
                 _ => Act::None,
             };

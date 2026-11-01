@@ -12,6 +12,8 @@ macro_rules! tokens {
 }
 
 tokens! {
+    At => "AT",
+    Bnot => "BNOT",
     Annotation => "ANNOTATION",
     Annotations => "ANNOTATIONS",
     AnnotationFieldDef => "ANNOTATION_FIELD_DEF",
@@ -59,6 +61,7 @@ tokens! {
     LiteralDo => "LITERAL_DO",
     LiteralElse => "LITERAL_ELSE",
     LiteralFinally => "LITERAL_FINALLY",
+    ForEachClause => "FOR_EACH_CLAUSE",
     LiteralFor => "LITERAL_FOR",
     LiteralIf => "LITERAL_IF",
     LiteralNew => "LITERAL_NEW",
@@ -98,6 +101,7 @@ tokens! {
     Star => "STAR",
     StarAssign => "STAR_ASSIGN",
     StaticInit => "STATIC_INIT",
+    InstanceInit => "INSTANCE_INIT",
     SwitchRule => "SWITCH_RULE",
     SuperCtorCall => "SUPER_CTOR_CALL",
     Typecast => "TYPECAST",

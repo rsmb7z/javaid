@@ -120,3 +120,147 @@ pub fn on_declaration(cx: &mut Ctx, decl: Node) {
         }
     }
 }
+
+/// `InnerAssignment`: an assignment that is not the whole of a statement. Allowed are the statement
+/// itself, a `for` initialiser or update, a lambda's expression body, a rule of a `switch` statement, and
+/// the body of an `if`, `else` or loop written without braces. An assignment compared with something in
+/// the condition of a `while`, `do` or `for` (`while ((line = in.readLine()) != null)`) is the loop
+/// idiom and is allowed too, whatever `&&`, `||`, `!`, `&` and `|` sit between.
+pub fn on_assignment(cx: &mut Ctx, assignment: Node) {
+    if !cx.cfg.inner_assignment {
+        return;
+    }
+    // Parentheses are not nodes of their own to Checkstyle.
+    let mut top = assignment;
+    while let Some(p) = top.parent().filter(|p| p.kind() == "parenthesized_expression") {
+        top = p;
+    }
+    let Some(parent) = top.parent() else { return };
+    let f = &cx.syn.f;
+    let allowed = match parent.kind() {
+        "expression_statement" => match parent.parent() {
+            Some(g) => match g.kind() {
+                "block" | "constructor_body" | "switch_block_statement_group" => true,
+                // The body of an `if`, `else` or loop without braces.
+                "if_statement" => g.child_by_field_id(f.consequence).is_some_and(|c| c.id() == parent.id()) || g.child_by_field_id(f.alternative).is_some_and(|c| c.id() == parent.id()),
+                "while_statement" | "for_statement" | "enhanced_for_statement" | "do_statement" => g.child_by_field_id(f.body).is_some_and(|c| c.id() == parent.id()),
+                "switch_rule" => g.parent().and_then(|b| b.parent()).and_then(|sw| sw.parent()).is_some_and(|s| matches!(s.kind(), "block" | "constructor_body" | "switch_block_statement_group")),
+                _ => false,
+            },
+            None => false,
+        },
+        "for_statement" => parent.child_by_field_name("condition").is_none_or(|c| c.id() != top.id()),
+        "lambda_expression" => parent.child_by_field_id(f.body).is_some_and(|b| b.id() == top.id()),
+        _ => false,
+    };
+    if allowed || in_loop_idiom(cx, top) {
+        return;
+    }
+    let at = assignment.child_by_field_name("operator").unwrap_or(assignment);
+    cx.diag("InnerAssignment", at, "Inner assignments should be avoided.".into());
+}
+
+/// Is `top` an operand of a comparison that makes up the condition of a `while`, `do` or `for`?
+fn in_loop_idiom(cx: &Ctx, top: Node) -> bool {
+    let Some(comparison) = top.parent().filter(|p| {
+        p.kind() == "binary_expression" && p.child_by_field_name("operator").is_some_and(|o| matches!(cx.text(o), b"==" | b"!=" | b"<" | b">" | b"<=" | b">="))
+    }) else {
+        return false;
+    };
+    let mut node = comparison;
+    while let Some(parent) = node.parent() {
+        let skip = match parent.kind() {
+            "parenthesized_expression" => true,
+            "binary_expression" => parent.child_by_field_name("operator").is_some_and(|o| matches!(cx.text(o), b"&&" | b"||" | b"&" | b"|")),
+            "unary_expression" => parent.child(0).is_some_and(|o| o.kind() == "!"),
+            _ => false,
+        };
+        if !skip {
+            return match parent.kind() {
+                "while_statement" | "do_statement" => true,
+                "for_statement" => parent.child_by_field_name("condition").is_some_and(|c| c.id() == node.id()),
+                _ => false,
+            };
+        }
+        node = parent;
+    }
+    false
+}
+
+/// `SimplifyBooleanExpression`: a `true` or `false` that is an operand of `==`, `!=`, `&&`, `||` or `!`
+/// (reported at the operator, once per literal), or that is, or sits next to, a literal in a
+/// `?:`. Parentheses are not nodes of their own to Checkstyle, so they are looked through.
+pub fn on_boolean_literal(cx: &mut Ctx, literal: Node) {
+    if !cx.cfg.simplify_boolean_expression {
+        return;
+    }
+    let mut top = literal;
+    while let Some(p) = top.parent().filter(|p| p.kind() == "parenthesized_expression") {
+        top = p;
+    }
+    let Some(parent) = top.parent() else { return };
+    match parent.kind() {
+        "binary_expression" => {
+            let Some(op) = parent.child_by_field_name("operator") else { return };
+            if matches!(cx.text(op), b"==" | b"!=" | b"&&" | b"||") {
+                cx.diag_once("SimplifyBooleanExpression", op, "Expression can be simplified.".into());
+            }
+        }
+        "unary_expression" => {
+            if let Some(op) = parent.child(0).filter(|o| o.kind() == "!") {
+                cx.diag_once("SimplifyBooleanExpression", op, "Expression can be simplified.".into());
+            }
+        }
+        "ternary_expression" => {
+            fn strip(mut n: Node<'_>) -> bool {
+                while n.kind() == "parenthesized_expression" {
+                    match n.named_child(0) {
+                        Some(inner) => n = inner,
+                        None => break,
+                    }
+                }
+                matches!(n.kind(), "true" | "false")
+            }
+            let (Some(cond), Some(then), Some(other)) =
+                (parent.child_by_field_name("condition"), parent.child_by_field_name("consequence"), parent.child_by_field_name("alternative"))
+            else {
+                return;
+            };
+            let flagged = strip(cond) || (then.id() == top.id() && strip(other));
+            if flagged {
+                if let Some(question) = parent.children(&mut parent.walk()).find(|c| c.kind() == "?") {
+                    cx.diag_once("SimplifyBooleanExpression", question, "Expression can be simplified.".into());
+                }
+            }
+        }
+        _ => {}
+    }
+}
+
+/// `SimplifyBooleanReturn`: an `if` with an `else` whose two branches each start with `return true;`
+/// or `return false;` (or `yield`). Only the first statement of a block is looked at.
+pub fn on_simplify_return(cx: &mut Ctx, node: Node) {
+    if !cx.cfg.simplify_boolean_return {
+        return;
+    }
+    let f = &cx.syn.f;
+    let (Some(then), Some(other)) = (node.child_by_field_id(f.consequence), node.child_by_field_id(f.alternative)) else { return };
+    if returns_only_a_boolean(then) && returns_only_a_boolean(other) {
+        cx.diag("SimplifyBooleanReturn", node, "Conditional logic can be removed.".into());
+    }
+}
+
+fn returns_only_a_boolean(statement: Node) -> bool {
+    fn literal_return(n: Node) -> bool {
+        matches!(n.kind(), "return_statement" | "yield_statement") && n.named_child(0).is_some_and(|v| matches!(v.kind(), "true" | "false"))
+    }
+    if literal_return(statement) {
+        return true;
+    }
+    if statement.kind() != "block" {
+        return false;
+    }
+    let mut cur = statement.walk();
+    let first = statement.children(&mut cur).find(|c| !matches!(c.kind(), "{" | "line_comment" | "block_comment"));
+    first.is_some_and(literal_return)
+}

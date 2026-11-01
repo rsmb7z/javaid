@@ -1,11 +1,12 @@
-//! The modules that read a file's lines: `FileTabCharacter`, `LineLength` and `RegexpSingleline`.
+//! The modules that read a file's lines: `FileTabCharacter`, `LineLength`, `RegexpSingleline`,
+//! `FileLength` and `NewlineAtEndOfFile`.
 //!
 //! They need no syntax tree, so they run on every file the configuration says they read (a
 //! Checker-level `fileExtensions` can pull in `.properties` or `.xml`) and share one pass over the
 //! lines. What a "line" is, how a tab is measured and what a regular expression sees were all
 //! pinned by probing Checkstyle; see `bench/oracle/probes/make-text-probes.py`.
 
-use crate::config::{Config, Extensions, RegexpSingleline};
+use crate::config::{Config, Extensions, LineSeparator, RegexpSingleline};
 use crate::engine::Diagnostic;
 use memchr::{memchr, memchr2};
 
@@ -54,6 +55,16 @@ pub fn run(cfg: &Config, ext: &str, src: &[u8], out: &mut Vec<Diagnostic>) {
     let tab = cfg.file_tab_character.as_ref().filter(|m| reads(&m.extensions));
     let length = cfg.line_length.as_ref().filter(|m| reads(&m.extensions));
     let patterns: Vec<&RegexpSingleline> = cfg.regexp_singleline.iter().filter(|m| reads(&m.extensions)).collect();
+    if let Some(m) = cfg.newline_at_end_of_file.as_ref().filter(|m| reads(&m.extensions)) {
+        newline_at_end_of_file(cfg, m.separator, src, out);
+    }
+    let size = cfg.file_length.as_ref().filter(|m| reads(&m.extensions));
+    if let Some(m) = size {
+        let count = lines(src).count();
+        if count > m.max {
+            out.push(Diagnostic { rule: cfg.display("FileLength"), line: 1, col: 1, message: format!("File length is {count} lines (max allowed is {}).", m.max) });
+        }
+    }
     if tab.is_none() && length.is_none() && patterns.is_empty() {
         return;
     }
@@ -103,4 +114,20 @@ pub fn run(cfg: &Config, ext: &str, src: &[u8], out: &mut Vec<Diagnostic>) {
             out.push(Diagnostic { rule: m.name, line: 1, col: 1, message });
         }
     }
+}
+
+/// `NewlineAtEndOfFile`. Found by probing Checkstyle: an empty file ends with every separator, so
+/// `lf` calls it a CRLF file; a file shorter than the separator does not end with it; and at `lf`
+/// a file that ends in `\r\n` is reported as having the wrong ending, not as lacking a newline.
+fn newline_at_end_of_file(cfg: &Config, separator: LineSeparator, src: &[u8], out: &mut Vec<Diagnostic>) {
+    let ends_with = |sep: &[u8]| src.is_empty() || src.ends_with(sep);
+    let message = match separator {
+        LineSeparator::Lf if ends_with(b"\r\n") => "Expected line ending for file is LF(\\n), but CRLF(\\r\\n) is detected.".to_string(),
+        LineSeparator::Lf if !ends_with(b"\n") => "File does not end with a newline 'lf'.".to_string(),
+        LineSeparator::Cr if !ends_with(b"\r") => "File does not end with a newline 'cr'.".to_string(),
+        LineSeparator::Crlf if !ends_with(b"\r\n") => "File does not end with a newline 'crlf'.".to_string(),
+        LineSeparator::LfCrCrlf if !(ends_with(b"\n") || ends_with(b"\r")) => "File does not end with a newline.".to_string(),
+        _ => return,
+    };
+    out.push(Diagnostic { rule: cfg.display("NewlineAtEndOfFile"), line: 1, col: 1, message });
 }

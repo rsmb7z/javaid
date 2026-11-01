@@ -9,7 +9,7 @@
 
 use super::tokens::Token;
 use super::pad;
-use crate::config::CurlyOption;
+use crate::config::{CurlyOption, RightCurlyOption};
 use super::whitespace::{is_comment, is_empty_statement, operator_token, punctuation_token};
 use crate::engine::Ctx;
 use tree_sitter::Node;
@@ -21,6 +21,12 @@ pub fn on_token(cx: &mut Ctx, node: Node) {
     }
     if !cx.cfg.left_curly.is_empty() && node.kind() == "{" {
         left_curly(cx, node);
+    }
+    if cx.cfg.empty_block.is_some() && node.kind() == "{" {
+        empty_block(cx, node);
+    }
+    if cx.cfg.right_curly.is_some() && node.kind() == "{" {
+        right_curly(cx, node);
     }
     if cx.cfg.operator_wrap.is_empty() {
         return;
@@ -360,7 +366,7 @@ fn first_child(n: Node) -> Option<Node> {
 }
 
 /// The token before `node`, comments aside.
-fn previous_token(node: Node) -> Option<Node> {
+pub fn previous_token(node: Node) -> Option<Node> {
     let mut n = node;
     loop {
         let mut sibling = n.prev_sibling();
@@ -415,4 +421,163 @@ fn right_operand_start(node: Node) -> Option<Node> {
         }
         token = next_token(token)?;
     }
+}
+
+/// `EmptyBlock`: a block of one of the configured statements with nothing in it. With the default
+/// option, `statement`, a comment is not a statement; with `text`, any text between the braces will do.
+/// Found by probing Checkstyle: a `case` label owns the block that follows it (and a `switch` rule's
+/// block), but a label with no block, and an array initialiser, are never reported.
+fn empty_block(cx: &mut Ctx, brace: Node) {
+    let Some(opts) = &cx.cfg.empty_block else { return };
+    let Some(container) = cx.parent() else { return };
+    let token = if container.kind() == "block" && cx.ancestor(1).is_some_and(|g| g.kind() == "class_body") {
+        Some(Token::InstanceInit)
+    } else {
+        brace_owners(cx, brace).into_iter().map(|o| o.token).find(|t| opts.tokens.contains(*t))
+    };
+    let Some(token) = token.filter(|t| opts.tokens.contains(*t)) else { return };
+    let mut cur = container.walk();
+    let has_content = container.children(&mut cur).any(|c| !matches!(c.kind(), "{" | "}") && !is_comment(c));
+    if has_content {
+        return;
+    }
+    let message = if opts.text {
+        let close = container.child(container.child_count().saturating_sub(1)).map_or(brace.end_byte(), |c| c.start_byte());
+        if cx.src[brace.end_byte()..close.max(brace.end_byte())].iter().any(|b| !pad::is_blank(*b) && !matches!(b, b'\n' | b'\r')) {
+            return;
+        }
+        let name = match token {
+            Token::InstanceInit => "INSTANCE_INIT".to_string(),
+            Token::StaticInit => "STATIC_INIT".to_string(),
+            Token::LiteralDefault => "case".to_string(),
+            t => format!("{t:?}").trim_start_matches("Literal").to_ascii_lowercase().replace("case", "case"),
+        };
+        format!("Empty {name} block.")
+    } else {
+        "Must have at least one statement.".to_string()
+    };
+    cx.diag("EmptyBlock", brace, message);
+}
+
+/// How `RightCurly` wants a closing brace placed, and what Checkstyle's tree makes of the brace.
+fn right_curly(cx: &mut Ctx, lbrace: Node) {
+    let Some(opts) = &cx.cfg.right_curly else { return };
+    let (option, tokens) = (opts.option, opts.tokens);
+    let Some(container) = cx.parent() else { return };
+    let token = if container.kind() == "block" && cx.ancestor(1).is_some_and(|g| g.kind() == "class_body") {
+        Some(Token::InstanceInit)
+    } else {
+        brace_owners(cx, lbrace).into_iter().map(|o| o.token).find(|t| tokens.contains(*t))
+    };
+    let Some(token) = token.filter(|t| tokens.contains(*t)) else { return };
+    let Some(rcurly) = container.child(container.child_count().saturating_sub(1)).filter(|c| c.kind() == "}") else { return };
+    if token == Token::LiteralSwitch && switch_in_expression(cx, container) {
+        return;
+    }
+    // A rule or label of a switch expression is skipped as well.
+    if matches!(token, Token::LiteralCase | Token::LiteralDefault) {
+        let mut up = container.parent();
+        while let Some(n) = up.filter(|n| n.kind() != "switch_block") {
+            up = n.parent();
+        }
+        if up.is_some_and(|b| switch_in_expression(cx, b)) {
+            return;
+        }
+    }
+    let src = cx.src;
+    let (lrow, rrow) = (lbrace.start_position().row, rcurly.start_position().row);
+    let next = next_token(rcurly);
+    let next_kind = next.map(|n| n.kind());
+    // Whether the brace ends a chain (`try`/`catch`, `if`/`else`, `do`/`while`): such a brace is judged by
+    // what follows it, the last one of the chain by itself.
+    let check_last = match token {
+        Token::LiteralTry | Token::LiteralCatch => !matches!(next_kind, Some("catch" | "finally")),
+        Token::LiteralIf => next_kind != Some("else"),
+        Token::LiteralDo => false,
+        _ => true,
+    };
+    let prev_row = last_member_row(container);
+    let has_break_before = rrow != prev_row.unwrap_or(lrow);
+    let alone = {
+        let line_start = src[..rcurly.start_byte()].iter().rposition(|&b| b == b'\n').map_or(0, |i| i + 1);
+        let blank_before = src[line_start..rcurly.start_byte()].iter().all(|&b| pad::is_blank(b));
+        // `new X() {{ ... }};` closing over two lines of braces counts as alone (Checkstyle's "double brace" case).
+        let double_brace = token == Token::InstanceInit
+            && next.is_some_and(|n| n.kind() == "}")
+            && next.and_then(next_token).is_some_and(|semi| semi.kind() == ";" && next_token(semi).is_some_and(|after| after.start_position().row != rrow));
+        blank_before && (next.is_none_or(|n| n.start_position().row != rrow) || double_brace)
+    };
+    let single_line_block = {
+        let mut after = next;
+        if after.is_some_and(|n| n.kind() == "else") {
+            after = after.and_then(|n| next_token(outermost_if(n)));
+        }
+        if matches!(after.map(|n| n.kind()), Some("catch" | "finally")) {
+            // The keyword sits in a clause; the statement is the clause's parent.
+            after = after.and_then(|n| n.parent()).and_then(|c| c.parent()).and_then(next_token);
+        } else if token == Token::LiteralDo {
+            after = after.and_then(|n| n.parent()).and_then(next_token);
+        }
+        lrow == rrow && (after.is_none_or(|n| n.start_position().row != rrow) || next.is_some_and(|n| n.kind() == ";"))
+    };
+    let message = if option == RightCurlyOption::Same && !has_break_before && lrow != rrow {
+        "should have line break before"
+    } else if option == RightCurlyOption::Same && !check_last && next.is_some_and(|n| n.start_position().row != rrow) {
+        "should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally)"
+    } else if (option == RightCurlyOption::Alone && !alone)
+        || ((option == RightCurlyOption::AloneOrSingleline || check_last) && !alone && !single_line_block)
+    {
+        "should be alone on a line"
+    } else {
+        return;
+    };
+    cx.diag("RightCurly", rcurly, format!("'}}' at column {} {message}.", rcurly.start_position().column + 1));
+}
+
+/// The row Checkstyle compares the closing brace with: that of the last statement's own token, which for a
+/// plain statement is its `;` and for anything bigger is where it starts.
+fn last_member_row(container: Node) -> Option<usize> {
+    let mut cur = container.walk();
+    let last = container.children(&mut cur).filter(|c| !matches!(c.kind(), "{" | "}") && !is_comment(*c)).last()?;
+    Some(match last.kind() {
+        "expression_statement" | "local_variable_declaration" | "field_declaration" | "constant_declaration" => last.end_position().row,
+        _ => last.start_position().row,
+    })
+}
+
+fn outermost_if(else_keyword: Node) -> Node {
+    let mut node = else_keyword.parent().unwrap_or(else_keyword);
+    while let Some(p) = node.parent().filter(|p| p.kind() == "if_statement") {
+        node = p;
+    }
+    node
+}
+
+/// Checkstyle treats a `switch` as an expression when any ancestor is an expression, even a lambda's
+/// block far above it. (Found by probing: a lambda that is a variable's whole initialiser does not
+/// count as one, an anonymous class does.)
+fn switch_in_expression(cx: &Ctx, switch_block: Node) -> bool {
+    let Some(switch) = switch_block.parent() else { return false };
+    let is_statement = |n: Node| n.parent().is_some_and(|p| matches!(p.kind(), "block" | "constructor_body" | "switch_block_statement_group" | "if_statement" | "while_statement" | "do_statement" | "for_statement" | "enhanced_for_statement" | "labeled_statement"));
+    if !is_statement(switch) {
+        return true;
+    }
+    let mut level = 0;
+    while let Some(a) = cx.ancestor(level) {
+        let in_expression = match a.kind() {
+            "switch_expression" => !is_statement(a),
+            // A lambda that is a variable's whole initialiser has no expression node above it.
+            "variable_declarator" => a.child_by_field_name("value").is_none_or(|v| v.kind() != "lambda_expression"),
+            "lambda_expression" => !a.parent().is_some_and(|p| p.kind() == "variable_declarator"),
+            "argument_list" | "assignment_expression" | "return_statement" | "yield_statement" | "parenthesized_expression"
+            | "binary_expression" | "ternary_expression" | "unary_expression" | "cast_expression" | "method_invocation" | "object_creation_expression"
+            | "expression_statement" | "array_access" | "field_access" | "element_value_pair" | "array_initializer" => true,
+            _ => false,
+        };
+        if in_expression && a.id() != switch.id() {
+            return true;
+        }
+        level += 1;
+    }
+    false
 }

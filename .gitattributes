@@ -1,0 +1,2 @@
+# Probe files are test data: Git must not change their line endings.
+bench/oracle/probes/* -text

@@ -1,4 +1,4 @@
-//! `ArrayTypeStyle` and `UpperEll`: small checks on a single token.
+//! `ArrayTypeStyle`, `UpperEll` and `EmptyStatement`: small checks on a single token.
 
 use crate::engine::Ctx;
 use tree_sitter::Node;
@@ -49,5 +49,25 @@ pub fn on_dimensions(cx: &mut Ctx, dims: Node) {
 pub fn on_integer_literal(cx: &mut Ctx, literal: Node) {
     if cx.cfg.upper_ell && cx.text(literal).last() == Some(&b'l') {
         cx.diag("UpperEll", literal, "Should use uppercase 'L'.".into());
+    }
+}
+
+/// `EmptyStatement`: a `;` that ends nothing. Checkstyle counts the stray `;` wherever the grammar
+/// allows one: between members, after a type or an import, as a loop body, in a block. The `;`
+/// that ends a declaration or statement is a child of that node, so only these parents matter.
+/// An enum's separator (the first `;` of its member list) is not empty; a second one is.
+pub fn on_empty_statement(cx: &mut Ctx, semi: Node) {
+    if !cx.cfg.empty_statement {
+        return;
+    }
+    let Some(parent) = cx.parent() else { return };
+    let empty = match parent.kind() {
+        "program" | "class_body" | "interface_body" | "annotation_type_body" | "constructor_body" => true,
+        "enum_body_declarations" => parent.child(0).is_some_and(|first| first.id() != semi.id()),
+        "package_declaration" | "import_declaration" => semi.prev_sibling().is_some_and(|p| p.kind() == ";"),
+        _ => crate::rules::whitespace::is_empty_statement(cx, parent, semi),
+    };
+    if empty {
+        cx.diag("EmptyStatement", semi, "Empty statement.".into());
     }
 }

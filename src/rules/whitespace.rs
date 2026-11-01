@@ -76,14 +76,27 @@ fn paren_owner(cx: &Ctx, parent: Node) -> Option<Token> {
 }
 
 pub fn on_paren(cx: &mut Ctx, paren: Node) {
-    if cx.cfg.paren_pad.is_none() && cx.cfg.method_param_pad.is_none() && cx.cfg.whitespace_after.is_none() {
+    if cx.cfg.paren_pad.is_none()
+        && cx.cfg.no_whitespace_after.is_none()
+        && cx.cfg.method_param_pad.is_none()
+        && cx.cfg.whitespace_after.is_none()
+        && cx.cfg.typecast_paren_pad.is_none()
+        && cx.cfg.empty_for_iterator_pad.is_none()
+    {
         return;
     }
     let Some(parent) = cx.parent() else { return };
-    // The `)` of a cast is the token WhitespaceAfter calls TYPECAST.
-    if parent.kind() == "cast_expression" && paren.kind() == ")" {
-        whitespace_after(cx, paren, Token::Typecast);
+    if parent.kind() == "cast_expression" {
+        typecast_paren_pad(cx, paren);
+        // The `)` of a cast is the token WhitespaceAfter calls TYPECAST.
+        if paren.kind() == ")" {
+            whitespace_after(cx, paren, Token::Typecast);
+            no_whitespace_after_cast(cx, paren, parent);
+        }
         return;
+    }
+    if paren.kind() == ")" {
+        empty_for_iterator_pad(cx, parent);
     }
     let Some(owner) = paren_owner(cx, parent) else { return };
     paren_pad(cx, paren, parent, owner);
@@ -136,39 +149,65 @@ fn paren_pad(cx: &mut Ctx, paren: Node, parent: Node, owner: Token) {
     if empty_clause {
         return;
     }
-    let message = if open {
-        // Only the character next to the parenthesis counts, so a blank before the line end still does.
-        let next = src.get(paren.end_byte()).copied().filter(|b| !matches!(b, b'\n' | b'\r'));
-        let Some(next) = next else { return };
+    if let Some(message) = pad_message(src, paren, open, space) {
+        cx.diag("ParenPad", paren, message.into());
+    }
+}
+
+/// What is wrong with the padding next to a parenthesis, if anything. `ParenPad` and
+/// `TypecastParenPad` share this: only the character next to the parenthesis counts, so a blank
+/// before the line end still does, and a `)` that starts its line is indentation, not padding.
+fn pad_message(src: &[u8], paren: Node, open: bool, space: bool) -> Option<&'static str> {
+    if open {
+        let next = src.get(paren.end_byte()).copied().filter(|b| !matches!(b, b'\n' | b'\r'))?;
         let padded = pad::is_blank(next);
         if space {
             if padded || next == b')' {
-                return;
+                return None;
             }
-            "'(' is not followed by whitespace."
+            Some("'(' is not followed by whitespace.")
         } else {
-            if !padded {
-                return;
-            }
-            "'(' is followed by whitespace."
+            padded.then_some("'(' is followed by whitespace.")
         }
     } else {
         let start = paren.start_byte();
         if space {
-            let Some(prev) = start.checked_sub(1).map(|i| src[i]) else { return };
+            let prev = start.checked_sub(1).map(|i| src[i])?;
             if pad::is_blank(prev) || prev == b'(' || matches!(prev, b'\n' | b'\r') {
-                return;
+                return None;
             }
-            "')' is not preceded with whitespace."
+            Some("')' is not preceded with whitespace.")
         } else {
-            // A `)` that starts its line is indentation, not padding.
-            if pad::before(src, start) != Gap::Space {
-                return;
-            }
-            "')' is preceded with whitespace."
+            (pad::before(src, start) == Gap::Space).then_some("')' is preceded with whitespace.")
         }
+    }
+}
+
+/// `TypecastParenPad`: the padding inside the parentheses of a cast.
+fn typecast_paren_pad(cx: &mut Ctx, paren: Node) {
+    let Some(space) = cx.cfg.typecast_paren_pad else { return };
+    if let Some(message) = pad_message(cx.src, paren, paren.kind() == "(", space) {
+        cx.diag("TypecastParenPad", paren, message.into());
+    }
+}
+
+/// `EmptyForIteratorPad`: the blank after the `;` that ends a `for` header whose update is empty.
+fn empty_for_iterator_pad(cx: &mut Ctx, parent: Node) {
+    let Some(space) = cx.cfg.empty_for_iterator_pad else { return };
+    if parent.kind() != "for_statement" || parent.child_by_field_name("update").is_some() {
+        return;
+    }
+    // Whatever the init and condition are, the header's last `;` is a child of the statement.
+    let mut cur = parent.walk();
+    let Some(semi) = parent.children(&mut cur).filter(|n| n.kind() == ";").last() else { return };
+    let Some(next) = cx.src.get(semi.end_byte()).copied().filter(|b| !matches!(b, b'\n' | b'\r')) else { return };
+    let padded = pad::is_blank(next);
+    let message = match (space, padded) {
+        (false, true) => "';' is followed by whitespace.",
+        (true, false) => "';' is not followed by whitespace.",
+        _ => return,
     };
-    cx.diag("ParenPad", paren, message.into());
+    cx.diag("EmptyForIteratorPad", semi, message.into());
 }
 
 /// The Checkstyle token a punctuation node stands for.
@@ -212,8 +251,16 @@ pub fn punctuation_token(cx: &Ctx, node: Node) -> Option<Token> {
 
 /// A punctuation token, for the rules that look at the gap around it.
 pub fn on_token(cx: &mut Ctx, node: Node) {
-    if cx.cfg.no_whitespace_before.is_none() && cx.cfg.whitespace_after.is_none() && cx.cfg.whitespace_around.is_none() && !cx.cfg.generic_whitespace {
+    if cx.cfg.no_whitespace_before.is_none()
+        && cx.cfg.no_whitespace_after.is_none()
+        && cx.cfg.whitespace_after.is_none()
+        && cx.cfg.whitespace_around.is_none()
+        && !cx.cfg.generic_whitespace
+    {
         return;
+    }
+    if cx.cfg.no_whitespace_after.is_some() {
+        no_whitespace_after(cx, node);
     }
     if cx.cfg.generic_whitespace {
         generic_whitespace(cx, node);
@@ -651,6 +698,182 @@ fn no_whitespace_before(cx: &mut Ctx, node: Node, token: Token) {
     if flagged {
         let text = std::str::from_utf8(cx.text(node)).unwrap_or("?");
         cx.diag("NoWhitespaceBefore", node, format!("'{text}' is preceded with whitespace."));
+    }
+}
+
+/// The token `NoWhitespaceAfter` sees in a node, if it is one of its kinds.
+fn no_whitespace_after_token(cx: &Ctx, node: Node) -> Option<Token> {
+    let parent = cx.parent()?;
+    let kind = node.kind();
+    Some(match kind {
+        "@" if matches!(parent.kind(), "annotation" | "marker_annotation") => Token::At,
+        // The braces of an annotation's array value are ANNOTATION_ARRAY_INIT, a different token.
+        "{" if parent.kind() == "array_initializer" => Token::ArrayInit,
+        // Only a prefix `++` is INC; after its operand it is POST_INC.
+        "++" | "--" if parent.kind() == "update_expression" && cx.previous_sibling().is_none() => {
+            if kind == "++" {
+                Token::Inc
+            } else {
+                Token::Dec
+            }
+        }
+        "-" if parent.kind() == "unary_expression" => Token::UnaryMinus,
+        "+" if parent.kind() == "unary_expression" => Token::UnaryPlus,
+        "~" if parent.kind() == "unary_expression" => Token::Bnot,
+        "!" if parent.kind() == "unary_expression" => Token::Lnot,
+        "[" if parent.kind() == "array_access" => Token::IndexOp,
+        "[" if matches!(parent.kind(), "dimensions" | "dimensions_expr") => Token::ArrayDeclarator,
+        _ => match punctuation_token(cx, node)? {
+            token @ (Token::Dot | Token::MethodRef | Token::LiteralIf | Token::LiteralFor | Token::LiteralWhile | Token::DoWhile | Token::LiteralCatch
+            | Token::LiteralSynchronized) => token,
+            _ => return None,
+        },
+    })
+}
+
+/// `NoWhitespaceAfter`: a blank after the token is wrong, and so is a line break unless
+/// `allowLineBreaks` says it is fine. For `[` it is the blank before the bracket that is wrong, so
+/// the character after the token in front of it is what counts.
+fn no_whitespace_after(cx: &mut Ctx, node: Node) {
+    let Some(token) = no_whitespace_after_token(cx, node) else { return };
+    let Some(opts) = &cx.cfg.no_whitespace_after else { return };
+    if !opts.tokens.contains(token) {
+        return;
+    }
+    // Checkstyle skips a token whose previous sibling is the (possibly empty) annotation list: the
+    // outermost `.` of a package name (which has one), and brackets that follow an annotation.
+    if token == Token::Dot && cx.parent().is_some_and(|p| p.kind() == "scoped_identifier") && cx.ancestor(1).is_some_and(|g| g.kind() == "package_declaration") {
+        return;
+    }
+    if token == Token::ArrayDeclarator && previous_sibling_skipping_comments(node).is_some_and(|p| matches!(p.kind(), "annotation" | "marker_annotation")) {
+        return;
+    }
+    if token == Token::ArrayDeclarator {
+        if let Some(annotation) = leading_type_annotation(cx, node) {
+            report_after_annotations(cx, node, annotation);
+            return;
+        }
+    }
+    let allow_line_breaks = opts.allow_line_breaks;
+    let element = match token {
+        Token::IndexOp | Token::ArrayDeclarator => match crate::rules::wrap::previous_token(node) {
+            Some(prev) => prev,
+            None => return,
+        },
+        _ => node,
+    };
+    report_whitespace_after(cx, node, element, allow_line_breaks);
+}
+
+/// The first annotation of a type that Checkstyle files under the type itself: `new @A T [n]`, a
+/// return type written after the type parameters, and an annotated type argument. When one leads the
+/// type of the first dimension `bracket` opens, Checkstyle measures from that annotation list (a
+/// token whose text is `ANNOTATIONS`, eleven characters wide) rather than from the type's last token.
+fn leading_type_annotation<'a>(cx: &Ctx<'a>, bracket: Node<'a>) -> Option<Node<'a>> {
+    let (dims, holder) = (cx.parent()?, cx.ancestor(1)?);
+    if bracket.prev_sibling().is_some() {
+        return None;
+    }
+    let plain = |t: Node| matches!(t.kind(), "type_identifier" | "integral_type" | "floating_point_type" | "boolean_type");
+    let is_annotation = |n: Node| matches!(n.kind(), "annotation" | "marker_annotation");
+    // `java.lang.@A String [n]`: the annotation list is the one inside the qualified name.
+    fn inside_name(t: Node) -> Option<Node> {
+        let mut cur = t.walk();
+        let found = (t.kind() == "scoped_type_identifier").then(|| t.children(&mut cur).find(|n| matches!(n.kind(), "annotation" | "marker_annotation"))).flatten();
+        found
+    }
+    match holder.kind() {
+        "array_type" => {
+            let element = holder.child_by_field_name("element")?;
+            if let Some(annotation) = inside_name(element) {
+                return Some(annotation);
+            }
+            if !plain(element) {
+                return None;
+            }
+            let outer = cx.ancestor(2)?;
+            match outer.kind() {
+                // A bound (`? extends @A T[]`, `T extends @A U[]`) is measured from its previous sibling as usual.
+                "annotated_type" if !cx.ancestor(3).is_some_and(|b| matches!(b.kind(), "wildcard" | "type_bound")) => outer.child(0).filter(|n| is_annotation(*n)),
+                "method_declaration" => {
+                    let mut cur = outer.walk();
+                    let first = outer.children(&mut cur).find(|n| is_annotation(*n));
+                    first
+                }
+                _ => None,
+            }
+        }
+        "array_creation_expression" => {
+            let ty = holder.child_by_field_name("type")?;
+            if dims.prev_sibling().map(|p| p.id()) != Some(ty.id()) {
+                return None;
+            }
+            if let Some(annotation) = inside_name(ty) {
+                return Some(annotation);
+            }
+            if !plain(ty) {
+                return None;
+            }
+            let mut cur = holder.walk();
+            let first = holder.children(&mut cur).find(|n| is_annotation(*n));
+            first
+        }
+        _ => None,
+    }
+}
+
+/// `NoWhitespaceAfter` on a cast: the `)` must not be followed by a blank. The finding is at the
+/// cast's `(`.
+fn no_whitespace_after_cast(cx: &mut Ctx, close: Node, cast: Node) {
+    let Some(opts) = &cx.cfg.no_whitespace_after else { return };
+    if !opts.tokens.contains(Token::Typecast) {
+        return;
+    }
+    let allow_line_breaks = opts.allow_line_breaks;
+    let Some(open) = cast.child(0).filter(|n| n.kind() == "(") else { return };
+    report_whitespace_after(cx, open, close, allow_line_breaks);
+}
+
+/// Checkstyle's own mistake, reproduced: the "element" is the annotation list, and "after it" is eleven
+/// characters (the length of its token name) past the first `@`.
+fn report_after_annotations(cx: &mut Ctx, at: Node, annotation: Node) {
+    let Some(opts) = &cx.cfg.no_whitespace_after else { return };
+    let allow_line_breaks = opts.allow_line_breaks;
+    let src = cx.src;
+    let wrong = if annotation.start_position().row != at.start_position().row {
+        !allow_line_breaks
+    } else {
+        // Eleven characters past the `@` may be beyond the end of the line: that is a line break.
+        let line_end = src[annotation.start_byte()..].iter().position(|b| matches!(b, b'\n' | b'\r')).map_or(src.len(), |i| annotation.start_byte() + i);
+        let at_byte = annotation.start_byte() + "ANNOTATIONS".len();
+        if at_byte >= line_end {
+            !allow_line_breaks
+        } else if src[at_byte].is_ascii() {
+            java_whitespace(src[at_byte] as char)
+        } else {
+            std::str::from_utf8(&src[at_byte..line_end]).ok().and_then(|t| t.chars().next()).is_some_and(java_whitespace)
+        }
+    };
+    if wrong {
+        cx.diag("NoWhitespaceAfter", at, "'ANNOTATIONS' is followed by whitespace.".into());
+    }
+}
+
+fn report_whitespace_after(cx: &mut Ctx, at: Node, element: Node, allow_line_breaks: bool) {
+    let src = cx.src;
+    let end = element.end_byte();
+    let wrong = if element.start_position().row != at.start_position().row {
+        !allow_line_breaks
+    } else {
+        match src.get(end) {
+            None | Some(b'\n' | b'\r') => !allow_line_breaks,
+            Some(&b) if b.is_ascii() => java_whitespace(b as char),
+            Some(_) => std::str::from_utf8(&src[end..]).ok().and_then(|t| t.chars().next()).is_some_and(java_whitespace),
+        }
+    };
+    if wrong {
+        let text = std::str::from_utf8(cx.text(element)).unwrap_or("?").to_string();
+        cx.diag("NoWhitespaceAfter", at, format!("'{text}' is followed by whitespace."));
     }
 }
 

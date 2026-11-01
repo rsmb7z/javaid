@@ -22,8 +22,18 @@ pub struct Module {
 
 pub const REGISTRY: &[Module] = &[
     Module { name: "EmptyCatchBlock", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "AvoidNestedBlocks", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "FinalParameters", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "MagicNumber", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "FinalClass", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "HideUtilityClassConstructor", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "InterfaceIsType", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "EmptyBlock", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "NeedBraces", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "EqualsHashCode", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "RedundantImport", family: "imports", multi: false, own_name: false },
+    Module { name: "IllegalInstantiation", family: "imports", multi: false, own_name: false },
+    Module { name: "IllegalImport", family: "imports", multi: false, own_name: false },
     Module { name: "UnusedImports", family: "imports", multi: false, own_name: false },
     Module { name: "TypeName", family: "naming", multi: true, own_name: false },
     Module { name: "MethodName", family: "naming", multi: false, own_name: false },
@@ -43,25 +53,37 @@ pub const REGISTRY: &[Module] = &[
     Module { name: "PatternVariableName", family: "naming", multi: false, own_name: false },
     Module { name: "RecordComponentName", family: "naming", multi: false, own_name: false },
     Module { name: "FileTabCharacter", family: "text", multi: false, own_name: false },
+    Module { name: "NewlineAtEndOfFile", family: "text", multi: false, own_name: false },
+    Module { name: "FileLength", family: "text", multi: false, own_name: false },
     Module { name: "LineLength", family: "text", multi: false, own_name: false },
     Module { name: "RegexpSingleline", family: "text", multi: true, own_name: true },
     Module { name: "TodoComment", family: "text", multi: true, own_name: true },
     Module { name: "ArrayTypeStyle", family: "modifiers and small checks", multi: false, own_name: false },
+    Module { name: "EmptyStatement", family: "modifiers and small checks", multi: false, own_name: false },
+    Module { name: "MethodLength", family: "modifiers and small checks", multi: false, own_name: false },
+    Module { name: "ParameterNumber", family: "modifiers and small checks", multi: false, own_name: false },
     Module { name: "UpperEll", family: "modifiers and small checks", multi: false, own_name: false },
     Module { name: "AvoidStarImport", family: "imports", multi: false, own_name: false },
+    Module { name: "SimplifyBooleanReturn", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "SimplifyBooleanExpression", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "InnerAssignment", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "MissingSwitchDefault", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "ModifierOrder", family: "modifiers and small checks", multi: false, own_name: false },
     Module { name: "MultipleVariableDeclarations", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "OneStatementPerLine", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "FallThrough", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "ParenPad", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "TypecastParenPad", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "EmptyForIteratorPad", family: "whitespace and wrapping", multi: false, own_name: false },
     Module { name: "MethodParamPad", family: "whitespace and wrapping", multi: false, own_name: false },
     Module { name: "NoWhitespaceBefore", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "NoWhitespaceAfter", family: "whitespace and wrapping", multi: false, own_name: false },
     Module { name: "WhitespaceAfter", family: "whitespace and wrapping", multi: false, own_name: false },
     Module { name: "WhitespaceAround", family: "whitespace and wrapping", multi: false, own_name: false },
     Module { name: "GenericWhitespace", family: "whitespace and wrapping", multi: false, own_name: false },
     Module { name: "OperatorWrap", family: "whitespace and wrapping", multi: true, own_name: true },
     Module { name: "SeparatorWrap", family: "whitespace and wrapping", multi: true, own_name: true },
+    Module { name: "RightCurly", family: "whitespace and wrapping", multi: false, own_name: false },
     Module { name: "LeftCurly", family: "whitespace and wrapping", multi: true, own_name: true },
 ];
 
@@ -238,6 +260,28 @@ pub struct FileTabCharacter {
     pub extensions: Extensions,
 }
 
+/// What `NewlineAtEndOfFile` wants a file to end with.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum LineSeparator {
+    Lf,
+    Cr,
+    Crlf,
+    /// Any of the three (the default).
+    LfCrCrlf,
+}
+
+#[derive(Clone, Debug)]
+pub struct NewlineAtEndOfFile {
+    pub separator: LineSeparator,
+    pub extensions: Extensions,
+}
+
+#[derive(Clone, Debug)]
+pub struct FileLength {
+    pub max: usize,
+    pub extensions: Extensions,
+}
+
 #[derive(Clone, Debug)]
 pub struct LineLength {
     pub max: usize,
@@ -274,6 +318,91 @@ pub struct OneStatementPerLine {
 }
 
 #[derive(Clone, Debug)]
+pub struct MethodLength {
+    pub max: usize,
+    /// `countEmpty`: blank lines and `//` comment lines count towards the length.
+    pub count_empty: bool,
+    pub tokens: TokenSet,
+}
+
+const METHOD_LENGTH_TOKENS: &str = "METHOD_DEF, CTOR_DEF, COMPACT_CTOR_DEF";
+
+#[derive(Clone, Debug)]
+pub struct ParameterNumber {
+    pub max: usize,
+    pub ignore_overridden: bool,
+    /// Annotation names, as written, that exempt a method.
+    pub ignore_annotated_by: Vec<String>,
+    pub tokens: TokenSet,
+}
+
+const PARAMETER_NUMBER_TOKENS: &str = "METHOD_DEF, CTOR_DEF";
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RightCurlyOption {
+    Same,
+    Alone,
+    AloneOrSingleline,
+}
+
+#[derive(Clone, Debug)]
+pub struct RightCurly {
+    pub option: RightCurlyOption,
+    pub tokens: TokenSet,
+}
+
+const RIGHT_CURLY_TOKENS: &str = "LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY, LITERAL_IF, LITERAL_ELSE";
+const RIGHT_CURLY_ACCEPTED: &str = "LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY, LITERAL_IF, LITERAL_ELSE, CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, \
+    LITERAL_WHILE, LITERAL_DO, STATIC_INIT, INSTANCE_INIT, ANNOTATION_DEF, ENUM_DEF, INTERFACE_DEF, RECORD_DEF, COMPACT_CTOR_DEF, LITERAL_SWITCH, \
+    LITERAL_CASE, LITERAL_DEFAULT";
+
+#[derive(Clone, Debug)]
+pub struct FinalParameters {
+    pub tokens: TokenSet,
+    pub ignore_primitive_types: bool,
+}
+
+const FINAL_PARAMETERS_TOKENS: &str = "METHOD_DEF, CTOR_DEF";
+const FINAL_PARAMETERS_ACCEPTED: &str = "METHOD_DEF, CTOR_DEF, LITERAL_CATCH, FOR_EACH_CLAUSE";
+
+#[derive(Clone, Debug)]
+pub struct IllegalImport {
+    pub pkgs: Vec<String>,
+    pub classes: Vec<String>,
+    pub regexp: bool,
+    /// With `regexp`, the patterns an import's package, and an import's full name, must match in full.
+    pub pkg_formats: Vec<Format>,
+    pub class_formats: Vec<Format>,
+}
+
+#[derive(Clone, Debug)]
+pub struct MagicNumber {
+    pub ignore_numbers: Vec<f64>,
+    pub ignore_hash_code_method: bool,
+    pub ignore_annotation: bool,
+    pub ignore_field_declaration: bool,
+    pub ignore_annotation_element_defaults: bool,
+}
+
+#[derive(Clone, Debug)]
+pub struct EmptyBlock {
+    pub tokens: TokenSet,
+    /// `option=text`: a block holding only a comment is not empty.
+    pub text: bool,
+}
+
+const EMPTY_BLOCK_TOKENS: &str = "LITERAL_WHILE, LITERAL_TRY, LITERAL_FINALLY, LITERAL_DO, LITERAL_IF, LITERAL_ELSE, LITERAL_FOR, INSTANCE_INIT, \
+    STATIC_INIT, LITERAL_SWITCH, LITERAL_SYNCHRONIZED";
+const EMPTY_BLOCK_ACCEPTED: &str = "LITERAL_WHILE, LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY, LITERAL_DO, LITERAL_IF, LITERAL_ELSE, LITERAL_FOR, \
+    INSTANCE_INIT, STATIC_INIT, LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_CASE, LITERAL_DEFAULT, ARRAY_INIT";
+
+#[derive(Clone, Debug)]
+pub struct AvoidNestedBlocks {
+    /// `allowInSwitchCase`: a block that is a `case`'s only statement is fine.
+    pub allow_in_switch_case: bool,
+}
+
+#[derive(Clone, Debug)]
 pub struct ParenPad {
     /// The constructs whose parentheses are checked.
     pub tokens: TokenSet,
@@ -307,6 +436,17 @@ pub struct NoWhitespaceBefore {
 const NO_WHITESPACE_BEFORE_TOKENS: &str = "COMMA, SEMI, POST_INC, POST_DEC, ELLIPSIS, LABELED_STAT";
 /// What javaid models beyond the defaults.
 const NO_WHITESPACE_BEFORE_ACCEPTED: &str = "COMMA, SEMI, POST_INC, POST_DEC, ELLIPSIS, LABELED_STAT, DOT, METHOD_REF";
+
+#[derive(Clone, Debug)]
+pub struct NoWhitespaceAfter {
+    pub tokens: TokenSet,
+    /// `allowLineBreaks`: a token that ends its line is fine.
+    pub allow_line_breaks: bool,
+}
+
+const NO_WHITESPACE_AFTER_TOKENS: &str = "ARRAY_INIT, AT, INC, DEC, UNARY_MINUS, UNARY_PLUS, BNOT, LNOT, DOT, ARRAY_DECLARATOR, INDEX_OP";
+const NO_WHITESPACE_AFTER_ACCEPTED: &str = "ARRAY_INIT, AT, INC, DEC, UNARY_MINUS, UNARY_PLUS, BNOT, LNOT, DOT, TYPECAST, ARRAY_DECLARATOR, INDEX_OP, \
+    DO_WHILE, LITERAL_IF, LITERAL_SYNCHRONIZED, METHOD_REF, LITERAL_FOR, LITERAL_WHILE, LITERAL_CATCH";
 
 #[derive(Clone, Debug)]
 pub struct WhitespaceAfter {
@@ -426,20 +566,46 @@ pub struct Config {
     pub unused_imports: Option<UnusedImports>,
     pub naming: Naming,
     pub file_tab_character: Option<FileTabCharacter>,
+    pub newline_at_end_of_file: Option<NewlineAtEndOfFile>,
+    pub file_length: Option<FileLength>,
     pub line_length: Option<LineLength>,
     pub regexp_singleline: Vec<RegexpSingleline>,
     pub todo_comments: Vec<TodoComment>,
     pub array_type_style: bool,
     pub upper_ell: bool,
+    pub empty_statement: bool,
     pub avoid_star_import: Option<AvoidStarImport>,
     pub missing_switch_default: bool,
+    pub inner_assignment: bool,
+    pub simplify_boolean_return: bool,
+    pub simplify_boolean_expression: bool,
     pub modifier_order: bool,
     pub multiple_variable_declarations: bool,
     pub one_statement_per_line: Option<OneStatementPerLine>,
     pub fall_through: Option<FallThrough>,
     pub paren_pad: Option<ParenPad>,
+    pub avoid_nested_blocks: Option<AvoidNestedBlocks>,
+    pub empty_block: Option<EmptyBlock>,
+    pub redundant_import: bool,
+    /// `IllegalInstantiation`: the fully qualified classes that must not be instantiated.
+    pub illegal_instantiation: Option<Vec<String>>,
+    pub illegal_import: Option<IllegalImport>,
+    pub final_class: bool,
+    pub magic_number: Option<MagicNumber>,
+    pub final_parameters: Option<FinalParameters>,
+    pub hide_utility_class_constructor: bool,
+    /// `InterfaceIsType`: whether marker interfaces are allowed.
+    pub interface_is_type: Option<bool>,
+    pub right_curly: Option<RightCurly>,
+    pub method_length: Option<MethodLength>,
+    pub parameter_number: Option<ParameterNumber>,
+    /// `TypecastParenPad`: whether padding is required (`option=space`).
+    pub typecast_paren_pad: Option<bool>,
+    /// `EmptyForIteratorPad`: whether padding is required (`option=space`).
+    pub empty_for_iterator_pad: Option<bool>,
     pub method_param_pad: Option<MethodParamPad>,
     pub no_whitespace_before: Option<NoWhitespaceBefore>,
+    pub no_whitespace_after: Option<NoWhitespaceAfter>,
     pub whitespace_after: Option<WhitespaceAfter>,
     pub whitespace_around: Option<WhitespaceAround>,
     pub generic_whitespace: bool,
@@ -466,20 +632,42 @@ impl Default for Config {
             unused_imports: None,
             naming: Naming::default(),
             file_tab_character: None,
+            newline_at_end_of_file: None,
+            file_length: None,
             line_length: None,
             regexp_singleline: Vec::new(),
             todo_comments: Vec::new(),
             array_type_style: false,
             upper_ell: false,
+            empty_statement: false,
             avoid_star_import: None,
             missing_switch_default: false,
+            inner_assignment: false,
+            simplify_boolean_return: false,
+            simplify_boolean_expression: false,
             modifier_order: false,
             multiple_variable_declarations: false,
             one_statement_per_line: None,
             fall_through: None,
             paren_pad: None,
+            avoid_nested_blocks: None,
+            empty_block: None,
+            redundant_import: false,
+            illegal_instantiation: None,
+            illegal_import: None,
+            final_class: false,
+            magic_number: None,
+            final_parameters: None,
+            hide_utility_class_constructor: false,
+            interface_is_type: None,
+            right_curly: None,
+            method_length: None,
+            parameter_number: None,
+            typecast_paren_pad: None,
+            empty_for_iterator_pad: None,
             method_param_pad: None,
             no_whitespace_before: None,
+            no_whitespace_after: None,
             whitespace_after: None,
             whitespace_around: None,
             generic_whitespace: false,
@@ -502,8 +690,11 @@ fn parse_extensions(list: &str) -> Vec<String> {
 impl Config {
     /// Do any of the enabled rules look at tokens inside `import` and `package` declarations?
     pub fn looks_inside_declarations(&self) -> bool {
-        self.paren_pad.is_some()
+        self.empty_statement
+            || self.paren_pad.is_some()
+            || self.typecast_paren_pad.is_some()
             || self.no_whitespace_before.is_some()
+            || self.no_whitespace_after.is_some()
             || self.whitespace_after.is_some()
             || !self.operator_wrap.is_empty()
             || !self.separator_wrap.is_empty()
@@ -536,6 +727,12 @@ impl Config {
             }
         };
         if let Some(m) = &self.file_tab_character {
+            add(&m.extensions);
+        }
+        if let Some(m) = &self.newline_at_end_of_file {
+            add(&m.extensions);
+        }
+        if let Some(m) = &self.file_length {
             add(&m.extensions);
         }
         if let Some(m) = &self.line_length {
@@ -758,6 +955,8 @@ impl Config {
         // narrows it. javaid reads Java files only, and says so rather than skipping silently.
         let unconstrained = |own: &Extensions| own.is_none();
         let file_level_without_extensions = cfg.file_tab_character.as_ref().is_some_and(|m| unconstrained(&m.extensions))
+            || cfg.newline_at_end_of_file.as_ref().is_some_and(|m| unconstrained(&m.extensions))
+            || cfg.file_length.as_ref().is_some_and(|m| unconstrained(&m.extensions))
             || cfg.line_length.as_ref().is_some_and(|m| unconstrained(&m.extensions))
             || cfg.regexp_singleline.iter().any(|m| unconstrained(&m.extensions));
         if cfg.checker_extensions.is_none() && file_level_without_extensions {
@@ -774,6 +973,26 @@ impl Config {
                 let extensions = p.extensions();
                 p.finish()?;
                 self.file_tab_character = Some(FileTabCharacter { each_line, extensions });
+            }
+            "NewlineAtEndOfFile" => {
+                // `system` is whatever the machine Checkstyle runs on uses, which javaid cannot know.
+                let separator = match p.take("lineSeparator").map(|v| v.trim().to_ascii_lowercase()).as_deref() {
+                    None | Some("lf_cr_crlf") => LineSeparator::LfCrCrlf,
+                    Some("lf") => LineSeparator::Lf,
+                    Some("cr") => LineSeparator::Cr,
+                    Some("crlf") => LineSeparator::Crlf,
+                    Some("system") => return Err("property lineSeparator: system depends on the machine and is not supported".to_string()),
+                    Some(other) => return Err(format!("property lineSeparator: expected lf, cr, crlf or lf_cr_crlf, got '{other}'")),
+                };
+                let extensions = p.extensions();
+                p.finish()?;
+                self.newline_at_end_of_file = Some(NewlineAtEndOfFile { separator, extensions });
+            }
+            "FileLength" => {
+                let max = p.usize("max", 2000)?;
+                let extensions = p.extensions();
+                p.finish()?;
+                self.file_length = Some(FileLength { max, extensions });
             }
             "LineLength" => {
                 let max = p.usize("max", 80)?;
@@ -799,9 +1018,25 @@ impl Config {
                 p.finish()?;
                 self.array_type_style = true;
             }
+            "EmptyStatement" => {
+                p.finish()?;
+                self.empty_statement = true;
+            }
             "UpperEll" => {
                 p.finish()?;
                 self.upper_ell = true;
+            }
+            "SimplifyBooleanReturn" => {
+                p.finish()?;
+                self.simplify_boolean_return = true;
+            }
+            "SimplifyBooleanExpression" => {
+                p.finish()?;
+                self.simplify_boolean_expression = true;
+            }
+            "InnerAssignment" => {
+                p.finish()?;
+                self.inner_assignment = true;
             }
             "MissingSwitchDefault" => {
                 p.finish()?;
@@ -828,11 +1063,131 @@ impl Config {
                 p.finish()?;
                 self.fall_through = Some(FallThrough { check_last_case_group, relief: Format::new(DEFAULT_RELIEF)? });
             }
+            "MethodLength" => {
+                let max = p.usize("max", 150)?;
+                let count_empty = p.bool("countEmpty", true)?;
+                let tokens = p.tokens(METHOD_LENGTH_TOKENS, METHOD_LENGTH_TOKENS)?;
+                p.finish()?;
+                self.method_length = Some(MethodLength { max, count_empty, tokens });
+            }
+            "ParameterNumber" => {
+                let max = p.usize("max", 7)?;
+                let ignore_overridden = p.bool("ignoreOverriddenMethods", false)?;
+                let ignore_annotated_by = p.take("ignoreAnnotatedBy").map(|v| v.split(',').map(|e| e.trim().to_string()).filter(|e| !e.is_empty()).collect()).unwrap_or_default();
+                let tokens = p.tokens(PARAMETER_NUMBER_TOKENS, PARAMETER_NUMBER_TOKENS)?;
+                p.finish()?;
+                self.parameter_number = Some(ParameterNumber { max, ignore_overridden, ignore_annotated_by, tokens });
+            }
+            "RightCurly" => {
+                let option = match p.take("option").map(|v| v.trim().to_ascii_lowercase()).as_deref() {
+                    None | Some("same") => RightCurlyOption::Same,
+                    Some("alone") => RightCurlyOption::Alone,
+                    Some("alone_or_singleline") => RightCurlyOption::AloneOrSingleline,
+                    Some(other) => return Err(format!("property option: expected same, alone or alone_or_singleline, got '{other}'")),
+                };
+                let tokens = p.tokens(RIGHT_CURLY_TOKENS, RIGHT_CURLY_ACCEPTED)?;
+                p.finish()?;
+                self.right_curly = Some(RightCurly { option, tokens });
+            }
+            "FinalParameters" => {
+                let ignore_primitive_types = p.bool("ignorePrimitiveTypes", false)?;
+                let tokens = p.tokens(FINAL_PARAMETERS_TOKENS, FINAL_PARAMETERS_ACCEPTED)?;
+                p.finish()?;
+                self.final_parameters = Some(FinalParameters { tokens, ignore_primitive_types });
+            }
+            "MagicNumber" => {
+                for unsupported in ["constantWaiverParentToken", "tokens"] {
+                    if p.take(unsupported).is_some() {
+                        return Err(format!("property {unsupported} is not supported yet"));
+                    }
+                }
+                let ignore_numbers = match p.take("ignoreNumbers") {
+                    None => vec![-1.0, 0.0, 1.0, 2.0],
+                    Some(v) => v
+                        .split(',')
+                        .map(str::trim)
+                        .filter(|e| !e.is_empty())
+                        .map(|e| e.parse::<f64>().map_err(|_| format!("property ignoreNumbers: '{e}' is not a number")))
+                        .collect::<Result<Vec<_>, _>>()?,
+                };
+                let ignore_hash_code_method = p.bool("ignoreHashCodeMethod", false)?;
+                let ignore_annotation = p.bool("ignoreAnnotation", false)?;
+                let ignore_field_declaration = p.bool("ignoreFieldDeclaration", false)?;
+                let ignore_annotation_element_defaults = p.bool("ignoreAnnotationElementDefaults", true)?;
+                p.finish()?;
+                self.magic_number =
+                    Some(MagicNumber { ignore_numbers, ignore_hash_code_method, ignore_annotation, ignore_field_declaration, ignore_annotation_element_defaults });
+            }
+            "FinalClass" => {
+                p.finish()?;
+                self.final_class = true;
+            }
+            "HideUtilityClassConstructor" => {
+                p.finish()?;
+                self.hide_utility_class_constructor = true;
+            }
+            "InterfaceIsType" => {
+                let allow = p.bool("allowMarkerInterfaces", true)?;
+                p.finish()?;
+                self.interface_is_type = Some(allow);
+            }
+            "RedundantImport" => {
+                p.finish()?;
+                self.redundant_import = true;
+            }
+            "IllegalInstantiation" => {
+                let classes = p.take("classes").map(|v| v.split(',').map(|e| e.trim().to_string()).filter(|e| !e.is_empty()).collect()).unwrap_or_default();
+                p.finish()?;
+                self.illegal_instantiation = Some(classes);
+            }
+            "IllegalImport" => {
+                let regexp = p.bool("regexp", false)?;
+                if p.take("illegalModules").is_some() {
+                    return Err("property illegalModules is not supported yet".to_string());
+                }
+                let list = |v: Option<String>, default: &str| -> Vec<String> {
+                    v.unwrap_or_else(|| default.to_string()).split(',').map(|e| e.trim().to_string()).filter(|e| !e.is_empty()).collect()
+                };
+                let pkgs = list(p.take("illegalPkgs"), "sun");
+                let classes = list(p.take("illegalClasses"), "");
+                p.finish()?;
+                let formats = |items: &[String]| -> Result<Vec<Format>, String> {
+                    if regexp { items.iter().map(|i| Format::new(&format!("^(?:{i})$"))).collect() } else { Ok(Vec::new()) }
+                };
+                let (pkg_formats, class_formats) = (formats(&pkgs)?, formats(&classes)?);
+                self.illegal_import = Some(IllegalImport { pkgs, classes, regexp, pkg_formats, class_formats });
+            }
+            "EmptyBlock" => {
+                let text = match p.take("option").map(|v| v.trim().to_ascii_lowercase()).as_deref() {
+                    None | Some("statement") => false,
+                    Some("text") => true,
+                    Some(other) => return Err(format!("property option: expected statement or text, got '{other}'")),
+                };
+                let tokens = p.tokens(EMPTY_BLOCK_TOKENS, EMPTY_BLOCK_ACCEPTED)?;
+                p.finish()?;
+                self.empty_block = Some(EmptyBlock { tokens, text });
+            }
+            "AvoidNestedBlocks" => {
+                let allow_in_switch_case = p.bool("allowInSwitchCase", false)?;
+                p.finish()?;
+                self.avoid_nested_blocks = Some(AvoidNestedBlocks { allow_in_switch_case });
+            }
             "ParenPad" => {
                 let tokens = p.tokens(PAREN_PAD_TOKENS, PAREN_PAD_TOKENS)?;
                 let space = p.pad_option()?;
                 p.finish()?;
                 self.paren_pad = Some(ParenPad { tokens, space });
+            }
+            "TypecastParenPad" => {
+                // The tokens are fixed (TYPECAST, RPAREN); only the option varies.
+                let space = p.pad_option()?;
+                p.finish()?;
+                self.typecast_paren_pad = Some(space);
+            }
+            "EmptyForIteratorPad" => {
+                let space = p.pad_option()?;
+                p.finish()?;
+                self.empty_for_iterator_pad = Some(space);
             }
             "MethodParamPad" => {
                 let allow_line_breaks = p.bool("allowLineBreaks", false)?;
@@ -846,6 +1201,12 @@ impl Config {
                 let tokens = p.tokens(NO_WHITESPACE_BEFORE_TOKENS, NO_WHITESPACE_BEFORE_ACCEPTED)?;
                 p.finish()?;
                 self.no_whitespace_before = Some(NoWhitespaceBefore { tokens, allow_line_breaks });
+            }
+            "NoWhitespaceAfter" => {
+                let allow_line_breaks = p.bool("allowLineBreaks", true)?;
+                let tokens = p.tokens(NO_WHITESPACE_AFTER_TOKENS, NO_WHITESPACE_AFTER_ACCEPTED)?;
+                p.finish()?;
+                self.no_whitespace_after = Some(NoWhitespaceAfter { tokens, allow_line_breaks });
             }
             "WhitespaceAfter" => {
                 let tokens = p.tokens(WHITESPACE_AFTER_TOKENS, WHITESPACE_AFTER_ACCEPTED)?;

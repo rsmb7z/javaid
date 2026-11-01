@@ -94,6 +94,21 @@ impl<'a> Ctx<'a> {
         let p = at.start_position();
         self.out.push(Diagnostic { rule: self.cfg.display(rule), line: p.row as u32 + 1, col: p.column as u32 + 1, message });
     }
+
+    /// A finding at a position that is not a node's: a declaration's reported line, say.
+    pub fn diag_at(&mut self, rule: &'static str, line: u32, col: u32, message: String) {
+        self.out.push(Diagnostic { rule: self.cfg.display(rule), line, col, message });
+    }
+
+    /// Like `diag`, for a finding Checkstyle can reach twice at one spot (`true == true` reports the
+    /// `==` for each operand): it reports an identical message at the same place only once.
+    pub fn diag_once(&mut self, rule: &'static str, at: Node, message: String) {
+        let p = at.start_position();
+        let (line, col, name) = (p.row as u32 + 1, p.column as u32 + 1, self.cfg.display(rule));
+        if !self.out.iter().rev().take(8).any(|d| d.line == line && d.col == col && d.rule == name && d.message == message) {
+            self.diag(rule, at, message);
+        }
+    }
 }
 
 /// Make a Java buffer's line breaks the ones Checkstyle counts. Checkstyle ends a line at `\n`,
@@ -101,9 +116,13 @@ impl<'a> Ctx<'a> {
 /// finding would land on line 1. A lone `\r` becomes `\n` in place: the length is unchanged, so no
 /// offset moves, and the Java language agrees that CR ends a line (a `//` comment stops there).
 /// Form feed, vertical tab and the Unicode separators end nothing, in Checkstyle or here.
+///
+/// A `\r` that is the very last byte stays: nothing follows it to be put on another line, and
+/// `NewlineAtEndOfFile` needs to see how the file ends.
 pub fn normalize_line_breaks(src: &mut [u8]) {
     // Jump from carriage return to carriage return: none in most files, one per line in CRLF ones.
-    let lone: Vec<usize> = memchr::memchr_iter(b'\r', src).filter(|&i| src.get(i + 1) != Some(&b'\n')).collect();
+    let last = src.len().wrapping_sub(1);
+    let lone: Vec<usize> = memchr::memchr_iter(b'\r', src).filter(|&i| i != last && src.get(i + 1) != Some(&b'\n')).collect();
     for i in lone {
         src[i] = b'\n';
     }

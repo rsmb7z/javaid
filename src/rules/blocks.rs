@@ -1,4 +1,4 @@
-//! `EmptyCatchBlock` and `NeedBraces`.
+//! `EmptyCatchBlock`, `NeedBraces` and `AvoidNestedBlocks`.
 
 use crate::engine::Ctx;
 use tree_sitter::Node;
@@ -79,5 +79,25 @@ pub fn on_loop(cx: &mut Ctx, node: Node, keyword: &str) {
         if !cx.syn.kind(b).is_block {
             cx.diag("NeedBraces", node, format!("'{keyword}' construct must use '{{}}'s."));
         }
+    }
+}
+
+/// `AvoidNestedBlocks`: a `{ ... }` that is a statement of another block. Checkstyle's `case` group
+/// is a statement list without braces, so a block that is the only statement of one is the one
+/// thing `allowInSwitchCase` excuses; every other block has its closing brace as a sibling.
+pub fn on_block(cx: &mut Ctx, block: Node) {
+    let Some(opts) = &cx.cfg.avoid_nested_blocks else { return };
+    let Some(parent) = cx.parent() else { return };
+    let nested = match parent.kind() {
+        "block" | "constructor_body" => true,
+        "switch_block_statement_group" => {
+            let mut cur = parent.walk();
+            let alone = parent.children(&mut cur).all(|c| c.id() == block.id() || matches!(c.kind(), "switch_label" | ":" | "line_comment" | "block_comment"));
+            !(opts.allow_in_switch_case && alone)
+        }
+        _ => false,
+    };
+    if nested {
+        cx.diag("AvoidNestedBlocks", block, "Avoid nested blocks.".into());
     }
 }
