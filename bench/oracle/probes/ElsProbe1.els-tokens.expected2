@@ -1,0 +1,55 @@
+23:5 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+28:5 EmptyLineSeparator 'VARIABLE_DEF' has more than 1 empty lines before.
+30:5 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+38:5 EmptyLineSeparator 'VARIABLE_DEF' has more than 1 empty lines before.
+40:5 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+44:5 EmptyLineSeparator 'METHOD_DEF' should be separated from previous line.
+46:5 EmptyLineSeparator 'METHOD_DEF' should be separated from previous line.
+49:15 EmptyLineSeparator There is more than 1 empty line after this line.
+55:14 EmptyLineSeparator There is more than 1 empty line after this line.
+59:14 EmptyLineSeparator There is more than 1 empty line after this line.
+67:5 EmptyLineSeparator 'METHOD_DEF' has more than 1 empty lines before.
+75:5 EmptyLineSeparator 'METHOD_DEF' has more than 1 empty lines before.
+77:5 EmptyLineSeparator 'METHOD_DEF' should be separated from previous line.
+82:5 EmptyLineSeparator 'METHOD_DEF' has more than 1 empty lines before.
+83:5 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+84:5 EmptyLineSeparator 'METHOD_DEF' should be separated from previous line.
+85:5 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+85:12 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+86:5 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+87:5 EmptyLineSeparator 'STATIC_INIT' should be separated from previous line.
+129:9 EmptyLineSeparator 'METHOD_DEF' should be separated from previous line.
+132:9 EmptyLineSeparator 'METHOD_DEF' has more than 1 empty lines before.
+142:9 EmptyLineSeparator 'ENUM_CONSTANT_DEF' has more than 1 empty lines before.
+148:9 EmptyLineSeparator 'ENUM_CONSTANT_DEF' has more than 1 empty lines after.
+162:9 EmptyLineSeparator 'VARIABLE_DEF' has more than 1 empty lines before.
+175:9 EmptyLineSeparator 'METHOD_DEF' should be separated from previous line.
+195:5 EmptyLineSeparator 'METHOD_DEF' has more than 1 empty lines before.
+205:13 EmptyLineSeparator 'ANNOTATION' has more than 1 empty lines before.
+205:13 EmptyLineSeparator 'METHOD_DEF' has more than 1 empty lines before.
+205:25 EmptyLineSeparator 'TYPE' has more than 1 empty lines before.
+205:30 EmptyLineSeparator 'annotated6' has more than 1 empty lines before.
+205:40 EmptyLineSeparator '(' has more than 1 empty lines before.
+205:41 EmptyLineSeparator ')' has more than 1 empty lines before.
+205:41 EmptyLineSeparator 'PARAMETERS' has more than 1 empty lines before.
+205:43 EmptyLineSeparator '{' has more than 1 empty lines before.
+208:5 EmptyLineSeparator 'METHOD_DEF' has more than 1 empty lines before.
+215:5 EmptyLineSeparator 'METHOD_DEF' has more than 1 empty lines before.
+218:5 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+219:5 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+221:5 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+225:5 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+228:9 EmptyLineSeparator 'METHOD_DEF' should be separated from previous line.
+230:5 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+236:5 EmptyLineSeparator 'CLASS_DEF' should be separated from previous line.
+238:9 EmptyLineSeparator 'METHOD_DEF' should be separated from previous line.
+239:9 EmptyLineSeparator 'METHOD_DEF' should be separated from previous line.
+240:9 EmptyLineSeparator 'METHOD_DEF' should be separated from previous line.
+243:18 EmptyLineSeparator There is more than 1 empty line after this line.
+250:19 EmptyLineSeparator There is more than 1 empty line after this line.
+256:32 EmptyLineSeparator There is more than 1 empty line after this line.
+263:5 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+264:5 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+267:5 EmptyLineSeparator 'VARIABLE_DEF' has more than 1 empty lines before.
+271:5 EmptyLineSeparator 'VARIABLE_DEF' has more than 1 empty lines before.
+273:5 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.

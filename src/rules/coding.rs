@@ -110,13 +110,13 @@ pub fn on_declaration(cx: &mut Ctx, decl: Node) {
     }
     let in_for_header = cx.parent().is_some_and(|p| p.kind() == "for_statement");
     if !in_for_header && decl.children_by_field_id(cx.syn.f.declarator, &mut decl.walk()).count() > 1 {
-        cx.diag("MultipleVariableDeclarations", decl, "Each variable declaration must be in its own statement.".into());
+        cx.diag_start("MultipleVariableDeclarations", decl, "Each variable declaration must be in its own statement.".into());
     }
     // Looked at from the later declaration: the one before it ended on the line where this starts.
     // The finding is still reported at the earlier one.
     if let Some(before) = cx.previous_sibling() {
         if matches!(before.kind(), "local_variable_declaration" | "field_declaration" | "constant_declaration") && before.end_position().row == decl.start_position().row {
-            cx.diag("MultipleVariableDeclarations", before, "Only one variable definition per line allowed.".into());
+            cx.diag_start("MultipleVariableDeclarations", before, "Only one variable definition per line allowed.".into());
         }
     }
 }

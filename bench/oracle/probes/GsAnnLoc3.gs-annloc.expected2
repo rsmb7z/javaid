@@ -1,0 +1,4 @@
+2:3 AnnotationLocationTypeAndPackageAndMembers Annotation 'SuppressWarnings' should be alone on line.
+2:26 AnnotationLocationTypeAndPackageAndMembers Annotation 'Deprecated' should be alone on line.
+3:1 AnnotationLocationTypeAndPackageAndMembers Annotation 'a' should be alone on line.
+3:9 AnnotationLocationTypeAndPackageAndMembers Annotation 'C' should be alone on line.

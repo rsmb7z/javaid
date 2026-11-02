@@ -1,0 +1,6 @@
+26:0 JavadocType Javadoc comment at column 3 has parse error. Details: token recognition error at: '@' while parsing  
+43:4 JavadocType Unused @param tag for 'c'.
+52:4 JavadocType Unused @param tag for '<T>'.
+91:0 JavadocType Javadoc comment at column 8 has parse error. Details: no viable alternative at input '</' while parsing HTML_ELEMENT
+109:0 JavadocType Javadoc comment at column 17 has parse error. Details: token recognition error at: '\n' while parsing f
+130:0 JavadocType Javadoc comment at column 1 has parse error. Details: mismatched input '<EOF>' expecting JAVADOC_INLINE_TAG_END while parsing INLINE_TAG

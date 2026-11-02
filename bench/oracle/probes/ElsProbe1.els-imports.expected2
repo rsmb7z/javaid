@@ -1,0 +1,8 @@
+4:1 EmptyLineSeparator '//' has more than 1 empty lines before.
+5:1 EmptyLineSeparator 'package' should be separated from previous line.
+6:1 EmptyLineSeparator 'import' should be separated from previous line.
+10:1 EmptyLineSeparator 'import' has more than 1 empty lines before.
+21:1 EmptyLineSeparator 'CLASS_DEF' should be separated from previous line.
+89:5 EmptyLineSeparator 'STATIC_INIT' should be separated from previous line.
+93:5 EmptyLineSeparator 'STATIC_INIT' has more than 1 empty lines before.
+99:5 EmptyLineSeparator 'INSTANCE_INIT' should be separated from previous line.

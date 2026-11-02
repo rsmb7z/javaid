@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+    "-//Checkstyle//DTD SuppressionXpathFilter Experimental Configuration 1.2//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2_xpath_experimental.dtd">
+<suppressions>
+  <suppress-xpath checks="MagicNumber" files="[\\/]test[\\/]" query="//NUM_INT"/>
+  <suppress-xpath checks="MissingJavadocMethod" query="//METHOD_DEF[MODIFIERS/ANNOTATION/IDENT[@text='Override']]/IDENT"/>
+  <suppress-xpath message="should be final" query="//PARAMETER_DEF[ancestor::LITERAL_CATCH]/IDENT"/>
+  <suppress-xpath checks="TodoComment" query="//COMMENT_CONTENT[contains(@text, 'TODO')]"/>
+</suppressions>

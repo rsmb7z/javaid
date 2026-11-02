@@ -1,0 +1,5 @@
+4:1 CustomImportOrder Wrong lexicographical order for 'a.A.a' import. Should be before 'z.Z.z'.
+5:1 CustomImportOrder Wrong lexicographical order for 'a.A.*' import. Should be before 'z.Z.z'.
+6:1 CustomImportOrder Wrong lexicographical order for 'a.B.b' import. Should be before 'z.Z.z'.
+11:1 CustomImportOrder Wrong lexicographical order for 'a.b.c.d.Deeper' import. Should be before 'b.B'.
+17:1 CustomImportOrder Wrong lexicographical order for 'junit.framework.TestCase' import. Should be before 'org.junit.jupiter.api.Test'.

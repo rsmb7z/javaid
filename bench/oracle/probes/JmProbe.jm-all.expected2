@@ -1,0 +1,13 @@
+27:8 JavadocMethod Unused @param tag for 'z'.
+35:8 JavadocMethod Duplicate @param tag.
+49:0 JavadocMethod Unused Javadoc tag.
+57:8 JavadocMethod Duplicate @return tag.
+85:8 JavadocMethod Unused @param tag for '<Q>'.
+104:44 JavadocMethod Expected @throws tag for 'IOException'.
+104:57 JavadocMethod Expected @throws tag for 'IllegalStateException'.
+121:32 JavadocMethod Expected @throws tag for 'IllegalArgumentException'.
+122:66 JavadocMethod Expected @throws tag for 'IllegalStateException'.
+141:5 JavadocMethod Invalid use of the '@inheritDoc' tag.
+144:5 JavadocMethod Invalid use of the '@inheritDoc' tag.
+154:8 JavadocMethod Unused @param tag for 'z'.
+162:0 JavadocMethod Unused Javadoc tag.

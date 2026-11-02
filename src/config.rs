@@ -26,6 +26,22 @@ pub const REGISTRY: &[Module] = &[
     Module { name: "FinalParameters", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "MagicNumber", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "FinalClass", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "OneTopLevelClass", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "NoFinalizer", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "PackageDeclaration", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "OuterTypeFilename", family: "misc", multi: false, own_name: false },
+    Module { name: "NoLineWrap", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "IllegalTokenText", family: "coding and blocks", multi: true, own_name: true },
+    Module { name: "ArrayBracketNoWhitespace", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "SingleSpaceSeparator", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "AvoidModuleImport", family: "imports", multi: false, own_name: false },
+    Module { name: "ModuleDirectiveOrder", family: "imports", multi: false, own_name: false },
+    Module { name: "AnnotationLocation", family: "modifiers and small checks", multi: true, own_name: true },
+    Module { name: "WhitespaceBeforeEmptyBody", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "NoWhitespaceBeforeCaseDefaultColon", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "ConstructorsDeclarationGrouping", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "OverloadMethodsDeclarationOrder", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "MissingOverrideOnRecordAccessor", family: "modifiers and small checks", multi: false, own_name: false },
     Module { name: "HideUtilityClassConstructor", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "InterfaceIsType", family: "coding and blocks", multi: false, own_name: false },
     Module { name: "HiddenField", family: "coding and blocks", multi: false, own_name: false },
@@ -69,6 +85,10 @@ pub const REGISTRY: &[Module] = &[
     Module { name: "SuppressWithNearbyCommentFilter", family: "filters", multi: true, own_name: true },
     Module { name: "SuppressWithPlainTextCommentFilter", family: "filters", multi: true, own_name: true },
     Module { name: "SuppressionXpathFilter", family: "filters", multi: true, own_name: true },
+    Module { name: "SuppressionXpathSingleFilter", family: "filters", multi: true, own_name: true },
+    Module { name: "SuppressWarningsHolder", family: "filters", multi: false, own_name: false },
+    Module { name: "SuppressWarningsFilter", family: "filters", multi: false, own_name: false },
+    Module { name: "MatchXpath", family: "xpath", multi: true, own_name: true },
     Module { name: "NonEmptyAtclauseDescription", family: "javadoc", multi: false, own_name: false },
     Module { name: "AtclauseOrder", family: "javadoc", multi: false, own_name: false },
     Module { name: "SingleLineJavadoc", family: "javadoc", multi: false, own_name: false },
@@ -98,6 +118,8 @@ pub const REGISTRY: &[Module] = &[
     Module { name: "TodoComment", family: "text", multi: true, own_name: true },
     Module { name: "ArrayTypeStyle", family: "modifiers and small checks", multi: false, own_name: false },
     Module { name: "EmptyStatement", family: "modifiers and small checks", multi: false, own_name: false },
+    Module { name: "VariableDeclarationUsageDistance", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "CommentsIndentation", family: "misc", multi: false, own_name: false },
     Module { name: "MethodLength", family: "modifiers and small checks", multi: false, own_name: false },
     Module { name: "ParameterNumber", family: "modifiers and small checks", multi: false, own_name: false },
     Module { name: "UpperEll", family: "modifiers and small checks", multi: false, own_name: false },
@@ -123,6 +145,10 @@ pub const REGISTRY: &[Module] = &[
     Module { name: "SeparatorWrap", family: "whitespace and wrapping", multi: true, own_name: true },
     Module { name: "RightCurly", family: "whitespace and wrapping", multi: false, own_name: false },
     Module { name: "LeftCurly", family: "whitespace and wrapping", multi: true, own_name: true },
+    Module { name: "Indentation", family: "whitespace and wrapping", multi: false, own_name: false },
+    Module { name: "TextBlockGoogleStyleFormatting", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "GoogleRightCurly", family: "coding and blocks", multi: false, own_name: false },
+    Module { name: "EmptyLineSeparator", family: "whitespace and wrapping", multi: false, own_name: false },
 ];
 
 /// Every module name, in registry order.
@@ -378,6 +404,23 @@ pub struct OneStatementPerLine {
 }
 
 #[derive(Clone, Debug)]
+pub struct VariableDeclarationUsageDistance {
+    pub allowed_distance: usize,
+    /// `ignoreVariablePattern`, wrapped to match the whole name.
+    pub ignore: Format,
+    pub validate_between_scopes: bool,
+    pub ignore_final: bool,
+}
+
+#[derive(Clone, Debug)]
+pub struct CommentsIndentation {
+    /// `SINGLE_LINE_COMMENT` is among the tokens.
+    pub single: bool,
+    /// `BLOCK_COMMENT_BEGIN` is among the tokens.
+    pub block: bool,
+}
+
+#[derive(Clone, Debug)]
 pub struct MethodLength {
     pub max: usize,
     /// `countEmpty`: blank lines and `//` comment lines count towards the length.
@@ -395,6 +438,48 @@ pub struct ParameterNumber {
     pub ignore_annotated_by: Vec<String>,
     pub tokens: TokenSet,
 }
+
+/// `Indentation`: the offsets Checkstyle's handlers work with.
+#[derive(Clone, Debug)]
+pub struct Indentation {
+    pub basic_offset: i32,
+    pub brace_adjustment: i32,
+    pub case_indent: i32,
+    pub throws_indent: i32,
+    pub array_init_indent: i32,
+    pub line_wrapping_indentation: i32,
+    pub force_strict_condition: bool,
+}
+
+/// `EmptyLineSeparator`, a module ported onto the emulated Checkstyle AST.
+#[derive(Clone, Debug)]
+pub struct EmptyLineSeparator {
+    pub tokens: Vec<crate::csast::Tok>,
+    pub allow_no_empty_line_between_fields: bool,
+    pub allow_multiple_empty_lines: bool,
+    pub allow_multiple_empty_lines_inside_class_members: bool,
+}
+
+use crate::csast::Tok as CsTok;
+
+/// The tokens `EmptyLineSeparator` accepts (and checks by default).
+const EMPTY_LINE_SEPARATOR_TOKENS: &[(&str, CsTok)] = &[
+    ("PACKAGE_DEF", CsTok::PACKAGE_DEF),
+    ("IMPORT", CsTok::IMPORT),
+    ("STATIC_IMPORT", CsTok::STATIC_IMPORT),
+    ("MODULE_IMPORT", CsTok::MODULE_IMPORT),
+    ("CLASS_DEF", CsTok::CLASS_DEF),
+    ("INTERFACE_DEF", CsTok::INTERFACE_DEF),
+    ("ENUM_DEF", CsTok::ENUM_DEF),
+    ("ENUM_CONSTANT_DEF", CsTok::ENUM_CONSTANT_DEF),
+    ("STATIC_INIT", CsTok::STATIC_INIT),
+    ("INSTANCE_INIT", CsTok::INSTANCE_INIT),
+    ("METHOD_DEF", CsTok::METHOD_DEF),
+    ("CTOR_DEF", CsTok::CTOR_DEF),
+    ("VARIABLE_DEF", CsTok::VARIABLE_DEF),
+    ("RECORD_DEF", CsTok::RECORD_DEF),
+    ("COMPACT_CTOR_DEF", CsTok::COMPACT_CTOR_DEF),
+];
 
 const PARAMETER_NUMBER_TOKENS: &str = "METHOD_DEF, CTOR_DEF";
 
@@ -821,6 +906,9 @@ pub struct Config {
     pub javadoc_content_location: Option<bool>,
     pub abbreviation_as_word_in_name: Option<AbbreviationAsWordInName>,
     pub multiline_comment_asterisk: bool,
+    pub text_block_google: bool,
+    pub google_right_curly: bool,
+    pub empty_line_separator: Option<EmptyLineSeparator>,
     pub custom_import_order: Option<CustomImportOrder>,
     pub avoid_escaped_unicode: Option<AvoidEscapedUnicode>,
     pub google_method_name: bool,
@@ -868,7 +956,10 @@ pub struct Config {
     pub redundant_modifier: Option<RedundantModifier>,
     pub right_curly: Option<RightCurly>,
     pub method_length: Option<MethodLength>,
+    pub variable_declaration_usage_distance: Option<VariableDeclarationUsageDistance>,
+    pub comments_indentation: Option<CommentsIndentation>,
     pub parameter_number: Option<ParameterNumber>,
+    pub indentation: Option<Indentation>,
     /// `TypecastParenPad`: whether padding is required (`option=space`).
     pub typecast_paren_pad: Option<bool>,
     /// `EmptyForIteratorPad`: whether padding is required (`option=space`).
@@ -891,13 +982,28 @@ pub struct Config {
     pub comment_filters: Vec<crate::suppress::CommentFilter>,
     /// The elements of every `SuppressionFilter` file.
     pub suppressions: Vec<crate::suppress::Suppression>,
+    /// `SuppressionXpathSingleFilter` instances and the `<suppress-xpath>` elements of every `SuppressionXpathFilter` file.
+    pub xpath_filters: Vec<crate::rules::xpathfilter::XpathFilter>,
+    pub match_xpaths: Vec<crate::rules::xpathfilter::MatchXpath>,
+    /// `SuppressWarningsHolder` with its `aliasList` entries (source name, alias), if configured.
+    pub suppress_warnings_holder: Option<Vec<(String, String)>>,
+    pub suppress_warnings_filter: bool,
+    /// Whether some TreeWalker check asks for comment nodes, which then are in the AST the XPath filters see.
+    pub needs_comment_nodes: bool,
     /// The Checker's own `fileExtensions`, if the configuration sets one.
     pub checker_extensions: Option<Vec<String>>,
     /// The Checker's `tabWidth`: how far a tab advances when a line is measured. Default 8.
     pub tab_width: usize,
+    /// The TreeWalker's `tabWidth`, which, when it has one, is what the columns of findings on the
+    /// syntax tree use instead of the Checker's.
+    pub walker_tab_width: Option<usize>,
+    /// The small structural modules of `rules::gs`.
+    pub gs: crate::rules::gs::Options,
     /// `id`s that single-instance modules were given. Checkstyle prints the id in brackets where it
     /// would print the module name, so javaid does too (see `display`).
     pub ids: Vec<(&'static str, &'static str)>,
+    /// The `<message>` overrides of the modules (see `messages`).
+    pub custom_messages: Vec<crate::messages::CustomMessage>,
 }
 
 impl Default for Config {
@@ -928,6 +1034,9 @@ impl Default for Config {
             javadoc_content_location: None,
             abbreviation_as_word_in_name: None,
             multiline_comment_asterisk: false,
+            text_block_google: false,
+            google_right_curly: false,
+            empty_line_separator: None,
             custom_import_order: None,
             avoid_escaped_unicode: None,
             google_method_name: false,
@@ -970,7 +1079,10 @@ impl Default for Config {
             redundant_modifier: None,
             right_curly: None,
             method_length: None,
+            variable_declaration_usage_distance: None,
+            comments_indentation: None,
             parameter_number: None,
+            indentation: None,
             typecast_paren_pad: None,
             empty_for_iterator_pad: None,
             method_param_pad: None,
@@ -985,10 +1097,18 @@ impl Default for Config {
             filters: Vec::new(),
             file_excludes: Vec::new(),
             suppressions: Vec::new(),
+            xpath_filters: Vec::new(),
+            match_xpaths: Vec::new(),
+            suppress_warnings_holder: None,
+            suppress_warnings_filter: false,
+            needs_comment_nodes: false,
             text_filters: Vec::new(),
             comment_filters: Vec::new(),
             checker_extensions: None,
             tab_width: 8,
+            walker_tab_width: None,
+            custom_messages: Vec::new(),
+            gs: Default::default(),
             ids: Vec::new(),
         }
     }
@@ -1013,6 +1133,11 @@ impl Config {
     }
 
     /// What Checkstyle prints in brackets for a module's findings: its `id` if it has one.
+    /// The tab width of the checks that run on the syntax tree: the TreeWalker's, else the Checker's.
+    pub fn walker_tab(&self) -> usize {
+        self.walker_tab_width.unwrap_or(self.tab_width)
+    }
+
     pub fn display(&self, module: &'static str) -> &'static str {
         self.ids.iter().find(|(m, _)| *m == module).map_or(module, |(_, id)| id)
     }
@@ -1078,7 +1203,7 @@ pub struct Loaded {
 struct RawModule {
     name: String,
     props: Vec<(String, String)>,
-    messages: Vec<String>,
+    messages: Vec<(String, String)>,
 }
 
 /// Properties of one `<module>`, consumed as they are understood; anything left over is a
@@ -1116,6 +1241,13 @@ impl Props {
                 "false" => Ok(false),
                 other => Err(format!("property {name}: expected true or false, got '{other}'")),
             },
+        }
+    }
+
+    fn i32(&mut self, name: &str, default: i32) -> Result<i32, String> {
+        match self.take(name) {
+            None => Ok(default),
+            Some(v) => v.trim().parse().map_err(|_| format!("property {name}: expected an integer, got '{}'", v.trim())),
         }
     }
 
@@ -1263,7 +1395,16 @@ impl Config {
                 }
                 continue;
             }
-            if name == "TreeWalker" || !allowed(only, &name) {
+            if name == "TreeWalker" {
+                // The TreeWalker's own tabWidth sets the columns of the findings on the syntax tree.
+                match props.take("tabWidth").map(|w| w.trim().parse::<usize>()) {
+                    Some(Ok(w)) if w > 0 => cfg.walker_tab_width = Some(w),
+                    Some(_) => notes.push("TreeWalker: tabWidth is not a positive integer; javaid uses the Checker's".to_string()),
+                    None => {}
+                }
+                continue;
+            }
+            if !allowed(only, &name) {
                 continue;
             }
             let id = props.take("id");
@@ -1280,8 +1421,11 @@ impl Config {
             }
             match cfg.apply(&name, props, id.as_deref()) {
                 Ok(()) => {
-                    for key in messages {
-                        notes.push(format!("{name}: the custom message for '{key}' is not applied; javaid prints its own wording"));
+                    for (key, value) in messages {
+                        match crate::messages::custom(&name, id.as_deref().unwrap_or(&name), &key, &value) {
+                            Some(m) => cfg.custom_messages.push(m),
+                            None => notes.push(format!("{name}: the custom message for '{key}' is not applied; javaid prints its own wording")),
+                        }
                     }
                     // Modules that keep one name per instance record their own id (see `apply`).
                     if let (Some(id), Some(module)) = (&id, find_module(&name)) {
@@ -1310,6 +1454,7 @@ impl Config {
         if cfg.checker_extensions.is_none() && file_level_without_extensions {
             notes.push("no fileExtensions are set: Checkstyle would read every file under the paths for FileTabCharacter, LineLength and RegexpSingleline, javaid reads .java files only".to_string());
         }
+        cfg.needs_comment_nodes = enabled.iter().any(|m| COMMENT_NODE_MODULES.contains(&m.as_str()));
         Ok(Loaded { config: cfg, enabled, skipped, notes })
     }
 
@@ -1411,12 +1556,46 @@ impl Config {
                 p.finish()?;
                 self.fall_through = Some(FallThrough { check_last_case_group, relief: Format::new(DEFAULT_RELIEF)? });
             }
+            "VariableDeclarationUsageDistance" => {
+                let allowed_distance = p.usize("allowedDistance", 3)?;
+                let ignore = Format::new(&format!("^(?:{})$", p.take("ignoreVariablePattern").unwrap_or_default()))?;
+                let validate_between_scopes = p.bool("validateBetweenScopes", false)?;
+                let ignore_final = p.bool("ignoreFinal", true)?;
+                p.finish()?;
+                self.variable_declaration_usage_distance = Some(VariableDeclarationUsageDistance { allowed_distance, ignore, validate_between_scopes, ignore_final });
+            }
+            "CommentsIndentation" => {
+                let (mut single, mut block) = (true, true);
+                if let Some(list) = p.take("tokens") {
+                    (single, block) = (false, false);
+                    for t in list.split(',').map(str::trim).filter(|t| !t.is_empty()) {
+                        match t {
+                            "SINGLE_LINE_COMMENT" => single = true,
+                            "BLOCK_COMMENT_BEGIN" => block = true,
+                            other => return Err(format!("tokens: {other} is not supported by this module")),
+                        }
+                    }
+                }
+                p.finish()?;
+                self.comments_indentation = Some(CommentsIndentation { single, block });
+            }
             "MethodLength" => {
                 let max = p.usize("max", 150)?;
                 let count_empty = p.bool("countEmpty", true)?;
                 let tokens = p.tokens(METHOD_LENGTH_TOKENS, METHOD_LENGTH_TOKENS)?;
                 p.finish()?;
                 self.method_length = Some(MethodLength { max, count_empty, tokens });
+            }
+            "Indentation" => {
+                let basic_offset = p.i32("basicOffset", 4)?;
+                let brace_adjustment = p.i32("braceAdjustment", 0)?;
+                let case_indent = p.i32("caseIndent", 4)?;
+                let throws_indent = p.i32("throwsIndent", 4)?;
+                let array_init_indent = p.i32("arrayInitIndent", 4)?;
+                let line_wrapping_indentation = p.i32("lineWrappingIndentation", 4)?;
+                let force_strict_condition = p.bool("forceStrictCondition", false)?;
+                p.finish()?;
+                self.indentation = Some(Indentation { basic_offset, brace_adjustment, case_indent, throws_indent, array_init_indent, line_wrapping_indentation, force_strict_condition });
             }
             "ParameterNumber" => {
                 let max = p.usize("max", 7)?;
@@ -1483,6 +1662,103 @@ impl Config {
                 let required_javadoc_phrase = Format::new(&phrase)?;
                 p.finish()?;
                 self.design_for_extension = Some(DesignForExtension { ignored_annotations, required_javadoc_phrase });
+            }
+            "MissingOverrideOnRecordAccessor" => {
+                p.finish()?;
+                self.gs.missing_override_on_record_accessor = true;
+            }
+            "OverloadMethodsDeclarationOrder" => {
+                let order = p.bool("orderByIncreasingParameterCount", false)?;
+                p.finish()?;
+                self.gs.overload_methods = Some(order);
+            }
+            "ConstructorsDeclarationGrouping" => {
+                let order = p.bool("orderByIncreasingParameterCount", false)?;
+                p.finish()?;
+                self.gs.constructors_grouping = Some(order);
+            }
+            "NoWhitespaceBeforeCaseDefaultColon" => {
+                p.finish()?;
+                self.gs.no_whitespace_before_case_default_colon = true;
+            }
+            "WhitespaceBeforeEmptyBody" => {
+                let all = crate::rules::gs::WHITESPACE_BEFORE_EMPTY_BODY_TOKENS;
+                let tokens = crate::rules::gs::token_names(p.take("tokens"), &all.join(", "), all)?;
+                p.finish()?;
+                self.gs.whitespace_before_empty_body = Some(tokens);
+            }
+            "AnnotationLocation" => {
+                use crate::rules::gs::{token_names, ANNOTATION_LOCATION_ACCEPTED, ANNOTATION_LOCATION_DEFAULT};
+                let same_line_single = p.bool("allowSamelineSingleParameterlessAnnotation", true)?;
+                let same_line_parameterized = p.bool("allowSamelineParameterizedAnnotation", false)?;
+                let same_line_multiple = p.bool("allowSamelineMultipleAnnotations", false)?;
+                let tokens = token_names(p.take("tokens"), ANNOTATION_LOCATION_DEFAULT, ANNOTATION_LOCATION_ACCEPTED)?;
+                p.finish()?;
+                let name = id.map_or("AnnotationLocation", leak);
+                self.gs.annotation_location.push(crate::rules::gs::AnnotationLocation { name, tokens, same_line_single, same_line_parameterized, same_line_multiple });
+            }
+            "ModuleDirectiveOrder" => {
+                let validate_block_separation = p.bool("validateBlockSeparation", true)?;
+                let order: Vec<String> = match p.take("order") {
+                    None => crate::rules::gs::MODULE_DIRECTIVES.iter().map(|s| s.to_string()).collect(),
+                    Some(v) => v.split(',').map(|e| e.trim().to_string()).filter(|e| !e.is_empty()).collect(),
+                };
+                if let Some(bad) = order.iter().find(|o| !crate::rules::gs::MODULE_DIRECTIVES.contains(&o.as_str())) {
+                    return Err(format!("property order: unable to parse {bad}"));
+                }
+                p.finish()?;
+                self.gs.module_directive_order = Some(crate::rules::gs::ModuleDirectiveOrder { order, validate_block_separation });
+            }
+            "AvoidModuleImport" => {
+                let excludes = p.take("excludes").map(|v| v.split(',').map(|e| e.trim().to_string()).filter(|e| !e.is_empty()).collect()).unwrap_or_default();
+                let max_allowed = p.usize("maxAllowedModuleImports", 0)?;
+                p.finish()?;
+                self.gs.avoid_module_import = Some(crate::rules::gs::AvoidModuleImport { excludes, max_allowed });
+            }
+            "SingleSpaceSeparator" => {
+                let validate_comments = p.bool("validateComments", false)?;
+                p.finish()?;
+                self.gs.single_space_separator = Some(crate::rules::gs::SingleSpaceSeparator { validate_comments });
+            }
+            "ArrayBracketNoWhitespace" => {
+                p.finish()?;
+                self.gs.array_bracket_no_whitespace = true;
+            }
+            "IllegalTokenText" => {
+                use crate::rules::gs::{message_format, token_names, ILLEGAL_TOKEN_TEXT_ACCEPTED};
+                let tokens = token_names(p.take("tokens"), "", ILLEGAL_TOKEN_TEXT_ACCEPTED)?;
+                let ignore_case = p.bool("ignoreCase", false)?;
+                let pattern = p.take("format").unwrap_or_else(|| "^$".to_string());
+                let format = Format::with_case(&pattern, ignore_case)?;
+                let custom = p.take("message").filter(|m| !m.is_empty());
+                p.finish()?;
+                // Without a message, Checkstyle's own: `Token text matches the illegal pattern ''{0}''.`
+                let message = message_format(custom.as_deref().unwrap_or("Token text matches the illegal pattern ''{0}''."), &pattern)?;
+                let name = id.map_or("IllegalTokenText", leak);
+                self.gs.illegal_token_text.push(crate::rules::gs::IllegalTokenText { name, tokens, format, pattern, message });
+            }
+            "NoLineWrap" => {
+                let skip_annotations = p.bool("skipAnnotations", true)?;
+                let tokens = crate::rules::gs::token_names(p.take("tokens"), crate::rules::gs::NO_LINE_WRAP_DEFAULT, crate::rules::gs::NO_LINE_WRAP_ACCEPTED)?;
+                p.finish()?;
+                self.gs.no_line_wrap = Some(crate::rules::gs::NoLineWrap { skip_annotations, tokens });
+            }
+            "OuterTypeFilename" => {
+                p.finish()?;
+                self.gs.outer_type_filename = true;
+            }
+            "PackageDeclaration" => {
+                let match_directory = p.bool("matchDirectoryStructure", true)?;
+                p.finish()?;
+                self.gs.package_declaration = Some(match_directory);
+            }
+            "NoFinalizer" => {
+                p.finish()?;
+                self.gs.no_finalizer = true;
+            }
+            "OneTopLevelClass" => {
+                p.finish()?;
+                self.gs.one_top_level_class = true;
             }
             "DeclarationOrder" => {
                 let ignore_modifiers = p.bool("ignoreModifiers", false)?;
@@ -1711,13 +1987,50 @@ impl Config {
                     Err(e) => return Err(format!("cannot read the suppressions file '{file}': {e}")),
                 };
                 if module == "SuppressionXpathFilter" {
-                    return Err(format!("the suppressions file '{file}' exists, and XPath suppressions are not implemented yet"));
+                    self.xpath_filters.extend(crate::rules::xpathfilter::parse_xpath_suppressions(&text)?);
+                    return Ok(());
                 }
                 let (found, unsupported) = crate::suppress::parse_suppressions(&text)?;
                 if let Some(first) = unsupported.first() {
                     return Err(format!("the suppressions file '{file}' has <{first}> elements, which are not implemented yet"));
                 }
                 self.suppressions.extend(found);
+            }
+            "SuppressionXpathSingleFilter" => {
+                let compile = |q: Option<String>| q.map(|q| crate::xpath::XPath::compile(&q).map_err(|e| format!("incorrect xpath query '{q}': {e}"))).transpose();
+                let files = p.take("files").map(|v| Format::new(&v)).transpose()?;
+                let checks = p.take("checks").map(|v| Format::new(&v)).transpose()?;
+                let message = p.take("message").map(|v| Format::new(&v)).transpose()?;
+                let query = compile(p.take("query"))?;
+                p.finish()?;
+                self.xpath_filters.push(crate::rules::xpathfilter::XpathFilter { files, checks, message, id: id.map(String::from), query });
+            }
+            "SuppressWarningsHolder" => {
+                let mut aliases = Vec::new();
+                if let Some(list) = p.take("aliasList") {
+                    for item in list.split(',').map(str::trim) {
+                        match item.find('=') {
+                            Some(i) if i > 0 => aliases.push((item[..i].to_string(), item[i + 1..].to_string())),
+                            _ if item.is_empty() => {}
+                            _ => return Err(format!("'=' expected in alias list item: {item}")),
+                        }
+                    }
+                }
+                p.finish()?;
+                self.suppress_warnings_holder = Some(aliases);
+            }
+            "SuppressWarningsFilter" => {
+                p.finish()?;
+                self.suppress_warnings_filter = true;
+            }
+            "MatchXpath" => {
+                let query = p.take("query").unwrap_or_default();
+                let message = p.take("@matchxpath.match").map(|m| crate::rules::xpathfilter::format_message(&m)).unwrap_or_else(|| crate::rules::xpathfilter::MATCH_MESSAGE.to_string());
+                p.finish()?;
+                if !query.is_empty() {
+                    let query = crate::xpath::XPath::compile(&query).map_err(|e| format!("creating Xpath expression failed: {query}: {e}"))?;
+                    self.match_xpaths.push(crate::rules::xpathfilter::MatchXpath { name: id.map_or("MatchXpath", leak), query, message });
+                }
             }
             "SuppressWithNearbyTextFilter" => {
                 let pattern = Format::new(&p.take("nearbyTextPattern").unwrap_or_else(|| "SUPPRESS CHECKSTYLE (\\w+)".to_string()))?;
@@ -1770,6 +2083,34 @@ impl Config {
             "MultilineCommentLeadingAsteriskPresence" => {
                 p.finish()?;
                 self.multiline_comment_asterisk = true;
+            }
+            "EmptyLineSeparator" => {
+                let allow_no_empty_line_between_fields = p.bool("allowNoEmptyLineBetweenFields", false)?;
+                let allow_multiple_empty_lines = p.bool("allowMultipleEmptyLines", true)?;
+                let allow_multiple_empty_lines_inside_class_members = p.bool("allowMultipleEmptyLinesInsideClassMembers", true)?;
+                let tokens = match p.take("tokens") {
+                    None => EMPTY_LINE_SEPARATOR_TOKENS.iter().map(|(_, t)| *t).collect(),
+                    Some(list) => {
+                        let mut out = Vec::new();
+                        for name in list.split(',').map(str::trim).filter(|n| !n.is_empty()) {
+                            match EMPTY_LINE_SEPARATOR_TOKENS.iter().find(|(n, _)| *n == name) {
+                                Some((_, t)) => out.push(*t),
+                                None => return Err(format!("tokens: {name} is not an acceptable token of EmptyLineSeparator")),
+                            }
+                        }
+                        out
+                    }
+                };
+                p.finish()?;
+                self.empty_line_separator = Some(EmptyLineSeparator { tokens, allow_no_empty_line_between_fields, allow_multiple_empty_lines, allow_multiple_empty_lines_inside_class_members });
+            }
+            "GoogleRightCurly" => {
+                p.finish()?;
+                self.google_right_curly = true;
+            }
+            "TextBlockGoogleStyleFormatting" => {
+                p.finish()?;
+                self.text_block_google = true;
             }
             "AvoidEscapedUnicodeCharacters" => {
                 let allow_escapes_for_control_characters = p.bool("allowEscapesForControlCharacters", false)?;
@@ -2189,6 +2530,48 @@ fn allowed(only: Option<&[String]>, module: &str) -> bool {
     only.is_none_or(|names| names.iter().any(|n| n.eq_ignore_ascii_case(module)))
 }
 
+/// TreeWalker checks that ask for comment nodes (`isCommentNodesRequired`). When one is configured
+/// the AST the filters see has comment nodes in it.
+const COMMENT_NODE_MODULES: &[&str] = &[
+    "MatchXpath",
+    "TodoComment",
+    "TrailingComment",
+    "CommentsIndentation",
+    "AvoidEscapedUnicodeCharacters",
+    "MultilineCommentLeadingAsteriskPresence",
+    "NonEmptyAtclauseDescription",
+    "AtclauseOrder",
+    "SingleLineJavadoc",
+    "JavadocMissingLeadingAsterisk",
+    "JavadocContentLocation",
+    "JavadocLeadingAsteriskAlign",
+    "RequireEmptyLineBeforeBlockTagGroup",
+    "SummaryJavadoc",
+    "JavadocParagraph",
+    "JavadocTagContinuationIndentation",
+    "InvalidJavadocPosition",
+    "JavadocMethod",
+    "JavadocType",
+    "MissingJavadocMethod",
+    "MissingJavadocType",
+    "JavadocVariable",
+    "JavadocStyle",
+    "JavadocBlockTagLocation",
+    "JavadocMissingWhitespaceAfterAsterisk",
+    // Found by probing: with any of these configured the filters' AST has comment nodes.
+    "EmptyCatchBlock",
+    "DesignForExtension",
+    "UnusedImports",
+    "FallThrough",
+    "WhitespaceAfter",
+    "MissingDeprecated",
+    "MissingOverride",
+    "NoWhitespaceBeforeCaseDefaultColon",
+    "IllegalTokenText",
+    "EmptyLineSeparator",
+    "WriteTag",
+];
+
 /// `com.puppycrawl.tools.checkstyle.checks.naming.TypeNameCheck` and `TypeName` are the same module.
 fn short_name(full: &str) -> &str {
     let last = full.rsplit('.').next().unwrap_or(full);
@@ -2213,7 +2596,17 @@ fn collect_modules(node: roxmltree::Node, out: &mut Vec<RawModule>) {
                 Some((p.attribute("name")?.to_string(), value.to_string()))
             })
             .collect();
-        let messages = children("message").filter_map(|m| m.attribute("key").map(String::from)).collect();
+        let mut props: Vec<(String, String)> = props;
+        let mut messages: Vec<(String, String)> = children("message").filter_map(|m| Some((m.attribute("key")?.to_string(), m.attribute("value").unwrap_or("").to_string()))).collect();
+        // MatchXpath's custom message is its output, so it travels as a pseudo-property.
+        if short_name(node.attribute("name").unwrap_or("")) == "MatchXpath" {
+            for (k, v) in &messages {
+                if k == "matchxpath.match" {
+                    props.push(("@matchxpath.match".to_string(), v.clone()));
+                }
+            }
+            messages.retain(|(k, _)| k != "matchxpath.match");
+        }
         out.push(RawModule { name: node.attribute("name").unwrap_or("").to_string(), props, messages });
     }
     for child in node.children().filter(is_module) {
@@ -2393,7 +2786,7 @@ mod tests {
     <module name="UnusedImports"><property name="processJavadoc" value="false"/></module>
     <module name="MethodName"><property name="format" value="^[a-z]+$"/></module>
     <module name="NeedBraces"><property name="allowSingleLineStatement" value="true"/></module>
-    <module name="Indentation"/>
+    <module name="AnonInnerLength"/>
     <module name="com.puppycrawl.tools.checkstyle.checks.naming.TypeNameCheck"/>
     <module name="EqualsHashCode"><property name="severity" value="ignore"/></module>
   </module>
@@ -2404,7 +2797,7 @@ mod tests {
         assert!(loaded.config.naming.type_name.class.is_some(), "fully-qualified names are understood");
         assert!(!loaded.config.equals_hash_code, "severity=ignore disables a module");
         let skipped: Vec<_> = loaded.skipped.iter().map(|(n, _)| n.as_str()).collect();
-        assert_eq!(skipped, vec!["NeedBraces", "Indentation"], "unsupported property and unimplemented module are named");
+        assert_eq!(skipped, vec!["NeedBraces", "AnonInnerLength"], "unsupported property and unimplemented module are named");
         assert!(loaded.skipped[0].1.contains("allowSingleLineStatement"));
     }
 }

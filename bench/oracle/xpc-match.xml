@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN" "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<module name="Checker">
+  <property name="severity" value="warning"/>
+  <property name="fileExtensions" value="java"/>
+  
+  <module name="TreeWalker">
+    <module name="MatchXpath"><property name="query" value="//LITERAL_IF[not(SLIST)]"/><property name="id" value="noBraceIf"/></module>
+    <module name="MatchXpath"><property name="query" value="//METHOD_DEF[count(PARAMETERS/PARAMETER_DEF) &gt; 4]/IDENT"/><message key="matchxpath.match" value="Too many parameters."/></module>
+    <module name="MatchXpath"><property name="query" value="//STRING_LITERAL[string-length(@text) &gt; 60] | //BLOCK_COMMENT_BEGIN[COMMENT_CONTENT[contains(@text, 'TODO')]]"/></module>
+    <module name="MatchXpath"><property name="query" value="//ANNOTATION[IDENT/@text='SuppressWarnings']//STRING_LITERAL[@text='unchecked']/ancestor::*[self::METHOD_DEF or self::CLASS_DEF][1]/IDENT"/><property name="id" value="sw"/></module>
+    <module name="MatchXpath"><property name="query" value="//METHOD_CALL/DOT[IDENT[1][@text='System']]/.."/></module>
+    <module name="MatchXpath"><property name="query" value="//LAMBDA[not(SLIST)]/preceding-sibling::*[1]"/></module>
+    <module name="MatchXpath"><property name="query" value="//LITERAL_SWITCH//SWITCH_RULE/SLIST"/></module>
+    <module name="MatchXpath"><property name="query" value="(//VARIABLE_DEF)[position() mod 997 = 0]"/></module>
+    <module name="SuppressionXpathSingleFilter"><property name="id" value="noBraceIf"/><property name="query" value="//LITERAL_IF[ancestor::LITERAL_ELSE]"/></module>
+
+  </module>
+</module>

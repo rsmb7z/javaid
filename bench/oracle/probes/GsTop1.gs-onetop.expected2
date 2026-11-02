@@ -1,0 +1,6 @@
+5:1 OneTopLevelClass Top-level class First has to reside in its own source file.
+8:1 OneTopLevelClass Top-level class SecondI has to reside in its own source file.
+16:1 OneTopLevelClass Top-level class ThirdE has to reside in its own source file.
+20:1 OneTopLevelClass Top-level class FourthR has to reside in its own source file.
+23:1 OneTopLevelClass Top-level class FifthA has to reside in its own source file.
+31:1 OneTopLevelClass Top-level class Seventh has to reside in its own source file.

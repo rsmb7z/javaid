@@ -1,0 +1,29 @@
+7:0 JavadocMethod @return tag should be present and have description.
+27:8 JavadocMethod Unused @param tag for 'z'.
+35:8 JavadocMethod Duplicate @param tag.
+44:0 JavadocMethod @return tag should be present and have description.
+49:0 JavadocMethod Unused Javadoc tag.
+57:8 JavadocMethod Duplicate @return tag.
+66:0 JavadocMethod @return tag should be present and have description.
+85:8 JavadocMethod Unused @param tag for '<Q>'.
+138:5 JavadocMethod Invalid use of the '@inheritDoc' tag.
+141:5 JavadocMethod Invalid use of the '@inheritDoc' tag.
+144:5 JavadocMethod Invalid use of the '@inheritDoc' tag.
+154:8 JavadocMethod Unused @param tag for 'z'.
+162:0 JavadocMethod Unused Javadoc tag.
+181:0 JavadocMethod @return tag should be present and have description.
+210:0 JavadocMethod @return tag should be present and have description.
+213:0 JavadocMethod @return tag should be present and have description.
+223:0 JavadocMethod @return tag should be present and have description.
+228:0 JavadocMethod @return tag should be present and have description.
+233:0 JavadocMethod @return tag should be present and have description.
+238:0 JavadocMethod @return tag should be present and have description.
+243:0 JavadocMethod @return tag should be present and have description.
+249:0 JavadocMethod @return tag should be present and have description.
+251:0 JavadocMethod @return tag should be present and have description.
+256:0 JavadocMethod @return tag should be present and have description.
+259:0 JavadocMethod Unused Javadoc tag.
+266:0 JavadocMethod @return tag should be present and have description.
+283:0 JavadocMethod @return tag should be present and have description.
+287:0 JavadocMethod @return tag should be present and have description.
+298:0 JavadocMethod @return tag should be present and have description.

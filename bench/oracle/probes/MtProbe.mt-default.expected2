@@ -1,0 +1,13 @@
+3:1 MissingJavadocType Missing a Javadoc comment for 'MtProbe'.
+4:5 MissingJavadocType Missing a Javadoc comment for 'PubInner'.
+10:5 MissingJavadocType Missing a Javadoc comment for 'LineOnly'.
+11:17 MissingJavadocType Missing a Javadoc comment for 'BlockOnly'.
+15:5 MissingJavadocType Missing a Javadoc comment for 'DocAfterAnn'.
+22:5 MissingJavadocType Missing a Javadoc comment for 'Sup'.
+23:5 MissingJavadocType Missing a Javadoc comment for 'PubIface'.
+24:5 MissingJavadocType Missing a Javadoc comment for 'PubEnum'.
+25:5 MissingJavadocType Missing a Javadoc comment for 'PubAnn'.
+26:5 MissingJavadocType Missing a Javadoc comment for 'PubRec'.
+32:5 MissingJavadocType Missing a Javadoc comment for 'PubOuter'.
+35:9 MissingJavadocType Missing a Javadoc comment for 'DeepPub'.
+49:1 MissingJavadocType Missing a Javadoc comment for 'PubTop'.

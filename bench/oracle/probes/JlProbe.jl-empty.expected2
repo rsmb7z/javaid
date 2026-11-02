@@ -1,0 +1,4 @@
+38:0 RequireEmptyLineBeforeBlockTagGroup Javadoc tag '@return' should be preceded with an empty line.
+49:0 RequireEmptyLineBeforeBlockTagGroup Javadoc tag '@return' should be preceded with an empty line.
+57:0 RequireEmptyLineBeforeBlockTagGroup Javadoc tag '@param' should be preceded with an empty line.
+70:0 RequireEmptyLineBeforeBlockTagGroup Javadoc tag '@return' should be preceded with an empty line.

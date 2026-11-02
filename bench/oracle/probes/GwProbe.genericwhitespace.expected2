@@ -1,0 +1,183 @@
+9:10 GenericWhitespace '<' is preceded with whitespace.
+10:9 GenericWhitespace '<' is followed by whitespace.
+11:17 GenericWhitespace '>' is preceded with whitespace.
+14:9 GenericWhitespace '<' is followed by whitespace.
+15:17 GenericWhitespace '>' is preceded with whitespace.
+17:28 GenericWhitespace '>' is followed by whitespace.
+17:30 GenericWhitespace '>' is preceded with whitespace.
+18:29 GenericWhitespace '>' is preceded with whitespace.
+21:41 GenericWhitespace '>' is followed by whitespace.
+21:43 GenericWhitespace '>' is preceded with whitespace.
+22:40 GenericWhitespace '>' is followed by whitespace.
+22:42 GenericWhitespace '>' is preceded with whitespace.
+23:9 GenericWhitespace '<' is preceded with whitespace.
+24:22 GenericWhitespace '<' is preceded with whitespace.
+36:9 GenericWhitespace '<' is followed by whitespace.
+38:12 GenericWhitespace '>' is preceded with whitespace.
+45:16 GenericWhitespace '>' is followed by an illegal character.
+51:11 GenericWhitespace '<' is not preceded with whitespace.
+53:14 GenericWhitespace '>' is followed by an illegal character.
+54:12 GenericWhitespace '<' is followed by whitespace.
+55:15 GenericWhitespace '>' is preceded with whitespace.
+58:42 GenericWhitespace '>' is followed by whitespace.
+58:44 GenericWhitespace '>' is preceded with whitespace.
+59:43 GenericWhitespace '>' is preceded with whitespace.
+60:43 GenericWhitespace '>' is followed by an illegal character.
+85:16 GenericWhitespace '<' is not preceded with whitespace.
+87:7 GenericWhitespace '>' is followed by an illegal character.
+89:12 GenericWhitespace '<' is not preceded with whitespace.
+92:21 GenericWhitespace '<' is preceded with whitespace.
+93:20 GenericWhitespace '<' is followed by whitespace.
+94:23 GenericWhitespace '>' is preceded with whitespace.
+95:22 GenericWhitespace '>' is followed by an illegal character.
+97:42 GenericWhitespace '>' is followed by whitespace.
+97:44 GenericWhitespace '>' is preceded with whitespace.
+98:43 GenericWhitespace '>' is followed by an illegal character.
+102:18 GenericWhitespace '<' is preceded with whitespace.
+105:15 GenericWhitespace '<' is preceded with whitespace.
+106:16 GenericWhitespace '>' is followed by whitespace.
+109:39 GenericWhitespace '<' is preceded with whitespace.
+110:45 GenericWhitespace '>' is followed by an illegal character.
+123:47 GenericWhitespace '<' is preceded with whitespace.
+123:64 GenericWhitespace '<' is followed by whitespace.
+123:90 GenericWhitespace '>' is preceded with whitespace.
+125:35 GenericWhitespace '<' is preceded with whitespace.
+126:34 GenericWhitespace '<' is followed by whitespace.
+127:42 GenericWhitespace '>' is preceded with whitespace.
+128:41 GenericWhitespace '>' is followed by whitespace.
+130:35 GenericWhitespace '<' is preceded with whitespace.
+131:34 GenericWhitespace '<' is followed by whitespace.
+131:36 GenericWhitespace '>' is preceded with whitespace.
+132:35 GenericWhitespace '>' is followed by whitespace.
+134:53 GenericWhitespace '>' is followed by whitespace.
+134:55 GenericWhitespace '>' is preceded with whitespace.
+135:54 GenericWhitespace '>' is preceded with whitespace.
+138:38 GenericWhitespace '>' is followed by whitespace.
+142:28 GenericWhitespace '<' is preceded with whitespace.
+143:27 GenericWhitespace '<' is followed by whitespace.
+144:35 GenericWhitespace '>' is preceded with whitespace.
+146:46 GenericWhitespace '>' is followed by whitespace.
+146:48 GenericWhitespace '>' is preceded with whitespace.
+149:34 GenericWhitespace '>' is followed by an illegal character.
+151:34 GenericWhitespace '>' is followed by an illegal character.
+157:53 GenericWhitespace '>' is followed by whitespace.
+158:47 GenericWhitespace '<' is preceded with whitespace.
+159:46 GenericWhitespace '<' is followed by whitespace.
+160:54 GenericWhitespace '>' is preceded with whitespace.
+163:49 GenericWhitespace '<' is preceded with whitespace.
+164:55 GenericWhitespace '>' is followed by whitespace.
+165:49 GenericWhitespace '<' is followed by whitespace.
+166:57 GenericWhitespace '>' is preceded with whitespace.
+168:26 GenericWhitespace '<' is preceded with whitespace.
+169:25 GenericWhitespace '<' is followed by whitespace.
+170:33 GenericWhitespace '>' is preceded with whitespace.
+171:32 GenericWhitespace '>' is followed by whitespace.
+173:27 GenericWhitespace '<' is preceded with whitespace.
+178:39 GenericWhitespace '>' is followed by whitespace.
+178:41 GenericWhitespace '>' is preceded with whitespace.
+179:40 GenericWhitespace '>' is preceded with whitespace.
+185:40 GenericWhitespace '<' is preceded with whitespace.
+187:46 GenericWhitespace '>' is followed by an illegal character.
+189:39 GenericWhitespace '<' is followed by whitespace.
+191:45 GenericWhitespace '>' is followed by an illegal character.
+192:47 GenericWhitespace '>' is preceded with whitespace.
+200:38 GenericWhitespace '>' is followed by an illegal character.
+201:24 GenericWhitespace '<' is preceded with whitespace.
+202:23 GenericWhitespace '<' is followed by whitespace.
+203:39 GenericWhitespace '>' is preceded with whitespace.
+205:18 GenericWhitespace '<' is preceded with whitespace.
+209:20 GenericWhitespace '>' is followed by an illegal character.
+211:20 GenericWhitespace '<' is preceded with whitespace.
+213:43 GenericWhitespace '>' is followed by whitespace.
+213:45 GenericWhitespace '>' is preceded with whitespace.
+214:37 GenericWhitespace '<' is preceded with whitespace.
+221:33 GenericWhitespace '<' is preceded with whitespace.
+222:35 GenericWhitespace '>' is preceded with whitespace.
+240:22 GenericWhitespace '<' is preceded with whitespace.
+241:21 GenericWhitespace '<' is followed by whitespace.
+242:29 GenericWhitespace '>' is followed by an illegal character.
+242:29 GenericWhitespace '>' is preceded with whitespace.
+248:13 GenericWhitespace '<' is not preceded with whitespace.
+250:30 GenericWhitespace '>' is followed by whitespace.
+250:32 GenericWhitespace '>' is preceded with whitespace.
+252:31 GenericWhitespace '>' is preceded with whitespace.
+254:29 GenericWhitespace '>' is followed by whitespace.
+254:31 GenericWhitespace '>' is preceded with whitespace.
+256:14 GenericWhitespace '<' is preceded with whitespace.
+257:13 GenericWhitespace '<' is followed by whitespace.
+258:16 GenericWhitespace '>' is followed by an illegal character.
+258:16 GenericWhitespace '>' is preceded with whitespace.
+260:16 GenericWhitespace '>' is followed by an illegal character.
+263:21 GenericWhitespace '>' is followed by whitespace.
+263:23 GenericWhitespace '>' is preceded with whitespace.
+264:22 GenericWhitespace '>' is followed by an illegal character.
+273:26 GenericWhitespace '>' is followed by an illegal character.
+275:26 GenericWhitespace '<' is preceded with whitespace.
+277:32 GenericWhitespace '>' is followed by an illegal character.
+279:33 GenericWhitespace '>' is preceded with whitespace.
+293:28 GenericWhitespace '&' is not preceded with whitespace.
+295:28 GenericWhitespace '&' is not preceded with whitespace.
+296:28 GenericWhitespace '>' is followed by whitespace.
+297:28 GenericWhitespace '>' is followed by whitespace.
+298:28 GenericWhitespace '>' is followed by whitespace.
+304:28 GenericWhitespace '>' is followed by whitespace.
+306:28 GenericWhitespace '>' is followed by whitespace.
+312:55 GenericWhitespace '>' is followed by whitespace.
+312:57 GenericWhitespace '>' is preceded with whitespace.
+316:35 GenericWhitespace '>' is followed by whitespace.
+317:35 GenericWhitespace '>' is followed by whitespace.
+320:35 GenericWhitespace '>' is followed by whitespace.
+322:35 GenericWhitespace '>' is followed by whitespace.
+325:35 GenericWhitespace '>' is followed by whitespace.
+327:52 GenericWhitespace '>' is followed by whitespace.
+328:38 GenericWhitespace '>' is followed by whitespace.
+329:42 GenericWhitespace '>' is followed by whitespace.
+330:41 GenericWhitespace '>' is followed by whitespace.
+330:43 GenericWhitespace '>' is followed by whitespace.
+330:43 GenericWhitespace '>' is preceded with whitespace.
+331:30 GenericWhitespace '>' is followed by whitespace.
+332:41 GenericWhitespace '>' is followed by whitespace.
+332:43 GenericWhitespace '>' is preceded with whitespace.
+333:36 GenericWhitespace '>' is followed by whitespace.
+334:42 GenericWhitespace '>' is followed by whitespace.
+337:26 GenericWhitespace '<' is followed by whitespace.
+338:34 GenericWhitespace '>' is preceded with whitespace.
+339:33 GenericWhitespace '>' is followed by whitespace.
+341:36 GenericWhitespace '>' is followed by whitespace.
+343:32 GenericWhitespace '>' is followed by whitespace.
+343:34 GenericWhitespace '>' is preceded with whitespace.
+345:33 GenericWhitespace '>' is followed by an illegal character.
+348:45 GenericWhitespace '>' is followed by an illegal character.
+349:44 GenericWhitespace '>' is followed by whitespace.
+349:46 GenericWhitespace '>' is preceded with whitespace.
+353:58 GenericWhitespace '>' is followed by whitespace.
+353:60 GenericWhitespace '>' is preceded with whitespace.
+354:59 GenericWhitespace '>' is followed by an illegal character.
+358:32 GenericWhitespace '>' is preceded with whitespace.
+360:23 GenericWhitespace '>' is followed by whitespace.
+360:25 GenericWhitespace '>' is preceded with whitespace.
+363:20 GenericWhitespace '>' is followed by whitespace.
+366:25 GenericWhitespace '>' is followed by whitespace.
+366:27 GenericWhitespace '>' is preceded with whitespace.
+368:25 GenericWhitespace '>' is followed by whitespace.
+368:27 GenericWhitespace '>' is preceded with whitespace.
+370:37 GenericWhitespace '>' is followed by whitespace.
+370:39 GenericWhitespace '>' is preceded with whitespace.
+379:20 GenericWhitespace '>' is followed by whitespace.
+379:35 GenericWhitespace '>' is followed by whitespace.
+386:25 GenericWhitespace '>' is followed by an illegal character.
+392:58 GenericWhitespace '>' is followed by whitespace.
+399:16 GenericWhitespace '>' is followed by whitespace.
+400:16 GenericWhitespace '>' is followed by whitespace.
+404:16 GenericWhitespace '>' is followed by whitespace.
+405:20 GenericWhitespace '>' is followed by whitespace.
+406:38 GenericWhitespace '>' is followed by whitespace.
+407:37 GenericWhitespace '>' is followed by whitespace.
+407:39 GenericWhitespace '>' is followed by whitespace.
+407:39 GenericWhitespace '>' is preceded with whitespace.
+409:17 GenericWhitespace '>' is followed by whitespace.
+417:19 GenericWhitespace '>' is followed by an illegal character.
+420:34 GenericWhitespace '>' is followed by an illegal character.
+422:24 GenericWhitespace '<' is not preceded with whitespace.
+428:32 GenericWhitespace '>' is followed by whitespace.
+428:44 GenericWhitespace '>' is followed by whitespace.

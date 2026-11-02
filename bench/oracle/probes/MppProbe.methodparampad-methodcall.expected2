@@ -1,0 +1,13 @@
+23:13 MethodParamPad '(' is preceded with whitespace.
+26:13 MethodParamPad '(' should be on the previous line.
+27:18 MethodParamPad '(' is preceded with whitespace.
+29:13 MethodParamPad '(' should be on the previous line.
+30:20 MethodParamPad '(' is preceded with whitespace.
+32:23 MethodParamPad '(' is preceded with whitespace.
+33:24 MethodParamPad '(' is preceded with whitespace.
+34:25 MethodParamPad '(' is preceded with whitespace.
+45:38 MethodParamPad '(' is preceded with whitespace.
+46:30 MethodParamPad '(' is preceded with whitespace.
+47:13 MethodParamPad '(' is preceded with whitespace.
+50:13 MethodParamPad '(' should be on the previous line.
+51:17 MethodParamPad '(' is preceded with whitespace.

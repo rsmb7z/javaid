@@ -1,0 +1,12 @@
+3:5 ModuleDirectiveOrder 'requires' directive should be before 'exports' directive.
+4:5 ModuleDirectiveOrder 'opens' directive block should be separated from the previous block by exactly one empty line.
+5:5 ModuleDirectiveOrder All 'exports' directives should be in a single block.
+6:5 ModuleDirectiveOrder 'uses' directive block should be separated from the previous block by exactly one empty line.
+7:5 ModuleDirectiveOrder All 'requires' directives should be in a single block.
+8:5 ModuleDirectiveOrder 'provides' directive block should be separated from the previous block by exactly one empty line.
+9:5 ModuleDirectiveOrder All 'uses' directives should be in a single block.
+10:5 ModuleDirectiveOrder All 'opens' directives should be in a single block.
+11:5 ModuleDirectiveOrder All 'requires' directives should be in a single block.
+12:5 ModuleDirectiveOrder All 'provides' directives should be in a single block.
+13:5 ModuleDirectiveOrder All 'exports' directives should be in a single block.
+14:5 ModuleDirectiveOrder All 'opens' directives should be in a single block.

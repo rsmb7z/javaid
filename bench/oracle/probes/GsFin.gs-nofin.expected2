@@ -1,0 +1,11 @@
+6:5 NoFinalizer Avoid using finalizer method.
+16:5 NoFinalizer Avoid using finalizer method.
+22:5 NoFinalizer Avoid using finalizer method.
+26:9 NoFinalizer Avoid using finalizer method.
+33:17 NoFinalizer Avoid using finalizer method.
+37:9 NoFinalizer Avoid using finalizer method.
+48:13 NoFinalizer Avoid using finalizer method.
+52:9 NoFinalizer Avoid using finalizer method.
+57:9 NoFinalizer Avoid using finalizer method.
+70:9 NoFinalizer Avoid using finalizer method.
+83:13 NoFinalizer Avoid using finalizer method.

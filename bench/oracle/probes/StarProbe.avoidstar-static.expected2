@@ -1,0 +1,8 @@
+3:17 AvoidStarImport Using the '.*' form of import should be avoided - java.util.*.
+4:28 AvoidStarImport Using the '.*' form of import should be avoided - java.util.concurrent.*.
+8:15 AvoidStarImport Using the '.*' form of import should be avoided - java.io.*.
+9:19 AvoidStarImport Using the '.*' form of import should be avoided - javax.swing.*.
+10:19 AvoidStarImport Using the '.*' form of import should be avoided - java.net.*.
+11:21 AvoidStarImport Using the '.*' form of import should be avoided - java.nio.file.*.
+12:26 AvoidStarImport Using the '.*' form of import should be avoided - java.util.function.*.
+15:21 AvoidStarImport Using the '.*' form of import should be avoided - java.util.Map.*.

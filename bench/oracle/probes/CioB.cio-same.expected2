@@ -1,0 +1,6 @@
+3:1 CustomImportOrder Wrong lexicographical order for 'java.util.ArrayList' import. Should be before 'java.util.List'.
+5:1 CustomImportOrder Extra separation in import group before 'com.google.common.base.Strings'
+5:1 CustomImportOrder Wrong lexicographical order for 'com.google.common.base.Strings' import. Should be before 'java.util.List'.
+8:1 CustomImportOrder Extra separation in import group before 'com.alpha.A'
+8:1 CustomImportOrder Wrong lexicographical order for 'com.alpha.A' import. Should be before 'java.util.List'.
+9:1 CustomImportOrder Import statement for 'org.junit.Assert.assertTrue' is in the wrong order. Should be in the 'STATIC' group, expecting not assigned imports on this line.

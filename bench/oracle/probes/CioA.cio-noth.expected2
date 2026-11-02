@@ -1,0 +1,13 @@
+4:1 CustomImportOrder Wrong lexicographical order for 'com.example.util.Helper.help' import. Should be before 'org.junit.Assert.assertTrue'.
+7:1 CustomImportOrder Import statement for 'java.util.List' is in the wrong order. Should be in the 'STANDARD_JAVA_PACKAGE' group, expecting not assigned imports on this line.
+8:1 CustomImportOrder Wrong lexicographical order for 'com.example.app.Sibling' import. Should be before 'com.google.common.base.Strings'.
+10:1 CustomImportOrder Import statement for 'java.io.File' is in the wrong order. Should be in the 'STANDARD_JAVA_PACKAGE' group, expecting not assigned imports on this line.
+12:1 CustomImportOrder Import statement for 'javax.swing.JFrame' is in the wrong order. Should be in the 'STANDARD_JAVA_PACKAGE' group, expecting not assigned imports on this line.
+13:1 CustomImportOrder Import statement for 'java.util.Collections.emptyList' is in the wrong order. Should be in the 'STATIC' group, expecting not assigned imports on this line.
+14:1 CustomImportOrder Extra separation in import group before 'com.example.other.Other'
+14:1 CustomImportOrder Wrong lexicographical order for 'com.example.other.Other' import. Should be before 'org.junit.Test'.
+15:1 CustomImportOrder Wrong lexicographical order for 'org.apache.commons.lang3.StringUtils' import. Should be before 'org.junit.Test'.
+16:1 CustomImportOrder Wrong lexicographical order for 'com.zeta.Z' import. Should be before 'org.junit.Test'.
+17:1 CustomImportOrder Wrong lexicographical order for 'com.alpha.A' import. Should be before 'org.junit.Test'.
+18:1 CustomImportOrder Wrong lexicographical order for 'com.alpha.A.Inner' import. Should be before 'org.junit.Test'.
+19:1 CustomImportOrder Wrong lexicographical order for 'com.alpha.*' import. Should be before 'org.junit.Test'.

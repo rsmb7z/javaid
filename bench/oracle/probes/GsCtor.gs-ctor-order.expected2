@@ -1,0 +1,28 @@
+14:5 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+20:5 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '14'.
+20:5 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+24:5 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '14'.
+24:5 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+29:5 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '14'.
+29:5 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+38:9 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+42:9 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+53:9 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '50'.
+56:9 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '50'.
+56:9 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+67:9 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '61'.
+73:9 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '61'.
+88:9 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+94:9 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '88'.
+94:9 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+102:9 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+117:9 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '110'.
+117:9 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+127:9 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+130:9 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+144:13 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+150:13 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '144'.
+150:13 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+169:13 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '164'.
+169:13 ConstructorsDeclarationGrouping Constructors should be ordered by increasing parameter count.
+173:9 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '160'.

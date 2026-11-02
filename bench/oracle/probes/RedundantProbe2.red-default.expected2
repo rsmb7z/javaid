@@ -1,0 +1,11 @@
+7:9 RedundantModifier Redundant 'final' modifier.
+8:9 RedundantModifier Redundant 'final' modifier.
+10:14 RedundantModifier Redundant 'final' modifier.
+12:24 RedundantModifier Redundant 'final' modifier.
+14:52 RedundantModifier Redundant 'final' modifier.
+16:26 RedundantModifier Redundant 'final' modifier.
+18:28 RedundantModifier Redundant 'final' modifier.
+19:14 RedundantModifier Redundant 'final' modifier.
+24:5 RedundantModifier Redundant 'strictfp' modifier.
+25:12 RedundantModifier Redundant 'strictfp' modifier.
+26:12 RedundantModifier Redundant 'strictfp' modifier.

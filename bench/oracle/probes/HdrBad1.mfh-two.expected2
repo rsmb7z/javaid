@@ -1,0 +1,1 @@
+1:0 MultiFileRegexpHeader Header mismatch, expected line content was '^// Copyright \d+$'. File must match one of the configured header templates: 'bench/oracle/headers/h1.header, bench/oracle/headers/h2.header'.

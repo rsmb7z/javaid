@@ -1,0 +1,73 @@
+2:12 JavadocVariable Missing a Javadoc comment for 'a'.
+2:26 VisibilityModifier Variable 'a' must be private and have accessor methods.
+3:6 JavadocVariable Missing a Javadoc comment for 'b'.
+3:29 VisibilityModifier Variable 'b' must be private and have accessor methods.
+4:3 JavadocVariable Missing a Javadoc comment for 'c'.
+4:9 VisibilityModifier Variable 'c' must be private and have accessor methods.
+5:3 JavadocVariable Missing a Javadoc comment for 'd'.
+5:12 VisibilityModifier Variable 'd' must be private and have accessor methods.
+6:12 JavadocVariable Missing a Javadoc comment for 'e'.
+6:22 VisibilityModifier Variable 'e' must be private and have accessor methods.
+7:3 JavadocVariable Missing a Javadoc comment for 'f'.
+7:16 VisibilityModifier Variable 'f' must be private and have accessor methods.
+8:6 JavadocVariable Missing a Javadoc comment for 'g'.
+8:19 VisibilityModifier Variable 'g' must be private and have accessor methods.
+9:3 JavadocVariable Missing a Javadoc comment for 'h'.
+9:7 VisibilityModifier Variable 'h' must be private and have accessor methods.
+10:6 JavadocVariable Missing a Javadoc comment for 'i'.
+10:9 VisibilityModifier Variable 'i' must be private and have accessor methods.
+11:3 JavadocVariable Missing a Javadoc comment for 'j'.
+11:7 VisibilityModifier Variable 'j' must be private and have accessor methods.
+12:3 MethodLength Method m length is 1 lines (max allowed is 0).
+13:12 DesignForExtension Class 'DeclAnchorProbe' looks like designed for extension (can be subclassed), but the method 'n' does not have javadoc that explains how to do that safely. If class is not designed for extension consider making the class 'DeclAnchorProbe' final or making the method 'n' static/final/abstract/empty, or adding allowed annotation for the method.
+13:12 MethodLength Method n length is 1 lines (max allowed is 0).
+14:3 DesignForExtension Class 'DeclAnchorProbe' looks like designed for extension (can be subclassed), but the method 'o' does not have javadoc that explains how to do that safely. If class is not designed for extension consider making the class 'DeclAnchorProbe' final or making the method 'o' static/final/abstract/empty, or adding allowed annotation for the method.
+14:3 MethodLength Method o length is 1 lines (max allowed is 0).
+15:3 DesignForExtension Class 'DeclAnchorProbe' looks like designed for extension (can be subclassed), but the method 'p' does not have javadoc that explains how to do that safely. If class is not designed for extension consider making the class 'DeclAnchorProbe' final or making the method 'p' static/final/abstract/empty, or adding allowed annotation for the method.
+15:3 MethodLength Method p length is 1 lines (max allowed is 0).
+16:3 DesignForExtension Class 'DeclAnchorProbe' looks like designed for extension (can be subclassed), but the method 'q' does not have javadoc that explains how to do that safely. If class is not designed for extension consider making the class 'DeclAnchorProbe' final or making the method 'q' static/final/abstract/empty, or adding allowed annotation for the method.
+16:3 MethodLength Method q length is 1 lines (max allowed is 0).
+17:3 DeclarationOrder Constructor definition in wrong order.
+17:3 MethodLength Method DeclAnchorProbe length is 1 lines (max allowed is 0).
+18:3 DesignForExtension Class 'DeclAnchorProbe' looks like designed for extension (can be subclassed), but the method 'r' does not have javadoc that explains how to do that safely. If class is not designed for extension consider making the class 'DeclAnchorProbe' final or making the method 'r' static/final/abstract/empty, or adding allowed annotation for the method.
+18:3 MethodLength Method r length is 1 lines (max allowed is 0).
+19:6 DesignForExtension Class 'DeclAnchorProbe' looks like designed for extension (can be subclassed), but the method 's' does not have javadoc that explains how to do that safely. If class is not designed for extension consider making the class 'DeclAnchorProbe' final or making the method 's' static/final/abstract/empty, or adding allowed annotation for the method.
+19:6 MethodLength Method s length is 1 lines (max allowed is 0).
+21:12 DeclarationOrder Instance variable definition in wrong order.
+21:12 JavadocVariable Missing a Javadoc comment for 't'.
+22:12 VisibilityModifier Variable 't' must be private and have accessor methods.
+23:3 DeclarationOrder Instance variable definition in wrong order.
+23:3 JavadocVariable Missing a Javadoc comment for 'u'.
+23:19 VisibilityModifier Variable 'u' must be private and have accessor methods.
+24:3 DeclarationOrder Instance variable definition in wrong order.
+24:3 JavadocVariable Missing a Javadoc comment for 'v'.
+25:13 VisibilityModifier Variable 'v' must be private and have accessor methods.
+26:3 MethodLength Method main length is 1 lines (max allowed is 0).
+28:3 DesignForExtension Class 'DeclAnchorProbe' looks like designed for extension (can be subclassed), but the method 'params' does not have javadoc that explains how to do that safely. If class is not designed for extension consider making the class 'DeclAnchorProbe' final or making the method 'params' static/final/abstract/empty, or adding allowed annotation for the method.
+28:3 MethodLength Method params length is 11 lines (max allowed is 0).
+28:15 FinalParameters Parameter p should be final.
+28:41 FinalParameters Parameter q should be final.
+29:5 MultipleVariableDeclarations Each variable declaration must be in its own statement.
+30:5 MultipleVariableDeclarations Only one variable definition per line allowed.
+30:48 OneStatementPerLine Only one statement per line allowed.
+31:5 MultipleVariableDeclarations Each variable declaration must be in its own statement.
+32:5 MultipleVariableDeclarations Each variable declaration must be in its own statement.
+33:5 MultipleVariableDeclarations Each variable declaration must be in its own statement.
+35:49 OneStatementPerLine Only one statement per line allowed.
+36:5 MultipleVariableDeclarations Each variable declaration must be in its own statement.
+36:5 MultipleVariableDeclarations Only one variable definition per line allowed.
+36:50 OneStatementPerLine Only one statement per line allowed.
+37:22 OneStatementPerLine Only one statement per line allowed.
+39:3 MethodLength Method foo length is 1 lines (max allowed is 0).
+40:3 MultipleVariableDeclarations Each variable declaration must be in its own statement.
+40:12 DeclarationOrder Instance variable definition in wrong order.
+40:12 JavadocVariable Missing a Javadoc comment for 'fa'.
+40:12 JavadocVariable Missing a Javadoc comment for 'fb'.
+40:26 VisibilityModifier Variable 'fa' must be private and have accessor methods.
+40:30 VisibilityModifier Variable 'fb' must be private and have accessor methods.
+41:3 MultipleVariableDeclarations Each variable declaration must be in its own statement.
+41:6 DeclarationOrder Instance variable definition in wrong order.
+41:6 JavadocVariable Missing a Javadoc comment for 'fc'.
+41:6 JavadocVariable Missing a Javadoc comment for 'fd'.
+41:29 VisibilityModifier Variable 'fc' must be private and have accessor methods.
+41:33 VisibilityModifier Variable 'fd' must be private and have accessor methods.

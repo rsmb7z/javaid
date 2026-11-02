@@ -1,0 +1,2 @@
+5:1 CustomImportOrder Extra separation in import group before 'com.google.common.base.Strings'
+8:1 CustomImportOrder Extra separation in import group before 'com.alpha.A'

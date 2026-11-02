@@ -1,0 +1,3 @@
+7:13 CustomImportOrder Extra separation in import group before 'java.util.Set'
+12:1 CustomImportOrder Import statement for 'a.B' is in the wrong order. Should be in the 'THIRD_PARTY_PACKAGE' group, expecting group 'SPECIAL_IMPORTS' on this line.
+12:13 CustomImportOrder Import statement for 'a.A' is in the wrong order. Should be in the 'THIRD_PARTY_PACKAGE' group, expecting group 'SPECIAL_IMPORTS' on this line.

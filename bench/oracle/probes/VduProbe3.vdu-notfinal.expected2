@@ -1,0 +1,7 @@
+26:9 VariableDeclarationUsageDistance Distance between variable 'a' declaration and its first usage is 4, but allowed 3.
+360:9 VariableDeclarationUsageDistance Distance between variable 'a' declaration and its first usage is 4, but allowed 3.
+361:9 VariableDeclarationUsageDistance Distance between variable 'b' declaration and its first usage is 4, but allowed 3.
+572:9 VariableDeclarationUsageDistance Distance between variable 'sa' declaration and its first usage is 5, but allowed 3.
+595:17 VariableDeclarationUsageDistance Distance between variable 'ea' declaration and its first usage is 5, but allowed 3.
+611:13 VariableDeclarationUsageDistance Distance between variable 'ra' declaration and its first usage is 5, but allowed 3.
+658:9 VariableDeclarationUsageDistance Distance between variable 'a' declaration and its first usage is 5, but allowed 3.

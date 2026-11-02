@@ -1,0 +1,28 @@
+61:10 GoogleMethodName Method name 'a' must be more than a character, start lowercase, and not have a single lowercase followed by uppercase, or consecutive uppercase.
+63:10 GoogleMethodName Method name 'aB' must be more than a character, start lowercase, and not have a single lowercase followed by uppercase, or consecutive uppercase.
+64:10 GoogleMethodName Method name 'aBc' must be more than a character, start lowercase, and not have a single lowercase followed by uppercase, or consecutive uppercase.
+65:10 GoogleMethodName Method name 'aBC' must be more than a character, start lowercase, and not have a single lowercase followed by uppercase, or consecutive uppercase.
+66:10 GoogleMethodName Method name 'aBcD' must be more than a character, start lowercase, and not have a single lowercase followed by uppercase, or consecutive uppercase.
+68:10 GoogleMethodName Method name 'Upper' must be more than a character, start lowercase, and not have a single lowercase followed by uppercase, or consecutive uppercase.
+69:10 GoogleMethodName Method name '_lead' has invalid underscore usage, underscores only allowed between adjacent digits.
+70:10 GoogleMethodName Method name 'trail_' has invalid underscore usage, underscores only allowed between adjacent digits.
+71:10 GoogleMethodName Method name 'dou__ble' has invalid underscore usage, underscores only allowed between adjacent digits.
+72:10 GoogleMethodName Method name 'snake_case' has invalid underscore usage, underscores only allowed between adjacent digits.
+73:10 GoogleMethodName Method name 'snake_1' has invalid underscore usage, underscores only allowed between adjacent digits.
+74:10 GoogleMethodName Method name 'method_1_2' has invalid underscore usage, underscores only allowed between adjacent digits.
+76:10 GoogleMethodName Method name 'method_a1' has invalid underscore usage, underscores only allowed between adjacent digits.
+79:10 GoogleMethodName Method name 'getHTTPResponse' must be more than a character, start lowercase, and not have a single lowercase followed by uppercase, or consecutive uppercase.
+80:10 GoogleMethodName Method name 'x_1' has invalid underscore usage, underscores only allowed between adjacent digits.
+81:10 GoogleMethodName Method name 'ü' must be more than a character, start lowercase, and not have a single lowercase followed by uppercase, or consecutive uppercase.
+88:16 GoogleMethodName Test method name 'test_Bad' segment must be more than a character, start lowercase, and not have a single lowercase followed by uppercase, or consecutive uppercase.
+89:16 GoogleMethodName Test method name 'test__double' has invalid underscore usage, underscore only allowed between letters or between digits.
+90:16 GoogleMethodName Test method name '_test' has invalid underscore usage, underscore only allowed between letters or between digits.
+91:16 GoogleMethodName Test method name 'test_' has invalid underscore usage, underscore only allowed between letters or between digits.
+92:16 GoogleMethodName Test method name 'test_1' has invalid underscore usage, underscore only allowed between letters or between digits.
+93:16 GoogleMethodName Test method name 'test_a_1' has invalid underscore usage, underscore only allowed between letters or between digits.
+94:16 GoogleMethodName Test method name 'test1_a' has invalid underscore usage, underscore only allowed between letters or between digits.
+95:16 GoogleMethodName Test method name 'Test_bad' segment must be more than a character, start lowercase, and not have a single lowercase followed by uppercase, or consecutive uppercase.
+96:16 GoogleMethodName Test method name 'a' segment must be more than a character, start lowercase, and not have a single lowercase followed by uppercase, or consecutive uppercase.
+97:16 GoogleMethodName Test method name 'aB_c' segment must be more than a character, start lowercase, and not have a single lowercase followed by uppercase, or consecutive uppercase.
+103:45 GoogleMethodName Test method name 'factory_q_test' segment must be more than a character, start lowercase, and not have a single lowercase followed by uppercase, or consecutive uppercase.
+104:18 GoogleMethodName Method name 'my_test' has invalid underscore usage, underscores only allowed between adjacent digits.

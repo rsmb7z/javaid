@@ -68,7 +68,8 @@ pub fn on_switch(cx: &mut Ctx, switch: Node) {
         }
         // Reported where the fall-through lands, which for the last group is its own label.
         let at = if is_last { g.first_label } else { gs[i + 1].first_label };
-        cx.diag("FallThrough", at, "Fall through from previous branch of the switch statement.".into());
+        let message = if is_last { "Fall through from the last branch of the switch statement." } else { "Fall through from previous branch of the switch statement." };
+        cx.diag("FallThrough", at, message.into());
     }
 }
 

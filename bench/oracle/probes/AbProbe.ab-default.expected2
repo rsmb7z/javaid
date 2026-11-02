@@ -1,0 +1,9 @@
+9:9 AbbreviationAsWordInName Abbreviation in name 'HTTPServer' must contain no more than '4' consecutive capital letters.
+10:9 AbbreviationAsWordInName Abbreviation in name 'httpSERVER' must contain no more than '4' consecutive capital letters.
+18:9 AbbreviationAsWordInName Abbreviation in name 'xmlHTTPRequest' must contain no more than '4' consecutive capital letters.
+38:16 AbbreviationAsWordInName Abbreviation in name 'ANNOTation' must contain no more than '4' consecutive capital letters.
+43:11 AbbreviationAsWordInName Abbreviation in name 'InnerHTTPClass' must contain no more than '4' consecutive capital letters.
+48:10 AbbreviationAsWordInName Abbreviation in name 'HTTPCodes' must contain no more than '4' consecutive capital letters.
+51:16 AbbreviationAsWordInName Abbreviation in name 'ABCDAnno' must contain no more than '4' consecutive capital letters.
+55:10 AbbreviationAsWordInName Abbreviation in name 'getHTTPResponse' must contain no more than '4' consecutive capital letters.
+88:39 AbbreviationAsWordInName Abbreviation in name 'sFINALABCD' must contain no more than '4' consecutive capital letters.

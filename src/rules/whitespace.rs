@@ -207,7 +207,10 @@ fn empty_for_iterator_pad(cx: &mut Ctx, parent: Node) {
         (true, false) => "';' is not followed by whitespace.",
         _ => return,
     };
-    cx.diag("EmptyForIteratorPad", semi, message.into());
+    // Checkstyle reports at the `)` that closes the header, not at the `;`.
+    let mut cur = parent.walk();
+    let close = parent.children(&mut cur).find(|n| n.kind() == ")" && n.start_byte() > semi.start_byte()).unwrap_or(semi);
+    cx.diag("EmptyForIteratorPad", close, message.into());
 }
 
 /// The Checkstyle token a punctuation node stands for.
@@ -613,7 +616,8 @@ fn whitespace_after(cx: &mut Ctx, node: Node, token: Token) {
     // Whatever the token, a `)` or a `;` may follow it: `for (;;)`, `return;`, `else;`, `do;`.
     let exempt = next == b')' || next == b';' || (token == Token::Semi && cx.parent().is_some_and(|p| is_empty_statement(cx, p, node)));
     if !exempt {
-        let text = std::str::from_utf8(cx.text(node)).unwrap_or("?");
+        // The cast's token text is its own name, not the `)` it is reported at.
+        let text = if token == Token::Typecast { "typecast" } else { std::str::from_utf8(cx.text(node)).unwrap_or("?") };
         cx.diag("WhitespaceAfter", node, format!("'{text}' is not followed by whitespace."));
     }
 }
@@ -755,14 +759,43 @@ fn no_whitespace_after(cx: &mut Ctx, node: Node) {
         }
     }
     let allow_line_breaks = opts.allow_line_breaks;
-    let element = match token {
+    let (element, label) = match token {
         Token::IndexOp | Token::ArrayDeclarator => match crate::rules::wrap::previous_token(node) {
-            Some(prev) => prev,
+            Some(prev) => {
+                let named = if token == Token::IndexOp { indexed_name(node) } else { declarator_name(cx, node, prev) };
+                // Checkstyle measures from, and names, the identifier the brackets index, which
+                // may sit inside parentheses (`( arr ) [0]`); a method's `n() []` names the method.
+                match (token, named) {
+                    (Token::IndexOp, Some(ident)) => (ident, ident),
+                    (_, Some(ident)) => (prev, ident),
+                    _ => (prev, prev),
+                }
+            }
             None => return,
         },
-        _ => node,
+        _ => (node, node),
     };
-    report_whitespace_after(cx, node, element, allow_line_breaks);
+    report_whitespace_after(cx, node, element, label, allow_line_breaks);
+}
+
+/// The identifier an index operation indexes: the array expression with its parentheses taken off,
+/// if that is a name (`arr`, `this.arr`, `a.b.arr`).
+fn indexed_name<'a>(bracket: Node<'a>) -> Option<Node<'a>> {
+    let mut array = bracket.parent()?.child_by_field_name("array")?;
+    while array.kind() == "parenthesized_expression" {
+        array = array.named_child(0)?;
+    }
+    match array.kind() {
+        "identifier" => Some(array),
+        "field_access" => array.child_by_field_name("field"),
+        _ => None,
+    }
+}
+
+/// The method name, for the brackets written after a method's parameters (`int n() []`).
+fn declarator_name<'a>(cx: &Ctx<'a>, bracket: Node<'a>, prev: Node<'a>) -> Option<Node<'a>> {
+    let method = bracket.parent()?.parent().filter(|m| m.kind() == "method_declaration" && prev.kind() == ")")?;
+    method.child_by_field_id(cx.syn.f.name)
 }
 
 /// The first annotation of a type that Checkstyle files under the type itself: `new @A T [n]`, a
@@ -831,7 +864,7 @@ fn no_whitespace_after_cast(cx: &mut Ctx, close: Node, cast: Node) {
     }
     let allow_line_breaks = opts.allow_line_breaks;
     let Some(open) = cast.child(0).filter(|n| n.kind() == "(") else { return };
-    report_whitespace_after(cx, open, close, allow_line_breaks);
+    report_whitespace_after(cx, open, close, close, allow_line_breaks);
 }
 
 /// Checkstyle's own mistake, reproduced: the "element" is the annotation list, and "after it" is eleven
@@ -859,7 +892,7 @@ fn report_after_annotations(cx: &mut Ctx, at: Node, annotation: Node) {
     }
 }
 
-fn report_whitespace_after(cx: &mut Ctx, at: Node, element: Node, allow_line_breaks: bool) {
+fn report_whitespace_after(cx: &mut Ctx, at: Node, element: Node, label: Node, allow_line_breaks: bool) {
     let src = cx.src;
     let end = element.end_byte();
     let wrong = if element.start_position().row != at.start_position().row {
@@ -872,7 +905,7 @@ fn report_whitespace_after(cx: &mut Ctx, at: Node, element: Node, allow_line_bre
         }
     };
     if wrong {
-        let text = std::str::from_utf8(cx.text(element)).unwrap_or("?").to_string();
+        let text = std::str::from_utf8(cx.text(label)).unwrap_or("?").to_string();
         cx.diag("NoWhitespaceAfter", at, format!("'{text}' is followed by whitespace."));
     }
 }

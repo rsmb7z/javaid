@@ -1,0 +1,13 @@
+7:0 AtclauseOrder Javadoc comment at column 3 has parse error. Details: token recognition error at: '@' while parsing  
+30:0 AtclauseOrder Block tags have to appear in the order '[@author, @version, @param, @return, @throws, @exception, @see, @since, @serial, @serialField, @serialData, @deprecated]'.
+45:0 AtclauseOrder Javadoc comment at column 3 has parse error. Details: token recognition error at: '@' while parsing  
+60:0 AtclauseOrder Javadoc comment at column 3 has parse error. Details: token recognition error at: '@' while parsing  
+67:0 AtclauseOrder Javadoc comment at column 17 has parse error. Details: token recognition error at: '\n' while parsing f
+83:0 AtclauseOrder Javadoc comment at column 4 has parse error. Details: no viable alternative at input '</' while parsing HTML_ELEMENT
+99:0 AtclauseOrder Javadoc comment at column 4 has parse error. Details: no viable alternative at input '</' while parsing HTML_ELEMENT
+107:0 AtclauseOrder Javadoc comment at column 1 has parse error. Details: mismatched input '<EOF>' expecting JAVADOC_INLINE_TAG_END while parsing INLINE_TAG
+118:0 AtclauseOrder Javadoc comment at column 9 has parse error. Details: token recognition error at: ',' while parsing A
+130:0 AtclauseOrder Javadoc comment at column 4 has parse error. Details: no viable alternative at input '</' while parsing HTML_ELEMENT
+173:0 AtclauseOrder Javadoc comment at column 4 has parse error. Details: token recognition error at: ' ' while parsing @
+184:0 AtclauseOrder Javadoc comment at column 1 has parse error. Details: no viable alternative at input '@' while parsing BLOCK_TAG
+189:0 AtclauseOrder Javadoc comment at column 25 has parse error. Details: token recognition error at: ',' while parsing K

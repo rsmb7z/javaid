@@ -1,0 +1,253 @@
+9:3 Indentation 'member def type' has incorrect indentation level 2, expected level should be 4.
+10:9 Indentation 'block' child has incorrect indentation level 8, expected level should be 6.
+11:7 Indentation 'block rcurly' has incorrect indentation level 6, expected level should be 2.
+12:3 Indentation 'member def type' has incorrect indentation level 2, expected level should be 4.
+13:7 Indentation 'System' has incorrect indentation level 6, expected level should be 10.
+14:3 Indentation 'member def type' has incorrect indentation level 2, expected level should be 4.
+15:5 Indentation '(' has incorrect indentation level 4, expected level should be 10.
+16:7 Indentation 'block' child has incorrect indentation level 6, expected level should be 14.
+17:3 Indentation 'block rcurly' has incorrect indentation level 2, expected level should be 10.
+18:3 Indentation 'member def type' has incorrect indentation level 2, expected level should be 4.
+19:3 Indentation 'x' has incorrect indentation level 2, expected level should be 10.
+20:3 Indentation 'member def type' has incorrect indentation level 2, expected level should be 4.
+21:7 Indentation 'y' has incorrect indentation level 6, expected level should be 10.
+22:3 Indentation 'member def type' has incorrect indentation level 2, expected level should be 4.
+23:9 Indentation 'x' has incorrect indentation level 8, expected level should be 10.
+24:3 Indentation 'member def type' has incorrect indentation level 2, expected level should be 4.
+25:5 Indentation 'block' child has incorrect indentation level 4, expected level should be 6.
+28:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+29:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+32:5 Indentation 'method call' child has incorrect indentation level 4, expected level should be 16.
+33:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+35:7 Indentation 'block rcurly' has incorrect indentation level 6, expected level should be 4.
+36:5 Indentation 'block' child has incorrect indentation level 4, expected level should be 10.
+37:5 Indentation 'block rcurly' has incorrect indentation level 4, expected level should be 6.
+38:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+39:7 Indentation 'System' has incorrect indentation level 6, expected level should be 12.
+40:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+41:7 Indentation 's' has incorrect indentation level 6, expected level should be 12.
+42:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+43:11 Indentation 's' has incorrect indentation level 10, expected level should be 12.
+44:7 Indentation 'block' child has incorrect indentation level 6, expected level should be one of the following: 12, 14, 16, 20.
+46:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+47:7 Indentation 'block' child has incorrect indentation level 6, expected level should be one of the following: 8, 16, 20.
+48:9 Indentation 'block rcurly' has incorrect indentation level 8, expected level should be one of the following: 4, 16.
+49:5 Indentation 'method call rparen' has incorrect indentation level 4, expected level should be 8.
+50:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+51:9 Indentation '.' has incorrect indentation level 8, expected level should be 12.
+52:9 Indentation 'method call' child has incorrect indentation level 8, expected level should be 16.
+53:11 Indentation 'a' has incorrect indentation level 10, expected level should be 12.
+54:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+55:11 Indentation 'block' child has incorrect indentation level 10, expected level should be 8.
+57:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+58:7 Indentation '(' has incorrect indentation level 6, expected level should be 12.
+59:5 Indentation 'block' child has incorrect indentation level 4, expected level should be one of the following: 12, 16, 20.
+60:5 Indentation 'block rcurly' has incorrect indentation level 4, expected level should be one of the following: 8, 12.
+61:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+63:7 Indentation 'block rcurly' has incorrect indentation level 6, expected level should be 4.
+64:7 Indentation '(' has incorrect indentation level 6, expected level should be 12.
+65:9 Indentation 'block' child has incorrect indentation level 8, expected level should be one of the following: 12, 16, 20.
+66:5 Indentation 'block rcurly' has incorrect indentation level 4, expected level should be one of the following: 8, 12.
+67:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+69:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+70:9 Indentation 'block rcurly' has incorrect indentation level 8, expected level should be 4.
+71:7 Indentation 'block rcurly' has incorrect indentation level 6, expected level should be one of the following: 4, 8.
+72:3 Indentation 'method def rcurly' has incorrect indentation level 2, expected level should be 4.
+74:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+75:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+76:7 Indentation 'block' child has incorrect indentation level 6, expected level should be 8.
+77:9 Indentation 'block rcurly' has incorrect indentation level 8, expected level should be 4.
+78:3 Indentation 'method def rcurly' has incorrect indentation level 2, expected level should be 4.
+80:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+81:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+82:5 Indentation 'lambda' has incorrect indentation level 4, expected level should be 12.
+83:3 Indentation 'method def rcurly' has incorrect indentation level 2, expected level should be 4.
+85:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+86:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+87:7 Indentation 'lambda arguments' has incorrect indentation level 6, expected level should be 12.
+88:3 Indentation 'method def rcurly' has incorrect indentation level 2, expected level should be 4.
+90:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+91:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+93:3 Indentation 'method def rcurly' has incorrect indentation level 2, expected level should be 4.
+95:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+97:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+98:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+99:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+101:9 Indentation 'method call' child has incorrect indentation level 8, expected level should be 16.
+102:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+103:9 Indentation '"b"' has incorrect indentation level 8, expected level should be 12.
+104:13 Indentation 'method call rparen' has incorrect indentation level 12, expected level should be 8.
+105:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+107:7 Indentation 'method call' child has incorrect indentation level 6, expected level should be 16.
+108:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+109:9 Indentation '.' has incorrect indentation level 8, expected level should be 12.
+110:7 Indentation '.' has incorrect indentation level 6, expected level should be 12.
+111:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+112:9 Indentation '2' has incorrect indentation level 8, expected level should be 12.
+113:7 Indentation 'baz' has incorrect indentation level 6, expected level should be 12.
+114:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+115:7 Indentation 'bar' has incorrect indentation level 6, expected level should be 12.
+116:9 Indentation '1' has incorrect indentation level 8, expected level should be 12.
+117:5 Indentation 'baz' has incorrect indentation level 4, expected level should be 12.
+118:11 Indentation '3' has incorrect indentation level 10, expected level should be 12.
+120:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+121:11 Indentation 'Math' has incorrect indentation level 10, expected level should be 12.
+122:7 Indentation '3' has incorrect indentation level 6, expected level should be 12.
+123:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+124:7 Indentation '2' has incorrect indentation level 6, expected level should be 12.
+125:9 Indentation 'method call' child has incorrect indentation level 8, expected level should be 12.
+126:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+127:7 Indentation 'method call' child has incorrect indentation level 6, expected level should be 12.
+128:9 Indentation 'object def' child has incorrect indentation level 8, expected level should be one of the following: 12, 16, 20.
+129:7 Indentation 'object def rcurly' has incorrect indentation level 6, expected level should be one of the following: 8, 12, 16.
+130:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+132:7 Indentation 'object def rcurly' has incorrect indentation level 6, expected level should be one of the following: 4, 8, 12.
+133:7 Indentation 'method call' child has incorrect indentation level 6, expected level should be 12.
+134:5 Indentation 'object def' child has incorrect indentation level 4, expected level should be one of the following: 12, 16, 20.
+135:5 Indentation 'object def rcurly' has incorrect indentation level 4, expected level should be one of the following: 8, 12, 16.
+136:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+137:9 Indentation '1' has incorrect indentation level 8, expected level should be 12.
+138:7 Indentation 'array initialization rcurly' has incorrect indentation level 6, expected level should be one of the following: 4, 12.
+139:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+140:9 Indentation 'method call' child has incorrect indentation level 8, expected level should be 12.
+141:7 Indentation '1' has incorrect indentation level 6, expected level should be 12.
+142:5 Indentation 'array initialization rcurly' has incorrect indentation level 4, expected level should be one of the following: 8, 16.
+143:3 Indentation 'method def rcurly' has incorrect indentation level 2, expected level should be 4.
+145:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+146:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+147:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+149:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+150:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+151:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+152:9 Indentation 'new' has incorrect indentation level 8, expected level should be 16.
+153:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+154:7 Indentation 'new' has incorrect indentation level 6, expected level should be 16.
+155:5 Indentation 'object def rcurly' has incorrect indentation level 4, expected level should be one of the following: 16, 20, 24.
+156:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+157:9 Indentation '?' has incorrect indentation level 8, expected level should be 12.
+158:7 Indentation ':' has incorrect indentation level 6, expected level should be 12.
+159:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+160:9 Indentation '?' has incorrect indentation level 8, expected level should be 12.
+161:11 Indentation '?' has incorrect indentation level 10, expected level should be 12.
+162:9 Indentation ':' has incorrect indentation level 8, expected level should be 12.
+163:9 Indentation ':' has incorrect indentation level 8, expected level should be 12.
+164:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+165:9 Indentation 'Arrays' has incorrect indentation level 8, expected level should be 12.
+166:11 Indentation '"a"' has incorrect indentation level 10, expected level should be 12.
+167:7 Indentation '"b"' has incorrect indentation level 6, expected level should be 12.
+168:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+169:7 Indentation 'String' has incorrect indentation level 6, expected level should be 12.
+171:7 Indentation 'block' child has incorrect indentation level 6, expected level should be 12.
+172:5 Indentation 'block rcurly' has incorrect indentation level 4, expected level should be one of the following: 8, 12, 16.
+174:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+175:7 Indentation 'new' has incorrect indentation level 6, expected level should be one of the following: 8, 12.
+177:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+178:7 Indentation 'array initialization' child has incorrect indentation level 6, expected level should be one of the following: 8, 12.
+180:7 Indentation 'object def rcurly' has incorrect indentation level 6, expected level should be one of the following: 8, 12, 16.
+182:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+183:7 Indentation 'array initialization lcurly' has incorrect indentation level 6, expected level should be one of the following: 8, 12, 20.
+185:7 Indentation 'array initialization' child has incorrect indentation level 6, expected level should be one of the following: 12, 16, 20.
+186:11 Indentation 'array initialization rcurly' has incorrect indentation level 10, expected level should be one of the following: 8, 12, 20.
+188:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+189:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+190:7 Indentation 'method def' child has incorrect indentation level 6, expected level should be 16.
+191:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+193:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+194:9 Indentation '0' has incorrect indentation level 8, expected level should be 12.
+195:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+196:9 Indentation '.' has incorrect indentation level 8, expected level should be 12.
+197:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+198:7 Indentation '.' has incorrect indentation level 6, expected level should be 12.
+199:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+201:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+202:9 Indentation 'new' has incorrect indentation level 8, expected level should be 12.
+203:7 Indentation 'new' has incorrect indentation level 6, expected level should be 20.
+204:3 Indentation 'method def rcurly' has incorrect indentation level 2, expected level should be 4.
+206:9 Indentation 'class def ident' has incorrect indentation level 2, expected level should be 4.
+208:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+210:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+211:5 Indentation 'if' has incorrect indentation level 4, expected level should be 8.
+212:7 Indentation 'if' child has incorrect indentation level 6, expected level should be 12.
+213:7 Indentation 'if' child has incorrect indentation level 6, expected level should be 12.
+214:5 Indentation 'if rcurly' has incorrect indentation level 4, expected level should be 8.
+215:5 Indentation 'if' has incorrect indentation level 4, expected level should be 8.
+216:9 Indentation 'if' child has incorrect indentation level 8, expected level should be 12.
+217:5 Indentation 'if' child has incorrect indentation level 4, expected level should be 12.
+218:7 Indentation 'if' child has incorrect indentation level 6, expected level should be 12.
+219:5 Indentation 'if rcurly' has incorrect indentation level 4, expected level should be 8.
+220:5 Indentation 'if' has incorrect indentation level 4, expected level should be 8.
+221:9 Indentation 'if' child has incorrect indentation level 8, expected level should be 12.
+222:7 Indentation 'if' child has incorrect indentation level 6, expected level should be 12.
+223:5 Indentation 'if rcurly' has incorrect indentation level 4, expected level should be 8.
+224:5 Indentation 'if' has incorrect indentation level 4, expected level should be 8.
+225:5 Indentation 'if rparen' has incorrect indentation level 4, expected level should be 8.
+226:7 Indentation 'if' child has incorrect indentation level 6, expected level should be 12.
+227:5 Indentation 'if rcurly' has incorrect indentation level 4, expected level should be 8.
+228:5 Indentation 'while' has incorrect indentation level 4, expected level should be 8.
+229:7 Indentation 'while' child has incorrect indentation level 6, expected level should be 12.
+230:7 Indentation 'while' child has incorrect indentation level 6, expected level should be 12.
+231:5 Indentation 'while rcurly' has incorrect indentation level 4, expected level should be 8.
+232:5 Indentation 'for' has incorrect indentation level 4, expected level should be 8.
+233:9 Indentation 'j' has incorrect indentation level 8, expected level should be 12.
+234:11 Indentation 'for' child has incorrect indentation level 10, expected level should be 12.
+235:7 Indentation 'for' child has incorrect indentation level 6, expected level should be 12.
+236:5 Indentation 'for rcurly' has incorrect indentation level 4, expected level should be 8.
+237:5 Indentation 'for' has incorrect indentation level 4, expected level should be 8.
+238:11 Indentation '1' has incorrect indentation level 10, expected level should be 12.
+239:7 Indentation 'for' child has incorrect indentation level 6, expected level should be 12.
+240:5 Indentation 'for rcurly' has incorrect indentation level 4, expected level should be 8.
+241:5 Indentation 'switch' has incorrect indentation level 4, expected level should be 8.
+242:7 Indentation 'switch' child has incorrect indentation level 6, expected level should be 8.
+243:7 Indentation 'case' child has incorrect indentation level 6, expected level should be 12.
+244:9 Indentation 'block' child has incorrect indentation level 8, expected level should be 16.
+245:5 Indentation 'switch rcurly' has incorrect indentation level 4, expected level should be 8.
+246:5 Indentation 'if' has incorrect indentation level 4, expected level should be 8.
+247:5 Indentation 'else' has incorrect indentation level 4, expected level should be 8.
+248:7 Indentation 'if' child has incorrect indentation level 6, expected level should be 12.
+249:5 Indentation 'else' has incorrect indentation level 4, expected level should be 8.
+250:7 Indentation 'else' child has incorrect indentation level 6, expected level should be 12.
+251:5 Indentation 'if' has incorrect indentation level 4, expected level should be 8.
+252:5 Indentation 'if rcurly' has incorrect indentation level 4, expected level should be 8.
+253:7 Indentation 'if' has incorrect indentation level 6, expected level should be 12.
+254:7 Indentation 'if rcurly' has incorrect indentation level 6, expected level should be 12.
+255:5 Indentation 'if' has incorrect indentation level 4, expected level should be 8.
+256:7 Indentation 'if' child has incorrect indentation level 6, expected level should be 12.
+257:5 Indentation 'if rcurly' has incorrect indentation level 4, expected level should be 8.
+258:7 Indentation 'if' child has incorrect indentation level 6, expected level should be 12.
+259:5 Indentation 'if rcurly' has incorrect indentation level 4, expected level should be 8.
+260:7 Indentation 'else' has incorrect indentation level 6, expected level should be 8.
+261:5 Indentation 'if' child has incorrect indentation level 4, expected level should be 12.
+262:5 Indentation 'if rcurly' has incorrect indentation level 4, expected level should be 8.
+263:3 Indentation 'method def rcurly' has incorrect indentation level 2, expected level should be 4.
+265:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+267:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+269:7 Indentation 'T' has incorrect indentation level 6, expected level should be 10.
+270:3 Indentation 'method def rcurly' has incorrect indentation level 2, expected level should be 4.
+272:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+273:5 Indentation '"1"' has incorrect indentation level 4, expected level should be 10.
+276:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+280:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+282:5 Indentation 'annotation array initialization' child has incorrect indentation level 4, expected level should be one of the following: 6, 10.
+283:9 Indentation 'annotation array initialization rcurly' has incorrect indentation level 8, expected level should be one of the following: 2, 10.
+286:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+287:5 Indentation '{' has incorrect indentation level 4, expected level should be 10.
+289:5 Indentation 'annotation array initialization rcurly' has incorrect indentation level 4, expected level should be one of the following: 2, 10.
+292:3 Indentation '@' has incorrect indentation level 2, expected level should be 4.
+293:5 Indentation 'annotation field def modifier' has incorrect indentation level 4, expected level should be 8.
+294:3 Indentation 'annotation def rcurly' has incorrect indentation level 2, expected level should be 4.
+296:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+297:5 Indentation 'annotation array initialization' child has incorrect indentation level 4, expected level should be one of the following: 6, 10.
+302:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+303:5 Indentation '{' has incorrect indentation level 4, expected level should be 10.
+306:3 Indentation 'method def modifier' has incorrect indentation level 2, expected level should be 4.
+307:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+310:7 Indentation '"""' has incorrect indentation level 6, expected level should be 12.
+311:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+314:7 Indentation '"""' has incorrect indentation level 6, expected level should be 12.
+315:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+317:5 Indentation 'method call' child has incorrect indentation level 4, expected level should be 12.
+318:9 Indentation 'method call' child has incorrect indentation level 8, expected level should be 12.
+319:5 Indentation 'method def' child has incorrect indentation level 4, expected level should be 8.
+320:9 Indentation '"""' has incorrect indentation level 8, expected level should be 12.
+322:5 Indentation '"""' has incorrect indentation level 4, expected level should be 12.
+323:3 Indentation 'method def rcurly' has incorrect indentation level 2, expected level should be 4.

@@ -1,0 +1,29 @@
+8:1 AnnotationLocationTypeAndPackageAndMembers Annotation 'Deprecated' should be alone on line.
+17:7 AnnotationLocationVariables Annotation 'SuppressWarnings' have incorrect indentation level 6, expected level should be 4.
+76:9 AnnotationLocationVariables Annotation 'SuppressWarnings' have incorrect indentation level 8, expected level should be 4.
+86:17 AnnotationLocationMethodsAndCtors Annotation 'SuppressWarnings' should be alone on line.
+90:7 AnnotationLocationMethodsAndCtors Annotation 'SuppressWarnings' have incorrect indentation level 6, expected level should be 4.
+101:5 AnnotationLocationMethodsAndCtors Annotation 'SuppressWarnings' should be alone on line.
+130:17 AnnotationLocationMethodsAndCtors Annotation 'SuppressWarnings' should be alone on line.
+133:5 AnnotationLocationMethodsAndCtors Annotation 'SuppressWarnings' should be alone on line.
+146:5 AnnotationLocationTypeAndPackageAndMembers Annotation 'Deprecated' should be alone on line.
+153:5 AnnotationLocationTypeAndPackageAndMembers Annotation 'Deprecated' should be alone on line.
+153:17 AnnotationLocationTypeAndPackageAndMembers Annotation 'SuppressWarnings' should be alone on line.
+157:7 AnnotationLocationTypeAndPackageAndMembers Annotation 'SuppressWarnings' have incorrect indentation level 6, expected level should be 4.
+161:5 AnnotationLocationTypeAndPackageAndMembers Annotation 'Deprecated' should be alone on line.
+168:5 AnnotationLocationTypeAndPackageAndMembers Annotation 'SuppressWarnings' should be alone on line.
+171:5 AnnotationLocationTypeAndPackageAndMembers Annotation 'Deprecated' should be alone on line.
+172:9 AnnotationLocationTypeAndPackageAndMembers Annotation 'Deprecated' should be alone on line.
+175:9 AnnotationLocationTypeAndPackageAndMembers Annotation 'Deprecated' should be alone on line.
+175:21 AnnotationLocationTypeAndPackageAndMembers Annotation 'SuppressWarnings' should be alone on line.
+177:11 AnnotationLocationTypeAndPackageAndMembers Annotation 'SuppressWarnings' have incorrect indentation level 10, expected level should be 8.
+180:9 AnnotationLocationTypeAndPackageAndMembers Annotation 'SuppressWarnings' should be alone on line.
+183:5 AnnotationLocationTypeAndPackageAndMembers Annotation 'Deprecated' should be alone on line.
+197:21 AnnotationLocationMethodsAndCtors Annotation 'SuppressWarnings' should be alone on line.
+207:5 AnnotationLocationTypeAndPackageAndMembers Annotation 'Deprecated' should be alone on line.
+208:9 AnnotationLocationTypeAndPackageAndMembers Annotation 'Deprecated' should be alone on line.
+213:9 AnnotationLocationTypeAndPackageAndMembers Annotation 'SuppressWarnings' should be alone on line.
+216:11 AnnotationLocationTypeAndPackageAndMembers Annotation 'SuppressWarnings' have incorrect indentation level 10, expected level should be 8.
+222:9 AnnotationLocationTypeAndPackageAndMembers Annotation 'Deprecated' should be alone on line.
+222:21 AnnotationLocationTypeAndPackageAndMembers Annotation 'SuppressWarnings' should be alone on line.
+229:5 AnnotationLocationTypeAndPackageAndMembers Annotation 'SuppressWarnings' should be alone on line.

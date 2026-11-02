@@ -1,0 +1,292 @@
+// header comment
+
+
+// second header comment
+package p;
+import java.util.List;
+import java.util.Map;
+
+
+import java.util.Set;
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
+
+import static java.lang.Math.min;
+// comment before import
+import java.io.File;
+/* block before import */
+
+import java.io.IOException;
+/** javadoc before class */
+public class ElsProbe1 {
+    int a;
+    int b;
+
+    int c;
+
+
+    int d;
+    // comment
+    int e;
+
+    // comment
+
+    int f;
+
+
+    // comment two blanks above
+    int g;
+    /** doc */
+    int h;
+    /** doc */
+
+    int i;
+    void m1() {
+    }
+    void m2() {
+    }
+
+    void m3() {
+
+
+    }
+
+    void m4() {
+        int x;
+
+
+        int y;
+        foo();
+
+
+
+        bar();
+    }
+
+
+    void m5() { }
+
+    /* c1 */
+
+    /* c2 */
+
+
+    /* c3 */
+    void m6() { }
+    // c
+    void m7() { }
+
+    // c
+
+
+    void m8() { }
+    int j;
+    void m9() { }
+    int k; int l;
+    int m, n;
+    static {
+    }
+    static {
+    }
+
+
+    static {
+        int q;
+
+
+        int r;
+    }
+    {
+    }
+    {
+        int q;
+
+        int r;
+
+
+        int s;
+    }
+    ElsProbe1() {
+    }
+    ElsProbe1(int a) {
+
+
+        this.a = a;
+    }
+    class Inner1 {
+    }
+    class Inner2 {
+    }
+
+
+    class Inner3 {
+        int z;
+
+
+    }
+    interface Inner4 {
+        void m();
+        void n();
+
+
+        void o();
+    }
+    enum Inner5 {
+        A, B;
+        void m() { }
+    }
+    enum Inner6 {
+        A,
+
+
+        B,
+
+        C;
+    }
+    enum Inner7 {
+        A,
+        B,
+
+
+    }
+    enum Inner8 {
+        A, B,
+
+        C
+    }
+    enum Inner9 {
+        A,
+        B;
+
+
+        int q;
+    }
+    enum Inner10 { A, B, C }
+    enum Inner11 { A,
+
+        B }
+    record Rec(int a) {
+        Rec {
+        }
+        Rec(String s) {
+            this(1);
+        }
+        int q;
+        void m() { }
+    }
+    record Rec2(int a) { int z; }
+    @interface Ann {
+        int v();
+        int w();
+    }
+
+    /**
+     * Javadoc.
+     */
+    @Deprecated
+    void annotated() { }
+
+    // comment
+    @Deprecated
+    void annotated2() { }
+
+
+    // comment
+    @Deprecated
+    void annotated3() { }
+
+    @Deprecated
+    // comment
+    void annotated4() { }
+
+    @Deprecated /* inline */ void annotated5() { }
+
+
+    /* c */ @Deprecated void annotated6() { }
+
+
+    @Deprecated
+
+    void annotated7() { }
+
+
+    // c1
+    // c2
+    @SuppressWarnings("x")
+    @Deprecated
+    void annotated8() { }
+    String s = "x";
+    String t =
+        "y";
+    int[] arr = {
+        1,
+        2
+    };
+    Object o = new Object() {
+        int p;
+        void m() { }
+        void n() { }
+    };
+    Runnable r = () -> {
+        int q;
+
+
+        int w;
+    };
+    abstract static class Abs {
+        abstract void m();
+        abstract void n();
+        native void o();
+        native void p();
+    }
+
+    void chain() {
+        String.valueOf(1)
+            .trim()
+
+
+            .length();
+        foo.bar()
+            .baz();
+
+
+        int[] a = {1,
+
+            2};
+        new Object().toString();
+
+
+        baz();
+    }
+
+    <T> T generic() { return null; }
+    public static final java.util.List<String> LIST = null;
+    @Deprecated public static final int ANN = 1;
+
+
+    public int
+        wrapped;
+
+
+    public
+    int wrapped2;
+    private
+    @Deprecated
+    int wrapped3;
+}
+class Second {
+}
+class Third {
+}
+
+
+class Fourth {
+}
+
+// trailing comment
+interface Fifth {
+}
+enum SixthEnum {
+}
+record SixthRec() {
+}

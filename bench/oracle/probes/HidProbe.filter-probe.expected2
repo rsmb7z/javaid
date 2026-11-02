@@ -1,0 +1,80 @@
+11:14 FinalParameters Parameter a should be final.
+11:21 FinalParameters Parameter s should be final.
+11:25 hid 's' hides a field.
+15:12 FinalParameters Parameter a should be final.
+15:19 FinalParameters Parameter s should be final.
+15:26 FinalParameters Parameter q should be final.
+33:20 FinalParameters Parameter a should be final.
+33:27 FinalParameters Parameter s should be final.
+48:15 FinalParameters Parameter a should be final.
+49:19 FinalParameters Parameter b should be final.
+49:23 hid 'b' hides a field.
+50:19 FinalParameters Parameter c should be final.
+50:23 hid 'c' hides a field.
+51:15 FinalParameters Parameter s should be final.
+52:23 FinalParameters Parameter s should be final.
+52:27 hid 's' hides a field.
+53:15 FinalParameters Parameter a should be final.
+54:14 FinalParameters Parameter a should be final.
+55:14 FinalParameters Parameter a should be final.
+56:16 FinalParameters Parameter a should be final.
+56:23 FinalParameters Parameter b should be final.
+56:27 hid 'b' hides a field.
+57:26 hid 'a' hides a field.
+58:16 FinalParameters Parameter a should be final.
+58:23 hid 'a' hides a field.
+59:16 FinalParameters Parameter a should be final.
+60:20 FinalParameters Parameter a should be final.
+61:16 FinalParameters Parameter a should be final.
+66:16 FinalParameters Parameter a should be final.
+71:24 FinalParameters Parameter a should be final.
+72:24 FinalParameters Parameter a should be final.
+78:16 FinalParameters Parameter a should be final.
+78:23 FinalParameters Parameter s should be final.
+78:30 FinalParameters Parameter nf should be final.
+78:38 FinalParameters Parameter nsf should be final.
+79:24 FinalParameters Parameter a should be final.
+79:31 FinalParameters Parameter s should be final.
+79:38 FinalParameters Parameter nf should be final.
+79:46 FinalParameters Parameter nsf should be final.
+84:16 FinalParameters Parameter a should be final.
+84:23 FinalParameters Parameter s should be final.
+84:30 FinalParameters Parameter inf should be final.
+84:39 FinalParameters Parameter b should be final.
+85:24 FinalParameters Parameter a should be final.
+85:31 FinalParameters Parameter s should be final.
+85:38 FinalParameters Parameter inf should be final.
+91:20 FinalParameters Parameter a should be final.
+91:27 FinalParameters Parameter lf should be final.
+91:35 FinalParameters Parameter s should be final.
+95:20 FinalParameters Parameter a should be final.
+95:27 FinalParameters Parameter af should be final.
+95:35 FinalParameters Parameter s should be final.
+102:11 FinalParameters Parameter ev should be final.
+103:16 FinalParameters Parameter ev should be final.
+103:24 FinalParameters Parameter X should be final.
+104:24 FinalParameters Parameter ev should be final.
+104:32 FinalParameters Parameter X should be final.
+112:11 FinalParameters Parameter rc should be final.
+112:19 FinalParameters Parameter rd should be final.
+112:26 hid 'rd' hides a field.
+112:30 FinalParameters Parameter extra should be final.
+115:16 FinalParameters Parameter rc should be final.
+115:24 FinalParameters Parameter rs should be final.
+115:28 hid 'rs' hides a field.
+115:32 FinalParameters Parameter rd should be final.
+115:36 hid 'rd' hides a field.
+116:24 FinalParameters Parameter rc should be final.
+116:32 FinalParameters Parameter rs should be final.
+116:36 hid 'rs' hides a field.
+120:12 FinalParameters Parameter x should be final.
+123:19 FinalParameters Parameter o should be final.
+125:32 hid 'a' hides a field.
+125:39 hid 's' hides a field.
+126:35 hid 'a' hides a field.
+129:18 MagicNumber '5' is a magic number.
+132:34 hid 'field2' hides a field.
+133:41 hid 'field2' hides a field.
+136:19 FinalParameters Parameter z should be final.
+136:26 FinalParameters Parameter Z should be final.
+136:30 hid 'Z' hides a field.

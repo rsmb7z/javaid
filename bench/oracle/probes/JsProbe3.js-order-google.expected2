@@ -1,0 +1,2 @@
+16:0 AtclauseOrder Block tags have to appear in the order '[@param, @return, @throws, @deprecated]'.
+23:0 AtclauseOrder Block tags have to appear in the order '[@param, @return, @throws, @deprecated]'.

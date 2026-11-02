@@ -1,0 +1,13 @@
+84:7 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 2, expected is 1.
+85:5 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 0, expected is 1.
+86:8 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 3, expected is 1.
+92:9 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 2, expected is 1.
+98:4 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level -1, expected is 1.
+103:8 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 3, expected is 1.
+107:9 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 4, expected is 1.
+113:6 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 5.
+114:9 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 4, expected is 5.
+115:6 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 5.
+121:5 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 0, expected is 1.
+147:10 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 5, expected is 1.
+148:10 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 5, expected is 1.

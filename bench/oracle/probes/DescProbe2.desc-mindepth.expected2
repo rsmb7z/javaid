@@ -1,0 +1,8 @@
+5:35 DescendantToken Count of 2 for 'FOR_ITERATOR' descendant 'COMMA' exceeds maximum count 1.
+6:35 DescendantToken Count of 3 for 'FOR_ITERATOR' descendant 'COMMA' exceeds maximum count 1.
+7:16 DescendantToken Count of 2 for 'FOR_INIT' descendant 'COMMA' exceeds maximum count 1.
+8:17 DescendantToken Count of 2 for 'FOR_INIT' descendant 'COMMA' exceeds maximum count 1.
+11:29 DescendantToken Count of 2 for 'FOR_ITERATOR' descendant 'COMMA' exceeds maximum count 1.
+12:27 DescendantToken Count of 2 for 'FOR_ITERATOR' descendant 'COMMA' exceeds maximum count 1.
+13:30 DescendantToken Count of 2 for 'FOR_ITERATOR' descendant 'COMMA' exceeds maximum count 1.
+14:28 DescendantToken Count of 2 for 'FOR_ITERATOR' descendant 'COMMA' exceeds maximum count 1.

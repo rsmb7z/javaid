@@ -115,7 +115,7 @@ pub fn on_import(cx: &mut Ctx, st: &mut State, node: Node) {
         }
         let earlier = st.seen.entry((is_static, text.clone())).or_default();
         for first in earlier.clone() {
-            cx.diag("RedundantImport", node, format!("Duplicate import to line {first} - {text}."));
+            cx.diag("RedundantImport", node, format!("Duplicate import to line {} - {text}.", crate::engine::grouped(first)));
         }
         earlier.push(line);
     }

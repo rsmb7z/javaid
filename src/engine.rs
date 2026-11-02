@@ -6,6 +6,7 @@
 use crate::config::Config;
 use crate::rules::{self, State};
 use crate::syntax::Syntax;
+use std::path::Path;
 use tree_sitter::{Node, Tree};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -13,6 +14,14 @@ pub struct Diagnostic {
     /// The Checkstyle module name, e.g. `NeedBraces`.
     pub rule: &'static str,
     pub line: u32,
+    /// The column Checkstyle prints, 1-based, or 0 for a finding that has none.
+    ///
+    /// Checkstyle reports a finding on the syntax tree at a column that counts code points (a
+    /// supplementary character is one column) and runs a tab to the next multiple of the `tabWidth` (default 8): a tab-indented line puts
+    /// everything after the indentation further right than its character index. `Ctx::diag` and
+    /// `Ctx::diag_at` convert from tree-sitter's byte column to that, so a rule never does. A
+    /// module that builds a `Diagnostic` itself (the line-based text modules, the javadoc ones,
+    /// the file-set ones) supplies the column Checkstyle prints, exactly.
     pub col: u32,
     pub message: String,
 }
@@ -23,6 +32,8 @@ pub struct Ctx<'a> {
     pub cfg: &'a Config,
     pub src: &'a [u8],
     pub out: &'a mut Vec<Diagnostic>,
+    /// The file being linted, for the modules that read its name or directory.
+    pub path: Option<&'a Path>,
     /// The ancestors of the node being visited, outermost first. Tree-sitter keeps no parent
     /// pointers: `Node::parent` searches from the root, and a sibling call searches the parent's
     /// children, which adds up when a rule asks for one of every statement. The walk knows these
@@ -31,11 +42,13 @@ pub struct Ctx<'a> {
     /// The previous sibling that is not a comment, for the node being visited (the last entry) and
     /// for each of its ancestors. Unnamed tokens such as `{` and `;` count.
     previous: Vec<Option<Node<'a>>>,
+    /// Byte offsets at which each line starts, built the first time a finding needs a column.
+    line_starts: std::cell::OnceCell<Vec<usize>>,
 }
 
 impl<'a> Ctx<'a> {
     pub fn new(syn: &'a Syntax, cfg: &'a Config, src: &'a [u8], out: &'a mut Vec<Diagnostic>) -> Self {
-        Ctx { syn, cfg, src, out, parents: Vec::new(), previous: vec![None] }
+        Ctx { syn, cfg, src, out, path: None, parents: Vec::new(), previous: vec![None], line_starts: std::cell::OnceCell::new() }
     }
 
     /// The parent of the node being visited. Only meaningful for that node, not for others.
@@ -90,25 +103,139 @@ impl<'a> Ctx<'a> {
         &src[n.byte_range()]
     }
 
-    pub fn diag(&mut self, rule: &'static str, at: Node, message: String) {
-        let p = at.start_position();
-        self.out.push(Diagnostic { rule: self.cfg.display(rule), line: p.row as u32 + 1, col: p.column as u32 + 1, message });
+    /// The column Checkstyle prints for the 1-based `byte_col` of `line` (0 stays 0, "no column").
+    pub fn column(&self, line: u32, byte_col: u32) -> u32 {
+        self.column_of(line, byte_col, self.cfg.walker_tab())
     }
 
-    /// A finding at a position that is not a node's: a declaration's reported line, say.
+    /// The 1-based position in code points, a tab counting as one: the "column N" some
+    /// messages quote, which Checkstyle does not expand.
+    pub fn char_column(&self, line: u32, byte_col: u32) -> u32 {
+        self.column_of(line, byte_col, 1)
+    }
+
+    fn column_of(&self, line: u32, byte_col: u32, tab_width: usize) -> u32 {
+        if byte_col == 0 {
+            return 0;
+        }
+        let starts = self.line_starts.get_or_init(|| std::iter::once(0).chain(memchr::memchr_iter(b'\n', self.src).map(|i| i + 1)).collect());
+        let Some(&start) = starts.get((line as usize).wrapping_sub(1)) else { return byte_col };
+        let end = (start + byte_col as usize - 1).min(self.src.len());
+        expanded_column(&self.src[start.min(end)..end], tab_width)
+    }
+
+    pub fn diag(&mut self, rule: &'static str, at: Node, message: String) {
+        let p = anchor(at).start_position();
+        self.diag_at(rule, p.row as u32 + 1, p.column as u32 + 1, message);
+    }
+
+    /// A finding at a position that is not a node's: a declaration's reported line, say. `col` is
+    /// a 1-based byte column, converted like `diag`'s (0 means the finding has no column).
     pub fn diag_at(&mut self, rule: &'static str, line: u32, col: u32, message: String) {
+        let col = self.column(line, col);
+        self.out.push(Diagnostic { rule: self.cfg.display(rule), line, col, message });
+    }
+
+    /// Like `diag`, for a rule that Checkstyle reports at the node's very first token: a declaration
+    /// is then not moved to its type's `.` (see `anchor`).
+    pub fn diag_start(&mut self, rule: &'static str, at: Node, message: String) {
+        let p = at.start_position();
+        self.diag_at(rule, p.row as u32 + 1, p.column as u32 + 1, message);
+    }
+
+    /// Like `diag_at`, but `col` is already the column Checkstyle prints.
+    pub fn diag_exact(&mut self, rule: &'static str, line: u32, col: u32, message: String) {
         self.out.push(Diagnostic { rule: self.cfg.display(rule), line, col, message });
     }
 
     /// Like `diag`, for a finding Checkstyle can reach twice at one spot (`true == true` reports the
     /// `==` for each operand): it reports an identical message at the same place only once.
     pub fn diag_once(&mut self, rule: &'static str, at: Node, message: String) {
-        let p = at.start_position();
-        let (line, col, name) = (p.row as u32 + 1, p.column as u32 + 1, self.cfg.display(rule));
+        let p = anchor(at).start_position();
+        let (line, name) = (p.row as u32 + 1, self.cfg.display(rule));
+        let col = self.column(line, p.column as u32 + 1);
         if !self.out.iter().rev().take(8).any(|d| d.line == line && d.col == col && d.rule == name && d.message == message) {
             self.diag(rule, at, message);
         }
     }
+}
+
+/// Where Checkstyle puts a finding reported on `node`. Almost always the node's own start; but a
+/// declaration with no modifiers, annotations or type parameters has an empty `MODIFIERS` node
+/// that has no position, and Checkstyle takes the position of the first child that has one: the
+/// type. A qualified type (`Map.Entry`, `java.util.List<T>`, `String[]` of those) is a `DOT` node,
+/// and a `DOT` sits at its own `.`, the last one of the name.
+fn anchor(node: Node) -> Node {
+    if !matches!(
+        node.kind(),
+        "method_declaration" | "field_declaration" | "constant_declaration" | "local_variable_declaration" | "formal_parameter" | "catch_formal_parameter" | "annotation_type_element_declaration" | "resource"
+    ) {
+        return node;
+    }
+    if node.child(0).is_some_and(|c| matches!(c.kind(), "modifiers" | "type_parameters")) {
+        return node;
+    }
+    let Some(mut ty) = node.child_by_field_name("type") else { return node };
+    loop {
+        match ty.kind() {
+            "array_type" => match ty.child_by_field_name("element") {
+                Some(e) => ty = e,
+                None => return node,
+            },
+            "generic_type" => match ty.named_child(0) {
+                Some(e) => ty = e,
+                None => return node,
+            },
+            _ => break,
+        }
+    }
+    if ty.kind() != "scoped_type_identifier" {
+        return node;
+    }
+    let mut cur = ty.walk();
+    let dot = ty.children(&mut cur).filter(|c| c.kind() == ".").last();
+    dot.unwrap_or(node)
+}
+
+/// The column Checkstyle prints for the position after `before`, the bytes of the line up to that
+/// position.
+///
+/// Checkstyle's parser counts code points, so the position is `n` characters in; the tab expansion
+/// then walks the first `n` UTF-16 *units* of the line (`CommonUtil.lengthExpandedTabs`), a tab
+/// running to the next multiple of `tab_width`. They are the same thing unless a supplementary
+/// character (an emoji) comes first, when the walk stops short by one unit for each of them
+/// (probed): a tab after an emoji expands from a column that is too small.
+pub fn expanded_column(before: &[u8], tab_width: usize) -> u32 {
+    if before.is_ascii() {
+        let mut width = 0usize;
+        for &b in before {
+            width = if b == b'\t' { (width / tab_width + 1) * tab_width } else { width + 1 };
+        }
+        return width as u32 + 1;
+    }
+    let text = String::from_utf8_lossy(before);
+    let characters = text.chars().count();
+    let mut width = 0usize;
+    for unit in text.encode_utf16().take(characters) {
+        width = if unit == u16::from(b'\t') { (width / tab_width + 1) * tab_width } else { width + 1 };
+    }
+    width as u32 + 1
+}
+
+/// An integer as `MessageFormat` prints it in the default (US) locale, `{0,number,integer}` and a
+/// bare `{0}` holding an `Integer` alike: groups of three digits separated by commas.
+pub fn grouped(n: impl std::fmt::Display) -> String {
+    let digits = n.to_string();
+    let (sign, digits) = digits.strip_prefix('-').map_or(("", digits.as_str()), |d| ("-", d));
+    let mut out = String::with_capacity(digits.len() + digits.len() / 3 + 1);
+    out.push_str(sign);
+    for (i, c) in digits.chars().enumerate() {
+        if i > 0 && (digits.len() - i) % 3 == 0 {
+            out.push(',');
+        }
+        out.push(c);
+    }
+    out
 }
 
 /// Make a Java buffer's line breaks the ones Checkstyle counts. Checkstyle ends a line at `\n`,
@@ -131,11 +258,20 @@ pub fn normalize_line_breaks(src: &mut [u8]) {
 /// Run the text-level modules over a file's lines: what `ext` (the file's extension) is read by.
 /// This is all that happens to a file that is not Java; a Java file gets it after the tree walk.
 pub fn lint_text(cfg: &Config, ext: &str, src: &[u8], out: &mut Vec<Diagnostic>) {
+    let from = out.len();
     rules::text::run(cfg, ext, src, out);
+    crate::messages::apply(cfg, out, from);
 }
 
 pub fn lint(syn: &Syntax, cfg: &Config, tree: &Tree, src: &[u8], out: &mut Vec<Diagnostic>) {
+    lint_file(syn, cfg, tree, src, None, out);
+}
+
+/// `lint`, for a file with a path: `PackageDeclaration` and `OuterTypeFilename` read it.
+pub fn lint_file(syn: &Syntax, cfg: &Config, tree: &Tree, src: &[u8], path: Option<&Path>, out: &mut Vec<Diagnostic>) {
+    let from = out.len();
     let mut cx = Ctx::new(syn, cfg, src, out);
+    cx.path = path;
     let mut st = State::default();
     let mut cursor = tree.walk();
     'outer: loop {
@@ -159,5 +295,10 @@ pub fn lint(syn: &Syntax, cfg: &Config, tree: &Tree, src: &[u8], out: &mut Vec<D
         }
     }
     rules::finish(&mut cx, &mut st);
+    rules::indentation::check(&mut cx, tree);
+    rules::csast_checks::run(cfg, tree, src, cx.out);
+    rules::xpathfilter::match_xpath(&mut cx);
     lint_text(cfg, "java", src, cx.out);
+    rules::cs::run(cfg, tree, src, cx.out);
+    crate::messages::apply(cfg, cx.out, from);
 }

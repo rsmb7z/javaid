@@ -57,12 +57,19 @@ where it is possible, makes a small edit that stays valid Java:
     `abstract` on a bodiless member, `final` on the first parameter of a bodiless method or on a try resource, `static`
     on a nested enum, interface or record, `strictfp` on a method, `private` on a field turned into nothing,
     `protected` or `public`, and `static final` into `static`
+  * CommentsIndentation (only with --indent-comments)  a comment that starts a line is moved a few columns left or right,
+    onto a tab, or to column 0
   * DescendantToken (only with --commas)  a `for (int i = 0; c; i++)` header gains one to three more variables in its init
     and update clauses
+  * EmptyLineSeparator (only with --blanks)  a blank line is deleted, doubled or tripled, or one or two are put after a
+    line of code (between members, inside a body, inside an enum or between comments and what they describe)
   * DeclarationOrder (only with --order)  two neighbouring one-line declarations swap places, or a one-line field moves
     below the next member
   * HiddenField (only with --hidden)  a parameter, local variable or lambda parameter is renamed to the name of a field
     of the same file
+  * SuppressWarningsHolder, SuppressWarningsFilter (only with --suppress)  a member or a local variable gets a
+    `@SuppressWarnings` naming checks (`MagicNumber`, `finalparameters`, `checkstyle:whitespacearound`, `all`,
+    lists, `value = ...`), on a line of its own or in front of the declaration
   * ParenPad (only with --parens)  `(x)` -> `( x )` on code lines, `foo(x)` -> `foo( x)`, `foo(x )`
 
 Checkstyle and javaid are then run on the *same* mutated tree, so whatever they disagree about is a
@@ -92,6 +99,52 @@ ARRAY = re.compile(r"^(\s*(?:(?:final|private|public|protected|static|transient|
 SIMPLE_STATEMENT = re.compile(r"^\s+[\w.\[\]()<>\", +*/!&|?:=-]+;\s*$")
 BREAK = re.compile(r"^\s*break;\s*$")
 DEFAULT = re.compile(r"^(\s*)default:\s*$")
+
+
+SW_NAMES = ["MagicNumber", "finalparameters", "checkstyle:whitespacearound", "all", "HiddenField", "unchecked", "NeedBraces", "EmptyBlock", "myid", "TodoComment", "MethodNameCheck", "java.lang.SuppressWarnings"]
+SW_MEMBER = re.compile(r"^(\s+)(?:(?:public|private|protected|static|final|abstract|synchronized)\s+)+[\w<>\[\],?.][\w<>\[\], ?.]*\s+\w+\s*(?:\(|=|;)")
+SW_LOCAL = re.compile(r"^(\s{6,})(?:final\s+)?(?:int|long|String|boolean|double)\s+\w+\s*=[^;]*;\s*$")
+
+
+SW_KEYWORDS = ("return", "throw", "new ", "else", "case", "default", "for", "while", "if", "do", "switch", "try", "catch", "finally", "synchronized", "assert", "break", "continue", "yield", "super", "this", "package", "import", "}", "{")
+
+
+def add_suppress_warnings(text, rng, rate):
+    """Put `@SuppressWarnings(...)` in front of members and local variables."""
+    out = []
+    prev = ""
+    for line in text.split("\n"):
+        m = SW_MEMBER.match(line) or SW_LOCAL.match(line)
+        body = line.strip()
+        starts_statement = prev.rstrip().endswith((";", "{", "}", "*/")) or not prev.strip() or prev.strip().startswith("//")
+        if (
+            m
+            and starts_statement
+            and body.endswith(("{", ";"))
+            and not prev.strip().startswith("@")
+            and not body.startswith(SW_KEYWORDS)
+            and rng.random() < rate * 2
+        ):
+            names = rng.sample(SW_NAMES, rng.choice([1, 1, 2]))
+            shape = rng.randrange(4)
+            if len(names) == 1 and shape == 0:
+                ann = '@SuppressWarnings(value = "%s")' % names[0]
+            elif len(names) == 1:
+                ann = '@SuppressWarnings("%s")' % names[0]
+            elif shape == 0:
+                ann = '@SuppressWarnings(value = {"%s", "%s"})' % tuple(names)
+            else:
+                ann = '@SuppressWarnings({"%s", "%s"})' % tuple(names)
+            indent = m.group(1)
+            if SW_LOCAL.match(line) and rng.random() < 0.5:
+                out.append(indent + ann + " " + line[len(indent):])
+            else:
+                out.append(indent + ann)
+                out.append(line)
+        else:
+            out.append(line)
+        prev = line
+    return "\n".join(out)
 
 
 OPEN = re.compile(r"\((?=[^\s)])")
@@ -791,6 +844,26 @@ def empty_blocks(text, rng, rate):
     return "\n".join(l for i, l in enumerate(lines) if i not in drop)
 
 
+def shift_comments(text, rng, rate):
+    """Move comment-only lines: a `//` or `/*` that starts a line gets two or three columns more or fewer, or a tab."""
+    lines = text.split("\n")
+    for i, line in enumerate(lines):
+        stripped = line.lstrip(" \t")
+        if stripped.startswith(("//", "/*")) and not stripped.startswith("/**") and rng.random() < rate * 4:
+            indent = line[: len(line) - len(stripped)]
+            how = rng.randrange(6)
+            if how < 2:
+                indent = indent + " " * rng.randrange(1, 4)
+            elif how < 4:
+                indent = indent[: max(0, len(indent) - rng.randrange(1, 4))]
+            elif how == 4:
+                indent = "\t" + indent[4:] if indent.startswith("    ") else indent + "\t"
+            else:
+                indent = ""
+            lines[i] = indent + stripped
+    return "\n".join(lines)
+
+
 def change_endings(text, rng, rate):
     """Change how a file ends, on `rate * 4` of the files."""
     if rng.random() >= rate * 4:
@@ -810,6 +883,367 @@ def change_endings(text, rng, rate):
     if how == 5:
         return body + "\r\r"
     return body + "  "
+
+
+def edit_blank_lines(text, rng, rate):
+    """Delete, double or triple blank lines and put new ones after code lines; blank lines are valid anywhere."""
+    out = []
+    for line in text.split("\n"):
+        eol = "\r" if line.endswith("\r") else ""
+        if line.strip() == "":
+            r = rng.random()
+            if r < rate * 3:
+                continue
+            out.append(line)
+            if r < rate * 6:
+                out.append(eol)
+            if r < rate * 7:
+                out.append(eol)
+            continue
+        out.append(line)
+        r = rng.random()
+        if r < rate:
+            out.append(eol)
+        elif r < rate * 1.5:
+            out.append(eol)
+            out.append(eol)
+    return "\n".join(out)
+
+
+# --gs <pass>: edits for the small structural modules of src/rules/gs.rs. Each pass is a function
+# of (text, rng, rate); GS_PASSES maps the name given on the command line to it.
+#
+#   package   PackageDeclaration  a `package` line is removed, loses its first segment, gains a wrong last one,
+#                                 or has blanks put around its dots
+#   rename    OuterTypeFilename   a file is written under another name (the name of the copy, not its text)
+#   wrap      NoLineWrap          a line break is put in a `package` or `import` line: after the keyword, after a dot,
+#                                 or before the `;`
+#   spaces    SingleSpaceSeparator  a single space between tokens becomes two, three or a tab
+#   brackets  ArrayBracketNoWhitespace  a blank put before or after a `[` or `]`, or taken from after a `]`
+#   colon     NoWhitespaceBeforeCaseDefaultColon  a blank or a comment put before the colon of a `case` or `default`
+#   emptybody WhitespaceBeforeEmptyBody  the blank before the `{` of an empty body is taken away
+#   annotations AnnotationLocation  an annotation joins the line of its declaration, leaves it, or is indented unevenly
+#   tokens    IllegalTokenText    a string literal gains a tab, a Unicode escape or an octal escape
+#   modimport AvoidModuleImport   one to three `import module` lines are put before the first import
+#   directives ModuleDirectiveOrder  directives of a module declaration swap places, gain an empty line or lose one
+#   records   MissingOverrideOnRecordAccessor  a record with a one-line header gains an accessor for its first component,
+#                                 a third of them with `@Override`
+
+PACKAGE_LINE = re.compile(r"^(?P<head>package\s+)(?P<name>[\w.]+)(?P<tail>\s*;.*)$")
+
+
+def gs_package(text, rng, rate):
+    lines = text.split("\n")
+    for i, line in enumerate(lines):
+        m = PACKAGE_LINE.match(line)
+        if m and rng.random() < rate * 6:
+            parts = m["name"].split(".")
+            kind = rng.randrange(4)
+            if kind == 0 and any(l.startswith("@") for l in lines[:i]):
+                kind = 1  # annotations need a package to hang on
+            if kind == 0:
+                lines[i] = ""
+            elif kind == 1:
+                lines[i] = f"{m['head']}{'.'.join(parts[1:] or ['x'])}{m['tail']}"
+            elif kind == 2:
+                lines[i] = f"{m['head']}{parts[0]}.other{m['tail']}"
+            else:
+                lines[i] = f"{m['head']}{' . '.join(parts)}{m['tail']}"
+    return "\n".join(lines)
+
+
+def gs_rename(name, rng, rate):
+    """The name a copy of `name` is written under: `Foo.java` -> `FooRenamed.java` at `rate * 6`."""
+    if name in ("package-info.java", "module-info.java") or rng.random() >= rate * 6:
+        return name
+    return name[: -len(".java")] + "Renamed.java"
+
+
+WRAPPABLE = re.compile(r"^(?P<head>(?:package|import(?: static)?) )(?P<name>[\w.]+)(?P<star>\.\*)?(?P<tail>;.*)$")
+
+
+def gs_wrap(text, rng, rate):
+    lines = text.split("\n")
+    out = []
+    for line in lines:
+        m = WRAPPABLE.match(line)
+        if m and rng.random() < rate * 6:
+            name = m["name"] + (m["star"] or "")
+            kind = rng.randrange(3)
+            if kind == 0:
+                line = f"{m['head'].rstrip()}\n    {name}{m['tail']}"
+            elif kind == 1 and "." in name:
+                cut = name.rindex(".") + 1 if rng.random() < 0.5 else name.index(".") + 1
+                line = f"{m['head']}{name[:cut]}\n    {name[cut:]}{m['tail']}"
+            else:
+                line = f"{m['head']}{name}\n    {m['tail']}"
+        out.append(line)
+    return "\n".join(out)
+
+
+RECORD_HEADER = re.compile(
+    r"^(?P<indent>[ \t]*)(?P<mods>(?:\w+ )*)record (?P<name>\w+)(?P<tp><[^>()]*>)?\((?P<comps>[^()]*)\)(?P<rest>[^{;]*)\{(?P<end>\s*\})?\s*$")
+
+
+def _split_components(comps):
+    parts, depth, cur = [], 0, ""
+    for ch in comps:
+        if ch == "<":
+            depth += 1
+        elif ch == ">":
+            depth -= 1
+        if ch == "," and depth == 0:
+            parts.append(cur.strip())
+            cur = ""
+        else:
+            cur += ch
+    if cur.strip():
+        parts.append(cur.strip())
+    return parts
+
+
+def gs_records(text, rng, rate):
+    """MissingOverrideOnRecordAccessor: a record with a one-line header gains an accessor for its first
+    component, with `@Override` on a third of them."""
+    out = []
+    for line in text.split("\n"):
+        m = RECORD_HEADER.match(line)
+        parts = _split_components(m["comps"]) if m else []
+        if m and parts and rng.random() < rate * 10:
+            first = re.sub(r"@\w+(?:\([^)]*\))?\s+", "", parts[0])
+            pieces = first.rsplit(None, 1)
+            if len(pieces) == 2 and pieces[1].isidentifier() and "..." not in first:
+                ctype, cname = pieces
+                ctype = re.sub(r"\bfinal\s+", "", ctype)
+                indent = m["indent"]
+                override = f"{indent}    @Override\n" if rng.random() < 0.33 else ""
+                method = f"{override}{indent}    public {ctype} {cname}() {{ return {cname}; }}"
+                if m["end"]:
+                    out.append(line[: line.rindex("{")].rstrip() + " {")
+                    out.append(method)
+                    out.append(f"{indent}}}")
+                else:
+                    out.append(line)
+                    out.append(method)
+                continue
+        out.append(line)
+    return "\n".join(out)
+
+
+def code_mask(text):
+    """For each character of `text`, whether it is code: not inside a comment, string, char or text block."""
+    n = len(text)
+    mask = [True] * n
+    i = 0
+    while i < n:
+        if text.startswith("//", i):
+            j = text.find("\n", i)
+            j = n if j < 0 else j
+            for k in range(i, j):
+                mask[k] = False
+            i = j
+        elif text.startswith("/*", i):
+            j = text.find("*/", i + 2)
+            j = n if j < 0 else j + 2
+            for k in range(i, j):
+                mask[k] = False
+            i = j
+        elif text.startswith('"""', i):
+            j = text.find('"""', i + 3)
+            while j > 0 and text[j - 1] == "\\":
+                j = text.find('"""', j + 1)
+            j = n if j < 0 else j + 3
+            for k in range(i, j):
+                mask[k] = False
+            i = j
+        elif text[i] in "\"'":
+            quote = text[i]
+            j = i + 1
+            while j < n and text[j] != quote and text[j] != "\n":
+                j += 2 if text[j] == "\\" else 1
+            j = min(n, j + 1)
+            for k in range(i, j):
+                mask[k] = False
+            i = j
+        else:
+            i += 1
+    return mask
+
+
+def gs_spaces(text, rng, rate):
+    """SingleSpaceSeparator: a single space between two tokens becomes two, three or a tab."""
+    mask = code_mask(text)
+    out = []
+    for i, c in enumerate(text):
+        if c == " " and mask[i] and 0 < i < len(text) - 1 and text[i - 1] not in " \t\n" and text[i + 1] not in " \t\n" and mask[i - 1] and mask[i + 1] \
+                and rng.random() < rate * 2:
+            out.append(rng.choice(["  ", "   ", "\t"]))
+        else:
+            out.append(c)
+    return "".join(out)
+
+
+def gs_brackets(text, rng, rate):
+    """ArrayBracketNoWhitespace: a blank put before or after a `[` or `]`, or taken from after a `]`."""
+    mask = code_mask(text)
+    out = []
+    n = len(text)
+    i = 0
+    while i < n:
+        c = text[i]
+        if c in "[]" and mask[i] and rng.random() < rate * 4:
+            kind = rng.randrange(3)
+            if c == "[" and kind == 0:
+                out.append(" [")
+            elif c == "[" and kind == 1:
+                out.append("[ ")
+            elif c == "]" and kind == 0:
+                out.append(" ]")
+            elif c == "]" and kind == 1 and i + 1 < n and text[i + 1] == " " and mask[i + 1]:
+                out.append("]")
+                i += 1  # drop the blank after
+            elif c == "]":
+                out.append("] ")
+            else:
+                out.append(c)
+        else:
+            out.append(c)
+        i += 1
+    return "".join(out)
+
+
+CASE_COLON = re.compile(r"^(?P<head>\s*(?:case\s[^:?'\"]*?|default))(?P<colon>:)(?!:)(?P<tail>.*)$")
+
+
+def gs_colon(text, rng, rate):
+    """NoWhitespaceBeforeCaseDefaultColon: a blank, two blanks or a comment put before the colon of a label."""
+    out = []
+    for line in text.split("\n"):
+        m = CASE_COLON.match(line)
+        if m and "->" not in line and rng.random() < rate * 6:
+            line = f"{m['head']}{rng.choice([' ', '  ', ' /* c */', '/* c */', '/* c */ '])}:{m['tail']}"
+        out.append(line)
+    return "\n".join(out)
+
+
+def gs_emptybody(text, rng, rate):
+    """WhitespaceBeforeEmptyBody: the blank before the `{` of an empty body is taken away."""
+    mask = code_mask(text)
+    out = []
+    n = len(text)
+    i = 0
+    while i < n:
+        c = text[i]
+        if c == " " and mask[i] and i + 1 < n and text[i + 1] == "{" and i > 0 and text[i - 1] not in " \n\t":
+            rest = re.match(r"\{\s*\}", text[i + 1:i + 200])
+            if rest and rng.random() < rate * 10:
+                i += 1
+                continue
+        out.append(c)
+        i += 1
+    return "".join(out)
+
+
+ANNOTATED = re.compile(r"^(?P<indent>[ \t]*)(?P<ann>@(?!interface)\w+(?:\([^)]*\))?)(?P<sep>[ \t]+)(?P<rest>(?:public|private|protected|static|final|abstract|default|synchronized|void|int|long|boolean|[A-Z]\w*)\b.*)$")
+ANNOTATION_ONLY = re.compile(r"^(?P<indent>[ \t]*)@(?!interface)\w+(?:\([^)]*\))?[ \t]*$")
+
+
+def gs_annotations(text, rng, rate):
+    """AnnotationLocation: an annotation is moved onto the line of its declaration, or off it, or indented unevenly."""
+    lines = text.split("\n")
+    out = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        m = ANNOTATED.match(line)
+        if m and rng.random() < rate * 6:
+            out.append(f"{m['indent']}{m['ann']}")
+            out.append(f"{m['indent']}{m['rest']}")
+        elif ANNOTATION_ONLY.match(line) and i + 1 < len(lines) and rng.random() < rate * 6:
+            nxt = lines[i + 1]
+            kind = rng.randrange(3)
+            if kind == 0 and nxt.strip() and not nxt.lstrip().startswith(("//", "/*", "*")):
+                out.append(line.rstrip() + " " + nxt.strip())
+                i += 1
+            elif kind == 1 and ANNOTATION_ONLY.match(nxt):
+                out.append(line)
+                out.append("  " + nxt)
+                i += 1
+            else:
+                out.append(line)
+        else:
+            out.append(line)
+        i += 1
+    return "\n".join(out)
+
+
+def gs_tokens(text, rng, rate):
+    """IllegalTokenText: a string literal gains a tab, a Unicode escape or an octal escape; `'\\t'` becomes an escape."""
+    mask = code_mask(text)
+    out = []
+    n = len(text)
+    i = 0
+    while i < n:
+        c = text[i]
+        if c == '"' and not mask[i] and not text.startswith('"""', i) and (i == 0 or mask[i - 1]) and rng.random() < rate * 4:
+            # an opening quote: code just before it, and not part of a text block
+            out.append(c + rng.choice(["\t", "\\u0009", "\\012", "\\u0020", " ", "\\040", "\\134"]))
+        elif text.startswith("'\\t'", i) and not mask[i] and rng.random() < rate * 8:
+            out.append(rng.choice(["'\\u0009'", "'\\011'"]))
+            i += 3
+        else:
+            out.append(c)
+        i += 1
+    return "".join(out)
+
+
+def gs_modimport(text, rng, rate):
+    """AvoidModuleImport: one to three `import module` lines are put before the first import of a file."""
+    lines = text.split("\n")
+    for i, line in enumerate(lines):
+        if line.startswith("import ") and rng.random() < rate * 10:
+            names = rng.sample(["java.base", "java.sql", "java.xml", "java.desktop", "jdk.compiler"], rng.randrange(1, 4))
+            lines[i:i] = [f"import module {n};" for n in names]
+            break
+    return "\n".join(lines)
+
+
+DIRECTIVE = re.compile(r"^\s*(requires|exports|opens|uses|provides)\b.*;\s*$")
+
+
+def gs_directives(text, rng, rate):
+    """ModuleDirectiveOrder: in a module declaration, a directive swaps places with the one before it, or
+    gains an empty line before it, or loses the one it has."""
+    lines = text.split("\n")
+    i = 1
+    while i < len(lines):
+        if DIRECTIVE.match(lines[i]) and rng.random() < rate:
+            kind = rng.randrange(3)
+            if kind == 0 and DIRECTIVE.match(lines[i - 1]):
+                lines[i - 1], lines[i] = lines[i], lines[i - 1]
+            elif kind == 1:
+                lines.insert(i, "")
+                i += 1
+            elif lines[i - 1].strip() == "":
+                del lines[i - 1]
+                i -= 1
+        i += 1
+    return "\n".join(lines)
+
+
+GS_PASSES = {
+    "package": gs_package,
+    "wrap": gs_wrap,
+    "records": gs_records,
+    "directives": gs_directives,
+    "modimport": gs_modimport,
+    "spaces": gs_spaces,
+    "brackets": gs_brackets,
+    "colon": gs_colon,
+    "emptybody": gs_emptybody,
+    "annotations": gs_annotations,
+    "tokens": gs_tokens,
+}
 
 
 def mutate(text, rng, rate):
@@ -863,6 +1297,7 @@ def main():
     ap.add_argument("--classes", action="store_true", help="only change class and constructor modifiers (a separate pass)")
     ap.add_argument("--modifiers", action="store_true", help="only add redundant modifiers and loosen field visibility (a separate pass)")
     ap.add_argument("--commas", action="store_true", help="only give for headers more variables (a separate pass)")
+    ap.add_argument("--blanks", action="store_true", help="only change the blank lines (a separate pass)")
     ap.add_argument("--order", action="store_true", help="only swap neighbouring one-line fields (a separate pass)")
     ap.add_argument("--hidden", action="store_true", help="only rename declarations to the names of fields (a separate pass)")
     ap.add_argument("--rcurly", action="store_true", help="only move closing braces (a separate pass)")
@@ -877,7 +1312,10 @@ def main():
     ap.add_argument("--after-punct", action="store_true", help="only remove blanks after tokens (a separate pass)")
     ap.add_argument("--before-punct", action="store_true", help="only pad before punctuation (a separate pass)")
     ap.add_argument("--before-paren", action="store_true", help="only pad before parentheses (a separate pass)")
+    ap.add_argument("--indent-comments", action="store_true", help="only shift the indentation of comment lines (a separate pass)")
+    ap.add_argument("--suppress", action="store_true", help="only add @SuppressWarnings annotations (a separate pass)")
     ap.add_argument("--parens", action="store_true", help="only pad parentheses (a separate pass, so other seeds are unchanged)")
+    ap.add_argument("--gs", choices=sorted(GS_PASSES) + ["rename"], help="one pass for the small structural modules (see GS_PASSES)")
     a = ap.parse_args()
     rng = random.Random(a.seed)
     files = changed = 0
@@ -887,11 +1325,19 @@ def main():
                 continue
             src = os.path.join(root, name)
             dst = os.path.join(a.destination, os.path.relpath(src, a.source))
+            if a.gs == "rename":
+                dst = os.path.join(os.path.dirname(dst), gs_rename(name, rng, a.rate))
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             with open(src, encoding="utf-8", errors="surrogateescape", newline="") as fh:
                 text = fh.read()
-            if a.parens:
+            if a.gs:
+                new = GS_PASSES[a.gs](text, rng, a.rate) if a.gs in GS_PASSES else text
+            if a.suppress:
+                new = add_suppress_warnings(text, rng, a.rate)
+            elif a.parens:
                 new = pad_parens(text, rng, a.rate)
+            elif a.indent_comments:
+                new = shift_comments(text, rng, a.rate)
             elif a.after_token:
                 new = pad_after_tokens(text, rng, a.rate)
             elif a.for_pad:
@@ -904,6 +1350,8 @@ def main():
                 new = edit_modifiers(text, rng, a.rate)
             elif a.commas:
                 new = add_for_variables(text, rng, a.rate)
+            elif a.blanks:
+                new = edit_blank_lines(text, rng, a.rate)
             elif a.order:
                 new = reorder_members(text, rng, a.rate)
             elif a.hidden:

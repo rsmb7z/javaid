@@ -1,0 +1,13 @@
+24:1 HideUtilityClassConstructor Utility classes should not have a public or default constructor.
+25:1 HideUtilityClassConstructor Utility classes should not have a public or default constructor.
+27:1 HideUtilityClassConstructor Utility classes should not have a public or default constructor.
+33:1 HideUtilityClassConstructor Utility classes should not have a public or default constructor.
+35:1 HideUtilityClassConstructor Utility classes should not have a public or default constructor.
+36:1 HideUtilityClassConstructor Utility classes should not have a public or default constructor.
+38:1 HideUtilityClassConstructor Utility classes should not have a public or default constructor.
+39:1 HideUtilityClassConstructor Utility classes should not have a public or default constructor.
+41:1 HideUtilityClassConstructor Utility classes should not have a public or default constructor.
+43:1 HideUtilityClassConstructor Utility classes should not have a public or default constructor.
+48:1 HideUtilityClassConstructor Utility classes should not have a public or default constructor.
+49:1 HideUtilityClassConstructor Utility classes should not have a public or default constructor.
+50:1 HideUtilityClassConstructor Utility classes should not have a public or default constructor.

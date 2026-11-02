@@ -27,7 +27,9 @@ pub fn on_comment(cx: &mut Ctx, node: Node) {
             .any(|line| todo.format.matches(line) || line.strip_suffix(b"\r").is_some_and(|l| todo.format.matches(l)));
         if hit {
             let message = format!("Comment matches to-do format '{}'.", todo.format.source);
-            cx.out.push(Diagnostic { rule: todo.name, line: at.row as u32 + 1, col: at.column as u32 + 3, message });
+            let line = at.row as u32 + 1;
+            let col = cx.column(line, at.column as u32 + 1) + 2;
+            cx.out.push(Diagnostic { rule: todo.name, line, col, message });
         }
     }
 }

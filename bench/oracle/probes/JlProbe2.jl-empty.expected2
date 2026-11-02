@@ -1,0 +1,3 @@
+6:0 RequireEmptyLineBeforeBlockTagGroup Javadoc tag '@return' should be preceded with an empty line.
+47:0 RequireEmptyLineBeforeBlockTagGroup Javadoc tag '@return' should be preceded with an empty line.
+54:0 RequireEmptyLineBeforeBlockTagGroup Javadoc comment at column 5 has parse error. Details: mismatched input '<EOF>' expecting JAVADOC_INLINE_TAG_END while parsing INLINE_TAG

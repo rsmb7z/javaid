@@ -1,0 +1,6 @@
+6:23 ParenPad '(' is not followed by whitespace.
+6:25 ParenPad ')' is not preceded with whitespace.
+37:12 ParenPad '(' is not followed by whitespace.
+37:36 ParenPad ')' is not preceded with whitespace.
+44:12 ParenPad '(' is not followed by whitespace.
+45:15 ParenPad ')' is not preceded with whitespace.

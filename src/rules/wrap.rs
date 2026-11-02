@@ -242,7 +242,7 @@ fn left_curly(cx: &mut Ctx, brace: Node) {
     }
     let line_start = src[..start].iter().rposition(|&b| b == b'\n').map_or(0, |i| i + 1);
     let starts_line = src[line_start..start].iter().all(|&b| pad::is_blank(b));
-    let column = start - line_start + 1;
+    let column = cx.char_column(brace.start_position().row as u32 + 1, (start - line_start) as u32 + 1);
     let row = brace.start_position().row;
     let on_previous_line = previous_token(brace).is_none_or(|t| t.end_position().row == row);
     let single_line = cx.parent().is_some_and(|p| p.end_position().row == row);
@@ -531,16 +531,24 @@ fn right_curly(cx: &mut Ctx, lbrace: Node) {
     } else {
         return;
     };
-    cx.diag("RightCurly", rcurly, format!("'}}' at column {} {message}.", rcurly.start_position().column + 1));
+    cx.diag("RightCurly", rcurly, format!("'}}' at column {} {message}.", cx.char_column(rcurly.start_position().row as u32 + 1, rcurly.start_position().column as u32 + 1)));
 }
 
 /// The row Checkstyle compares the closing brace with: that of the last statement's own token, which for a
 /// plain statement is its `;` and for anything bigger is where it starts.
 fn last_member_row(container: Node) -> Option<usize> {
     let mut cur = container.walk();
-    let last = container.children(&mut cur).filter(|c| !matches!(c.kind(), "{" | "}") && !is_comment(*c)).last()?;
+    let mut last = container.children(&mut cur).filter(|c| !matches!(c.kind(), "{" | "}") && !is_comment(*c)).last()?;
+    // An enum's members (and the `;` that opens them) are in a node of their own here, but are the
+    // body's own children to Checkstyle.
+    if last.kind() == "enum_body_declarations" {
+        let mut inner = last.walk();
+        last = last.children(&mut inner).filter(|c| !is_comment(*c)).last().unwrap_or(last);
+    }
+    // A field's `;` is part of the declaration to Checkstyle, a local variable's and an expression
+    // statement's is a token of its own after it.
     Some(match last.kind() {
-        "expression_statement" | "local_variable_declaration" | "field_declaration" | "constant_declaration" => last.end_position().row,
+        "expression_statement" | "local_variable_declaration" => last.end_position().row,
         _ => last.start_position().row,
     })
 }

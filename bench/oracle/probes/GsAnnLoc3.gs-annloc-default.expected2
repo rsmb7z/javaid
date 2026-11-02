@@ -1,0 +1,4 @@
+2:3 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+2:26 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+3:1 AnnotationLocation Annotation 'a' should be alone on line.
+3:9 AnnotationLocation Annotation 'C' should be alone on line.

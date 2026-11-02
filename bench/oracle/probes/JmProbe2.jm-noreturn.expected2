@@ -1,0 +1,16 @@
+14:22 JavadocMethod Expected @param tag for 'x'.
+16:23 JavadocMethod Expected @param tag for 'x'.
+16:30 JavadocMethod Expected @param tag for 'y'.
+73:41 JavadocMethod Expected @param tag for 'e'.
+115:0 JavadocMethod Javadoc comment at column 8 has parse error. Details: no viable alternative at input '</' while parsing HTML_ELEMENT
+141:28 JavadocMethod Expected @param tag for 'a'.
+171:28 JavadocMethod Expected @param tag for 'a'.
+185:19 JavadocMethod Expected @param tag for 'a'.
+210:0 JavadocMethod Javadoc comment at column 19 has parse error. Details: token recognition error at: ',' while parsing A
+230:28 JavadocMethod Expected @param tag for 'a'.
+241:28 JavadocMethod Expected @param tag for 'a'.
+243:21 JavadocMethod Expected @param tag for 'a'.
+246:33 JavadocMethod Expected @param tag for 'a'.
+251:29 JavadocMethod Expected @param tag for 'a'.
+254:32 JavadocMethod Expected @param tag for 'a'.
+258:26 JavadocMethod Expected @param tag for 'a'.

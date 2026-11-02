@@ -1,0 +1,14 @@
+11:16 IllegalInstantiation Instantiation of java.lang.Boolean should be avoided.
+13:16 IllegalInstantiation Instantiation of java.lang.String should be avoided.
+14:16 IllegalInstantiation Instantiation of java.lang.String should be avoided.
+15:16 IllegalInstantiation Instantiation of java.util.Date should be avoided.
+16:16 IllegalInstantiation Instantiation of java.util.Date should be avoided.
+17:16 IllegalInstantiation Instantiation of a.b.Local should be avoided.
+18:16 IllegalInstantiation Instantiation of a.b.Local should be avoided.
+19:16 IllegalInstantiation Instantiation of com.x.Thing should be avoided.
+20:16 IllegalInstantiation Instantiation of com.x.Thing should be avoided.
+22:16 IllegalInstantiation Instantiation of java.lang.Thread should be avoided.
+23:16 IllegalInstantiation Instantiation of java.lang.Thread should be avoided.
+42:17 IllegalInstantiation Instantiation of java.util.Date should be avoided.
+46:16 IllegalInstantiation Instantiation of a.b.Local should be avoided.
+47:16 IllegalInstantiation Instantiation of java.util.Date should be avoided.

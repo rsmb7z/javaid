@@ -1,0 +1,47 @@
+1:19 LeftCurly '{' at column 19 should be on a new line.
+2:0 LineLength Line is longer than 30 characters (found 99).
+2:1 FileTabCharacter Line contains a tab character.
+3:0 LineLength Line is longer than 30 characters (found 32).
+3:1 FileTabCharacter Line contains a tab character.
+3:5 JavadocVariable Missing a Javadoc comment for 's'.
+3:21 NoWhitespaceBefore ';' is preceded with whitespace.
+3:23 JavadocVariable Missing a Javadoc comment for 'x'.
+3:23 OneStatementPerLine Only one statement per line allowed.
+4:0 LineLength Line is longer than 30 characters (found 35).
+4:1 FileTabCharacter Line contains a tab character.
+4:5 JavadocVariable Missing a Javadoc comment for 'y'.
+5:0 LineLength Line is longer than 30 characters (found 40).
+5:1 FileTabCharacter Line contains a tab character.
+5:5 JavadocVariable Missing a Javadoc comment for 't'.
+5:22 JavadocVariable Missing a Javadoc comment for 'FooBar_baz'.
+5:22 OneStatementPerLine Only one statement per line allowed.
+5:26 MemberName Name 'FooBar_baz' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+6:0 LineLength Line is longer than 30 characters (found 43).
+6:1 FileTabCharacter Line contains a tab character.
+6:5 JavadocVariable Missing a Javadoc comment for 'café'.
+6:12 MemberName Name 'café' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+6:24 JavadocVariable Missing a Javadoc comment for 'Ünder_score'.
+6:24 OneStatementPerLine Only one statement per line allowed.
+6:28 MemberName Name 'Ünder_score' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+7:1 FileTabCharacter Line contains a tab character.
+7:14 LeftCurly '{' at column 11 should be on a new line.
+8:0 LineLength Line is longer than 30 characters (found 40).
+8:1 FileTabCharacter Line contains a tab character.
+8:20 LeftCurly '{' at column 14 should be on a new line.
+8:40 RightCurly '}' at column 34 should be alone on a line.
+9:1 FileTabCharacter Line contains a tab character.
+10:1 FileTabCharacter Line contains a tab character.
+11:1 FileTabCharacter Line contains a tab character.
+11:20 RightCurly '}' at column 11 should be alone on a line.
+12:0 LineLength Line is longer than 30 characters (found 46).
+12:1 FileTabCharacter Line contains a tab character.
+12:21 NoWhitespaceAfter '{' is followed by whitespace.
+12:31 OneStatementPerLine Only one statement per line allowed.
+12:43 NoWhitespaceAfter 'arr' is followed by whitespace.
+13:1 FileTabCharacter Line contains a tab character.
+14:0 LineLength Line is longer than 30 characters (found 37).
+14:1 FileTabCharacter Line contains a tab character.
+14:14 JavadocVariable Missing a Javadoc comment for 'qualified'.
+15:0 LineLength Line is longer than 30 characters (found 36).
+15:1 FileTabCharacter Line contains a tab character.
+15:8 JavadocVariable Missing a Javadoc comment for 'entry'.

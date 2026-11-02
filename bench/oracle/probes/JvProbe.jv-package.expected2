@@ -1,0 +1,13 @@
+17:5 JavadocVariable Missing a Javadoc comment for 'l2'.
+19:5 JavadocVariable Missing a Javadoc comment for 'noDoc'.
+37:31 JavadocVariable Missing a Javadoc comment for 'inAnon'.
+47:9 JavadocVariable Missing a Javadoc comment for 'B'.
+48:9 JavadocVariable Missing a Javadoc comment for 'C'.
+50:9 JavadocVariable Missing a Javadoc comment for 'E1'.
+51:9 JavadocVariable Missing a Javadoc comment for 'ef'.
+58:20 JavadocVariable Missing a Javadoc comment for 'innerInIface'.
+68:9 JavadocVariable Missing a Javadoc comment for 'rs'.
+72:39 JavadocVariable Missing a Javadoc comment for 'pn'.
+73:41 JavadocVariable Missing a Javadoc comment for 'pn'.
+74:37 JavadocVariable Missing a Javadoc comment for 'pn'.
+77:16 JavadocVariable Missing a Javadoc comment for 'pt'.

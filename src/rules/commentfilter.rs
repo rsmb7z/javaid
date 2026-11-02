@@ -8,11 +8,11 @@
 
 use crate::config::Format;
 use crate::engine::Ctx;
-use crate::suppress::{expanded_column, fill, module_of, source_name, CommentFilter};
+use crate::suppress::{fill, module_of, source_name, CommentFilter};
 use tree_sitter::Node;
 
 /// Modules that report to the Checker, not to the TreeWalker.
-const CHECKER_LEVEL: &[&str] = &[
+pub const CHECKER_LEVEL: &[&str] = &[
     "FileTabCharacter", "RegexpSingleline", "RegexpMultiline", "Regexp", "NewlineAtEndOfFile", "LineLength", "JavadocPackage", "Translation", "UniqueProperties", "OrderedProperties",
     "Header", "RegexpHeader", "MultiFileRegexpHeader", "RegexpOnFilename", "FileLength",
 ];
@@ -122,14 +122,13 @@ pub fn finish(cx: &mut Ctx, st: &mut State) {
         return;
     }
     let per_filter: Vec<Vec<Tag>> = cfg.comment_filters.iter().map(|f| tags_of(f, &st.comments)).collect();
-    let lines: Vec<&[u8]> = cx.src.split(|&b| b == b'\n').collect();
     let mut out = std::mem::take(cx.out);
     out.retain(|d| {
         let (module, id) = module_of(cfg, d.rule);
         if CHECKER_LEVEL.contains(&module.as_str()) {
             return true;
         }
-        let column = if d.col == 0 { 0 } else { expanded_column(&lines, d.line, d.col, cfg.tab_width) };
+        let column = d.col;
         let source = source_name(module);
         !cfg.comment_filters.iter().zip(&per_filter).any(|(filter, tags)| match filter {
             CommentFilter::OnOff { .. } => {

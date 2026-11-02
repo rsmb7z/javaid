@@ -2,8 +2,9 @@
 //! that keep a file from being read at all.
 //!
 //! Checkstyle's filters do not find anything; they decide which findings (or files) stand. Done
-//! here: `BeforeExecutionExclusionFileFilter` and `SuppressionFilter`. The XPath, comment and
-//! `@SuppressWarnings` filters are not, and a configuration that names them says so when it loads.
+//! here: `BeforeExecutionExclusionFileFilter` and `SuppressionFilter`. The XPath filters and
+//! `@SuppressWarnings` live in `rules::xpathfilter` (called from `by_file`), the comment filters in
+//! `rules::commentfilter`.
 
 use crate::config::{Config, Format};
 use crate::engine::Diagnostic;
@@ -70,7 +71,7 @@ fn within(ranges: &[(u32, u32)], n: u32) -> bool {
 }
 
 /// The path Checkstyle matches file patterns against: absolute, as the file system names it.
-fn absolute(path: &Path) -> String {
+pub fn absolute(path: &Path) -> String {
     std::path::absolute(path).unwrap_or_else(|_| path.to_path_buf()).to_string_lossy().into_owned()
 }
 
@@ -207,6 +208,7 @@ fn by_text(cfg: &Config, src: &[u8], findings: &mut Vec<Diagnostic>) {
 /// Remove the findings of a file that the `SuppressionFilter` suppresses.
 pub fn by_file(cfg: &Config, path: &Path, src: &[u8], findings: &mut Vec<Diagnostic>) {
     by_text(cfg, src, findings);
+    crate::rules::xpathfilter::apply(cfg, path, src, findings);
     if cfg.suppressions.is_empty() || findings.is_empty() {
         return;
     }
@@ -216,10 +218,9 @@ pub fn by_file(cfg: &Config, path: &Path, src: &[u8], findings: &mut Vec<Diagnos
     if relevant.is_empty() {
         return;
     }
-    let lines: Vec<&[u8]> = if relevant.iter().any(|s| s.columns.is_some()) { src.split(|&b| b == b'\n').collect() } else { Vec::new() };
     findings.retain(|d| {
         let (module, id) = module_of(cfg, d.rule);
-        let column = expanded_column(&lines, d.line, d.col, cfg.tab_width);
+        let column = d.col;
         let source = source_name(module);
         !relevant.iter().any(|s| {
             s.checks.as_ref().is_none_or(|c| c.matches(source.as_bytes()))
@@ -256,6 +257,20 @@ pub fn module_of(cfg: &Config, display: &str) -> (String, Option<&'static str>) 
     if let Some(t) = cfg.descendant_tokens.iter().find(|t| t.name == display) {
         return ("DescendantToken".to_string(), (t.name != "DescendantToken").then_some(t.name));
     }
+    // Modules whose instances each carry their own `id`.
+    let per_instance: [(&str, Option<&'static str>); 3] = [
+        ("LeftCurly", cfg.left_curly.iter().find(|t| t.name == display).map(|t| t.name)),
+        ("OperatorWrap", cfg.operator_wrap.iter().find(|t| t.name == display).map(|t| t.name)),
+        ("SeparatorWrap", cfg.separator_wrap.iter().find(|t| t.name == display).map(|t| t.name)),
+    ];
+    for (module, found) in per_instance {
+        if let Some(name) = found {
+            return (module.to_string(), (name != module).then_some(name));
+        }
+    }
+    if let Some(t) = cfg.match_xpaths.iter().find(|t| t.name == display) {
+        return ("MatchXpath".to_string(), (t.name != "MatchXpath").then_some(t.name));
+    }
     (display.to_string(), None)
 }
 
@@ -263,7 +278,7 @@ pub fn module_of(cfg: &Config, display: &str) -> (String, Option<&'static str>) 
 pub fn source_name(module: String) -> String {
     let package = match module.as_str() {
         "AnnotationLocation" | "AnnotationOnSameLine" | "AnnotationUseStyle" | "MissingDeprecated" | "MissingOverride" | "PackageAnnotation" | "SuppressWarnings" => "annotation",
-        "AvoidNestedBlocks" | "EmptyBlock" | "EmptyCatchBlock" | "LeftCurly" | "NeedBraces" | "RightCurly" => "blocks",
+        "AvoidNestedBlocks" | "GoogleRightCurly" | "EmptyBlock" | "EmptyCatchBlock" | "LeftCurly" | "NeedBraces" | "RightCurly" => "blocks",
         "DesignForExtension" | "FinalClass" | "HideUtilityClassConstructor" | "InnerTypeLast" | "InterfaceIsType" | "MutableException" | "OneTopLevelClass" | "SealedShouldHavePermitsList"
         | "ThrowsCount" | "VisibilityModifier" => "design",
         "AvoidStarImport" | "AvoidStaticImport" | "CustomImportOrder" | "IllegalImport" | "ImportControl" | "ImportOrder" | "RedundantImport" | "UnusedImports" | "AvoidModuleImport" => "imports",
@@ -290,19 +305,4 @@ pub fn source_name(module: String) -> String {
         _ => "coding",
     };
     format!("com.puppycrawl.tools.checkstyle.checks.{package}.{module}Check")
-}
-
-/// The column the filter compares: Checkstyle counts a tab as running to the next multiple of the
-/// tab width, so a finding after tab indentation sits further right than its character index.
-pub fn expanded_column(lines: &[&[u8]], line: u32, col: u32, tab_width: usize) -> u32 {
-    let Some(text) = lines.get((line as usize).wrapping_sub(1)) else { return col };
-    let mut width = 0usize;
-    for &b in text.iter().take((col as usize).saturating_sub(1)) {
-        if b == b'\t' {
-            width = (width / tab_width + 1) * tab_width;
-        } else if b & 0xC0 != 0x80 {
-            width += 1;
-        }
-    }
-    width as u32 + 1
 }

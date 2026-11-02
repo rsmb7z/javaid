@@ -1,0 +1,14 @@
+8:19 JavadocVariable Missing a Javadoc comment for 'x'.
+14:27 JavadocVariable Missing a Javadoc comment for 'A'.
+14:30 JavadocVariable Missing a Javadoc comment for 'B'.
+15:5 JavadocVariable Missing a Javadoc comment for 's'.
+16:5 JavadocVariable Missing a Javadoc comment for 'o'.
+17:9 JavadocVariable Missing a Javadoc comment for 'f1'.
+18:22 JavadocVariable Missing a Javadoc comment for 'f2'.
+29:5 JavadocVariable Missing a Javadoc comment for 'a1'.
+29:5 JavadocVariable Missing a Javadoc comment for 'b1'.
+29:5 JavadocVariable Missing a Javadoc comment for 'c1'.
+47:5 JavadocVariable Missing a Javadoc comment for 'serialPersistentFields'.
+48:5 JavadocVariable Missing a Javadoc comment for 'ignoreMe'.
+52:5 JavadocVariable Missing a Javadoc comment for 'notAllowed'.
+54:5 JavadocVariable Missing a Javadoc comment for 'missing'.

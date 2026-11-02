@@ -1,0 +1,10 @@
+7:13 CustomImportOrder Extra separation in import group before 'java.util.Set'
+8:1 CustomImportOrder Wrong lexicographical order for 'java.util.Collection' import. Should be before 'java.util.Set'.
+10:1 CustomImportOrder Wrong lexicographical order for 'java.util.Queue' import. Should be before 'java.util.Set'.
+12:1 CustomImportOrder 'a.B' should be separated from previous import group by one line.
+12:13 CustomImportOrder Wrong lexicographical order for 'a.A' import. Should be before 'a.B'.
+14:1 CustomImportOrder Wrong lexicographical order for 'com.Abc' import. Should be before 'com.Zed'.
+16:1 CustomImportOrder Wrong lexicographical order for 'com.ABC' import. Should be before 'com.abc'.
+17:1 CustomImportOrder Wrong lexicographical order for 'com.a1.B' import. Should be before 'com.abc'.
+18:1 CustomImportOrder Wrong lexicographical order for 'com.a.B' import. Should be before 'com.abc'.
+19:1 CustomImportOrder Wrong lexicographical order for 'com.a_b.B' import. Should be before 'com.abc'.

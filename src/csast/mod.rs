@@ -12,5 +12,5 @@ pub mod tok;
 
 pub use ast::{CsAst, N, NIL};
 pub use build::{build, build_checked, build_source, build_with_comments, try_build_source};
-pub use print::dump;
+pub use print::{dump, node_line};
 pub use tok::Tok;

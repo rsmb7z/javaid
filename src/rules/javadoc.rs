@@ -345,7 +345,7 @@ fn column_of(cx: &Ctx, line: u32, index: usize) -> u32 {
     let mut width = 0usize;
     for c in text.chars().take(index) {
         if c == '\t' {
-            width = (width / cx.cfg.tab_width + 1) * cx.cfg.tab_width;
+            width = (width / cx.cfg.walker_tab() + 1) * cx.cfg.walker_tab();
         } else {
             width += 1;
         }
@@ -475,12 +475,12 @@ fn type_name_parts<'a>(cx: &Ctx, ty: Node<'a>) -> Option<(Node<'a>, String)> {
     while let Some(c) = first.named_child(0).filter(|_| matches!(first.kind(), "scoped_type_identifier" | "generic_type" | "scoped_identifier")) {
         first = c;
     }
-    let simple = match ty.kind() {
-        "scoped_type_identifier" | "scoped_identifier" => ty.named_children(&mut ty.walk()).last().map(|n| cx.text(n)),
+    // The name as written, which is what the message shows (`java.io.IOException`).
+    let written = match ty.kind() {
         "generic_type" => ty.named_child(0).map(|n| cx.text(n)),
         _ => Some(cx.text(ty)),
     }?;
-    Some((first, String::from_utf8_lossy(simple).rsplit('.').next().unwrap_or_default().to_string()))
+    Some((first, String::from_utf8_lossy(written).into_owned()))
 }
 
 /// `throw new X(...)` statements that Checkstyle counts: not inside a lambda, an anonymous or local
@@ -631,19 +631,21 @@ pub fn on_javadoc_method(cx: &mut Ctx, decl: Node) {
             }
             // Each exception class is wanted once, wherever it is thrown (probed on Guava).
             let mut seen: Vec<String> = Vec::new();
-            wanted.retain(|(_, simple)| {
-                let fresh = !seen.contains(simple);
+            let simple_of = |written: &str| written.rsplit('.').next().unwrap_or_default().to_string();
+            wanted.retain(|(_, written)| {
+                let simple = simple_of(written);
+                let fresh = !seen.contains(&simple);
                 if fresh {
-                    seen.push(simple.clone());
+                    seen.push(simple);
                 }
                 fresh
             });
             let mut documented_throws: Vec<String> = throws_tags.iter().filter_map(|t| t.arg.as_ref().map(|a| a.rsplit('.').next().unwrap_or(a).to_string())).collect();
-            for (node, simple) in wanted {
-                if let Some(i) = documented_throws.iter().position(|d| *d == simple) {
+            for (node, written) in wanted {
+                if let Some(i) = documented_throws.iter().position(|d| *d == simple_of(&written)) {
                     documented_throws.remove(i);
                 } else {
-                    cx.diag("JavadocMethod", node, format!("Expected @throws tag for '{simple}'."));
+                    cx.diag("JavadocMethod", node, format!("Expected @throws tag for '{written}'."));
                 }
             }
         }

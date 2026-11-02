@@ -1,0 +1,5 @@
+2:5 FinalClass Class A should be declared as final.
+5:5 FinalClass Class D should be declared as final.
+18:5 FinalClass Class R should be declared as final.
+19:5 FinalClass Class S should be declared as final.
+28:1 FinalClass Class Util5 should be declared as final.

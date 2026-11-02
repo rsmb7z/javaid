@@ -1,0 +1,14 @@
+5:5 JavadocVariable Missing a Javadoc comment for 'b'.
+6:5 JavadocVariable Missing a Javadoc comment for 'c'.
+7:5 JavadocVariable Missing a Javadoc comment for 'd'.
+9:5 JavadocVariable Missing a Javadoc comment for 'f'.
+14:10 JavadocVariable Missing a Javadoc comment for 'j'.
+15:5 JavadocVariable Missing a Javadoc comment for 'k'.
+21:17 JavadocVariable Missing a Javadoc comment for 'plain'.
+23:5 JavadocVariable Missing a Javadoc comment for 'line'.
+28:5 JavadocVariable Missing a Javadoc comment for 'afterAnn'.
+56:9 JavadocVariable Missing a Javadoc comment for 'K'.
+63:9 JavadocVariable Missing a Javadoc comment for 'W'.
+73:49 JavadocVariable Missing a Javadoc comment for 'pub'.
+74:45 JavadocVariable Missing a Javadoc comment for 'pub'.
+77:24 JavadocVariable Missing a Javadoc comment for 'ptPub'.

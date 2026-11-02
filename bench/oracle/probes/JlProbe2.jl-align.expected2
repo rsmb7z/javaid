@@ -1,0 +1,7 @@
+11:12 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 3, expected is 1.
+17:9 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 0, expected is 1.
+18:18 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 9, expected is 1.
+23:10 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 5, expected is 1.
+35:5 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 0, expected is 1.
+54:0 JavadocLeadingAsteriskAlign Javadoc comment at column 5 has parse error. Details: mismatched input '<EOF>' expecting JAVADOC_INLINE_TAG_END while parsing INLINE_TAG
+63:7 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 2, expected is 1.

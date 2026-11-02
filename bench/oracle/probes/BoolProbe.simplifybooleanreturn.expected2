@@ -1,0 +1,14 @@
+3:9 SimplifyBooleanReturn Conditional logic can be removed.
+4:9 SimplifyBooleanReturn Conditional logic can be removed.
+5:9 SimplifyBooleanReturn Conditional logic can be removed.
+6:9 SimplifyBooleanReturn Conditional logic can be removed.
+11:38 SimplifyBooleanReturn Conditional logic can be removed.
+14:9 SimplifyBooleanReturn Conditional logic can be removed.
+16:9 SimplifyBooleanReturn Conditional logic can be removed.
+21:9 SimplifyBooleanReturn Conditional logic can be removed.
+22:34 SimplifyBooleanReturn Conditional logic can be removed.
+24:9 SimplifyBooleanReturn Conditional logic can be removed.
+25:9 SimplifyBooleanReturn Conditional logic can be removed.
+26:9 SimplifyBooleanReturn Conditional logic can be removed.
+29:46 SimplifyBooleanReturn Conditional logic can be removed.
+30:43 SimplifyBooleanReturn Conditional logic can be removed.

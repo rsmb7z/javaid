@@ -1,0 +1,10 @@
+8:1 CustomImportOrder Import statement for 'a.b.c.Same' is in the wrong order. Should be in the 'THIRD_PARTY_PACKAGE' group, expecting not assigned imports on this line.
+9:1 CustomImportOrder Import statement for 'a.b.d.Other' is in the wrong order. Should be in the 'THIRD_PARTY_PACKAGE' group, expecting not assigned imports on this line.
+10:1 CustomImportOrder Import statement for 'b.B' is in the wrong order. Should be in the 'THIRD_PARTY_PACKAGE' group, expecting not assigned imports on this line.
+11:1 CustomImportOrder Import statement for 'a.b.c.d.Deeper' is in the wrong order. Should be in the 'THIRD_PARTY_PACKAGE' group, expecting not assigned imports on this line.
+12:1 CustomImportOrder Import statement for 'c.C' is in the wrong order. Should be in the 'THIRD_PARTY_PACKAGE' group, expecting not assigned imports on this line.
+13:1 CustomImportOrder Import statement for 'java.util.List' is in the wrong order. Should be in the 'STANDARD_JAVA_PACKAGE' group, expecting not assigned imports on this line.
+14:1 CustomImportOrder Import statement for 'javax.annotation.Nullable' is in the wrong order. Should be in the 'THIRD_PARTY_PACKAGE' group, expecting not assigned imports on this line.
+15:1 CustomImportOrder Import statement for 'org.junit.Test' is in the wrong order. Should be in the 'THIRD_PARTY_PACKAGE' group, expecting not assigned imports on this line.
+16:1 CustomImportOrder Import statement for 'org.junit.jupiter.api.Test' is in the wrong order. Should be in the 'THIRD_PARTY_PACKAGE' group, expecting not assigned imports on this line.
+17:1 CustomImportOrder Import statement for 'junit.framework.TestCase' is in the wrong order. Should be in the 'THIRD_PARTY_PACKAGE' group, expecting not assigned imports on this line.

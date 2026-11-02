@@ -1,0 +1,1 @@
+1:0 MultiFileRegexpHeader Header is missing or too short based on configured header templates '/com/puppycrawl/tools/checkstyle/any.header'. File must match one of them.

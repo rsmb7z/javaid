@@ -1,0 +1,11 @@
+9:16 VisibilityModifier Variable 'pub' must be private and have accessor methods.
+17:23 VisibilityModifier Variable 'pubstatic' must be private and have accessor methods.
+21:16 VisibilityModifier Variable 'x' must be private and have accessor methods.
+21:19 VisibilityModifier Variable 'y' must be private and have accessor methods.
+27:39 VisibilityModifier Variable 'sw' must be private and have accessor methods.
+35:19 VisibilityModifier Variable 's' must be private and have accessor methods.
+36:18 VisibilityModifier Variable 'arr' must be private and have accessor methods.
+42:24 VisibilityModifier Variable 'anonPub' must be private and have accessor methods.
+66:20 VisibilityModifier Variable 'enumPub' must be private and have accessor methods.
+79:24 VisibilityModifier Variable 'deep' must be private and have accessor methods.
+92:18 VisibilityModifier Variable 'pt' must be private and have accessor methods.

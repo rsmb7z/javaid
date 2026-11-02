@@ -1,0 +1,2 @@
+2:0 RegexpSingleline Trailing whitespace is not allowed
+3:1 FileTabCharacter Line contains a tab character.

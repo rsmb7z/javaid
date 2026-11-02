@@ -1,0 +1,18 @@
+67:5 LeftCurly '{' at column 5 should be on the previous line.
+70:19 LeftCurly '{' at column 19 should have line break after.
+80:5 LeftCurly '{' at column 5 should be on the previous line.
+83:19 LeftCurly '{' at column 19 should have line break after.
+89:5 LeftCurly '{' at column 5 should be on the previous line.
+89:5 LeftCurly '{' at column 5 should have line break after.
+97:5 LeftCurly '{' at column 5 should be on the previous line.
+109:19 LeftCurly '{' at column 19 should have line break after.
+114:5 LeftCurly '{' at column 5 should be on the previous line.
+1560:5 LeftCurly '{' at column 5 should be on the previous line.
+1564:26 LeftCurly '{' at column 26 should have line break after.
+1579:5 LeftCurly '{' at column 5 should be on the previous line.
+1583:26 LeftCurly '{' at column 26 should have line break after.
+1591:5 LeftCurly '{' at column 5 should be on the previous line.
+1591:5 LeftCurly '{' at column 5 should have line break after.
+1601:5 LeftCurly '{' at column 5 should be on the previous line.
+1617:26 LeftCurly '{' at column 26 should have line break after.
+1624:5 LeftCurly '{' at column 5 should be on the previous line.

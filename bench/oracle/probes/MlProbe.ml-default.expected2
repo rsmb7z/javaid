@@ -1,0 +1,13 @@
+7:1 MultilineCommentLeadingAsteriskPresence Multiline comment line(s) 8 should start with leading asterisk.
+11:1 MultilineCommentLeadingAsteriskPresence Multiline comment line(s) 12, 13 should start with leading asterisk.
+19:1 MultilineCommentLeadingAsteriskPresence Multiline comment line(s) 20 should start with leading asterisk.
+25:1 MultilineCommentLeadingAsteriskPresence Multiline comment line(s) 26 should start with leading asterisk.
+28:1 MultilineCommentLeadingAsteriskPresence Multiline comment line(s) 29 should start with leading asterisk.
+38:5 MultilineCommentLeadingAsteriskPresence Multiline comment line(s) 39 should start with leading asterisk.
+41:9 MultilineCommentLeadingAsteriskPresence Multiline comment line(s) 42 should start with leading asterisk.
+45:17 MultilineCommentLeadingAsteriskPresence Multiline comment line(s) 46 should start with leading asterisk.
+47:13 MultilineCommentLeadingAsteriskPresence Multiline comment line(s) 48 should start with leading asterisk.
+59:9 MultilineCommentLeadingAsteriskPresence Multiline comment line(s) 61 should start with leading asterisk.
+63:5 MultilineCommentLeadingAsteriskPresence Multiline comment line(s) 64 should start with leading asterisk.
+68:9 MultilineCommentLeadingAsteriskPresence Multiline comment line(s) 69 should start with leading asterisk.
+74:1 MultilineCommentLeadingAsteriskPresence Multiline comment line(s) 75 should start with leading asterisk.

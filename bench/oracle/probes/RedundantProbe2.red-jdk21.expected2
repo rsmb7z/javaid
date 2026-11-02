@@ -1,0 +1,4 @@
+19:14 RedundantModifier Redundant 'final' modifier.
+24:5 RedundantModifier Redundant 'strictfp' modifier.
+25:12 RedundantModifier Redundant 'strictfp' modifier.
+26:12 RedundantModifier Redundant 'strictfp' modifier.

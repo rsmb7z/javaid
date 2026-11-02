@@ -1,0 +1,9 @@
+40:24 WhitespaceAfter ',' is not followed by whitespace.
+40:34 WhitespaceAfter ',' is not followed by whitespace.
+56:21 WhitespaceAfter ',' is not followed by whitespace.
+145:18 WhitespaceAfter ';' is not followed by whitespace.
+163:18 WhitespaceAfter 'else' is not followed by whitespace.
+167:9 WhitespaceAfter 'do' is not followed by whitespace.
+167:13 WhitespaceAfter 'while' is not followed by whitespace.
+169:9 WhitespaceAfter 'while' is not followed by whitespace.
+171:9 WhitespaceAfter 'for' is not followed by whitespace.

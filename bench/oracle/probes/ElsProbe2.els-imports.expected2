@@ -1,0 +1,5 @@
+6:1 EmptyLineSeparator 'package' should be separated from previous line.
+15:1 EmptyLineSeparator 'ENUM_DEF' should be separated from previous line.
+126:5 EmptyLineSeparator 'STATIC_INIT' should be separated from previous line.
+130:5 EmptyLineSeparator '//' has more than 1 empty lines before.
+141:5 EmptyLineSeparator '/*' has more than 1 empty lines before.

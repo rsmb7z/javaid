@@ -1,0 +1,6 @@
+17:7 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 6, expected level should be 4.
+76:9 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 8, expected level should be 4.
+90:7 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 6, expected level should be 4.
+157:7 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 6, expected level should be 4.
+177:11 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 10, expected level should be 8.
+216:11 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 10, expected level should be 8.

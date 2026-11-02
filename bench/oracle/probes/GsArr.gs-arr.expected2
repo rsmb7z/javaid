@@ -1,0 +1,68 @@
+8:9 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+9:8 ArrayBracketNoWhitespace '[' is followed by whitespace.
+9:10 ArrayBracketNoWhitespace ']' is preceded with whitespace.
+10:9 ArrayBracketNoWhitespace '[' is followed by whitespace.
+10:9 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+10:11 ArrayBracketNoWhitespace ']' is preceded with whitespace.
+12:12 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+13:11 ArrayBracketNoWhitespace '[' is followed by whitespace.
+13:13 ArrayBracketNoWhitespace ']' is preceded with whitespace.
+14:9 ArrayBracketNoWhitespace ']' is not followed by whitespace.
+17:26 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+17:28 ArrayBracketNoWhitespace ']' is followed by whitespace.
+17:30 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+18:25 ArrayBracketNoWhitespace '[' is followed by whitespace.
+18:29 ArrayBracketNoWhitespace ']' is preceded with whitespace.
+18:30 ArrayBracketNoWhitespace '[' is followed by whitespace.
+18:34 ArrayBracketNoWhitespace ']' is preceded with whitespace.
+19:27 ArrayBracketNoWhitespace ']' is followed by whitespace.
+19:29 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+22:28 ArrayBracketNoWhitespace ']' is not followed by whitespace.
+23:24 ArrayBracketNoWhitespace ']' is not followed by whitespace.
+27:12 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+29:14 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+31:14 ArrayBracketNoWhitespace ']' is followed by whitespace.
+34:23 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+37:33 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+39:22 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+46:19 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+47:18 ArrayBracketNoWhitespace '[' is followed by whitespace.
+48:21 ArrayBracketNoWhitespace ']' is preceded with whitespace.
+49:20 ArrayBracketNoWhitespace ']' is not followed by whitespace.
+53:20 ArrayBracketNoWhitespace ']' is followed by whitespace.
+55:11 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+57:12 ArrayBracketNoWhitespace ']' is not followed by whitespace.
+59:12 ArrayBracketNoWhitespace ']' is not followed by whitespace.
+61:13 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+62:10 ArrayBracketNoWhitespace '[' is followed by whitespace.
+62:15 ArrayBracketNoWhitespace ']' is followed by whitespace.
+62:17 ArrayBracketNoWhitespace ']' is preceded with whitespace.
+65:16 ArrayBracketNoWhitespace ']' is followed by whitespace.
+67:17 ArrayBracketNoWhitespace ']' is followed by whitespace.
+68:15 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+68:17 ArrayBracketNoWhitespace ']' is followed by whitespace.
+69:16 ArrayBracketNoWhitespace ']' is followed by whitespace.
+76:16 ArrayBracketNoWhitespace ']' is not followed by whitespace.
+76:25 ArrayBracketNoWhitespace ']' is not followed by whitespace.
+78:16 ArrayBracketNoWhitespace ']' is not followed by whitespace.
+80:25 ArrayBracketNoWhitespace ']' is not followed by whitespace.
+80:33 ArrayBracketNoWhitespace ']' is not followed by whitespace.
+84:11 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+84:13 ArrayBracketNoWhitespace ']' is followed by whitespace.
+84:15 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+85:12 ArrayBracketNoWhitespace ']' is followed by whitespace.
+85:14 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+86:13 ArrayBracketNoWhitespace '[' is followed by whitespace.
+87:19 ArrayBracketNoWhitespace ']' is not followed by whitespace.
+88:40 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+91:24 ArrayBracketNoWhitespace ']' is followed by whitespace.
+93:21 ArrayBracketNoWhitespace ']' is not followed by whitespace.
+94:30 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+108:9 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+109:15 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+113:13 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+122:20 ArrayBracketNoWhitespace '[' is not preceded with whitespace.
+131:37 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+133:13 ArrayBracketNoWhitespace '[' is preceded with whitespace.
+137:13 ArrayBracketNoWhitespace ']' is preceded with whitespace.
+146:36 ArrayBracketNoWhitespace '[' is preceded with whitespace.

@@ -1,0 +1,62 @@
+8:1 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+12:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+14:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+14:17 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+17:7 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 6, expected level should be 4.
+20:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+20:17 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+28:5 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+32:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+32:17 AnnotationLocation Annotation 'Override' should be alone on line.
+34:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+36:5 AnnotationLocation Annotation 'a' should be alone on line.
+38:5 AnnotationLocation Annotation 'C' should be alone on line.
+44:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+46:5 AnnotationLocation Annotation 'Target' should be alone on line.
+48:5 AnnotationLocation Annotation 'Target' should be alone on line.
+52:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+57:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+60:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+66:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+66:19 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+73:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+73:17 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+73:40 AnnotationLocation Annotation 'SafeVarargs' should be alone on line.
+76:9 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 8, expected level should be 4.
+76:32 AnnotationLocation Annotation 'SafeVarargs' should be alone on line.
+83:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+86:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+86:17 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+90:7 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 6, expected level should be 4.
+94:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+108:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+119:5 AnnotationLocation Annotation 'Override' should be alone on line.
+123:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+130:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+130:17 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+146:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+153:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+153:17 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+157:7 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 6, expected level should be 4.
+161:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+171:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+172:9 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+175:9 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+175:21 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+177:11 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 10, expected level should be 8.
+183:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+188:9 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+197:9 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+197:21 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+207:5 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+208:9 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+216:11 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 10, expected level should be 8.
+222:9 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+222:21 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+233:9 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+235:9 AnnotationLocation Annotation 'Override' should be alone on line.
+246:9 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+251:9 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+251:21 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+256:13 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+258:13 AnnotationLocation Annotation 'Deprecated' should be alone on line.

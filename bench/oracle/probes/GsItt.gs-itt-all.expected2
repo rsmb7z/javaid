@@ -1,0 +1,8 @@
+4:7 IllegalTokenText Token text matches the illegal pattern 'a{2}|bb|1_|\s$'.
+5:7 IllegalTokenText Token text matches the illegal pattern 'a{2}|bb|1_|\s$'.
+7:7 IllegalTokenText Token text matches the illegal pattern 'a{2}|bb|1_|\s$'.
+31:20 IllegalTokenText Token text matches the illegal pattern 'a{2}|bb|1_|\s$'.
+36:20 IllegalTokenText Token text matches the illegal pattern 'a{2}|bb|1_|\s$'.
+39:20 IllegalTokenText Token text matches the illegal pattern 'a{2}|bb|1_|\s$'.
+42:20 IllegalTokenText Token text matches the illegal pattern 'a{2}|bb|1_|\s$'.
+49:14 IllegalTokenText Token text matches the illegal pattern 'a{2}|bb|1_|\s$'.

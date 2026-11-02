@@ -1,0 +1,35 @@
+6:25 RightCurly '}' at column 25 should be alone on a line.
+13:14 RightCurly '}' at column 14 should have line break before.
+16:5 RightCurly '}' at column 5 should be alone on a line.
+20:23 RightCurly '}' at column 23 should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally).
+29:9 RightCurly '}' at column 9 should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally).
+34:18 RightCurly '}' at column 18 should have line break before.
+35:32 RightCurly '}' at column 32 should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally).
+43:20 RightCurly '}' at column 20 should have line break before.
+46:23 RightCurly '}' at column 23 should be alone on a line.
+49:9 RightCurly '}' at column 9 should be alone on a line.
+52:18 RightCurly '}' at column 18 should have line break before.
+55:18 RightCurly '}' at column 18 should have line break before.
+61:18 RightCurly '}' at column 18 should have line break before.
+64:9 RightCurly '}' at column 9 should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally).
+78:9 RightCurly '}' at column 9 should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally).
+81:9 RightCurly '}' at column 9 should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally).
+85:39 RightCurly '}' at column 39 should be alone on a line.
+86:49 RightCurly '}' at column 49 should be alone on a line.
+89:18 RightCurly '}' at column 18 should have line break before.
+99:22 RightCurly '}' at column 22 should be alone on a line.
+103:22 RightCurly '}' at column 22 should have line break before.
+107:39 RightCurly '}' at column 39 should be alone on a line.
+107:59 RightCurly '}' at column 59 should be alone on a line.
+110:22 RightCurly '}' at column 22 should have line break before.
+130:63 RightCurly '}' at column 63 should be alone on a line.
+150:16 RightCurly '}' at column 16 should have line break before.
+153:5 RightCurly '}' at column 5 should be alone on a line.
+156:16 RightCurly '}' at column 16 should have line break before.
+157:24 RightCurly '}' at column 24 should be alone on a line.
+162:15 RightCurly '}' at column 15 should have line break before.
+165:19 RightCurly '}' at column 19 should have line break before.
+168:34 RightCurly '}' at column 34 should be alone on a line.
+171:18 RightCurly '}' at column 18 should have line break before.
+173:36 RightCurly '}' at column 36 should be alone on a line.
+174:62 RightCurly '}' at column 62 should be alone on a line.

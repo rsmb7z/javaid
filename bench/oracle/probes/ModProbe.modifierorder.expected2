@@ -1,0 +1,26 @@
+9:12 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+10:11 ModifierOrder 'static' modifier out of order with the JLS suggestions.
+12:18 ModifierOrder 'static' modifier out of order with the JLS suggestions.
+18:18 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+20:14 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+21:12 ModifierOrder 'abstract' modifier out of order with the JLS suggestions.
+23:19 ModifierOrder 'abstract' modifier out of order with the JLS suggestions.
+24:11 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+26:14 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+27:15 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+29:14 ModifierOrder 'transient' modifier out of order with the JLS suggestions.
+30:12 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+32:14 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+35:12 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+37:16 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+39:12 ModifierOrder 'static' modifier out of order with the JLS suggestions.
+40:18 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+42:17 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+44:16 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+47:18 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+50:55 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+51:61 ModifierOrder 'public' modifier out of order with the JLS suggestions.
+56:12 ModifierOrder '@Deprecated' annotation modifier does not precede non-annotation modifiers.
+58:12 ModifierOrder '@Deprecated' annotation modifier does not precede non-annotation modifiers.
+59:22 ModifierOrder 'abstract' modifier out of order with the JLS suggestions.
+60:19 ModifierOrder 'static' modifier out of order with the JLS suggestions.

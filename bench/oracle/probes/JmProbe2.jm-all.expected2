@@ -1,0 +1,8 @@
+27:19 JavadocMethod Expected @throws tag for 'java.lang.IllegalArgumentException'.
+39:23 JavadocMethod Expected @throws tag for 'UnsupportedOperationException'.
+41:23 JavadocMethod Expected @throws tag for 'ArithmeticException'.
+52:23 JavadocMethod Expected @throws tag for 'IllegalStateException'.
+65:19 JavadocMethod Expected @throws tag for 'Error'.
+73:51 JavadocMethod Expected @throws tag for 'Exception'.
+115:0 JavadocMethod Javadoc comment at column 8 has parse error. Details: no viable alternative at input '</' while parsing HTML_ELEMENT
+210:0 JavadocMethod Javadoc comment at column 19 has parse error. Details: token recognition error at: ',' while parsing A

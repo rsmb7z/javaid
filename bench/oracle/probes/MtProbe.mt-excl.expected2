@@ -1,0 +1,11 @@
+6:5 MissingJavadocType Missing a Javadoc comment for 'PkgInner'.
+7:5 MissingJavadocType Missing a Javadoc comment for 'PrivInner'.
+27:5 MissingJavadocType Missing a Javadoc comment for 'Outer'.
+28:9 MissingJavadocType Missing a Javadoc comment for 'Implicit'.
+29:9 MissingJavadocType Missing a Javadoc comment for 'Nested'.
+30:9 MissingJavadocType Missing a Javadoc comment for 'En'.
+34:9 MissingJavadocType Missing a Javadoc comment for 'DeepPkg'.
+37:5 MissingJavadocType Missing a Javadoc comment for 'PrivOuter'.
+38:9 MissingJavadocType Missing a Javadoc comment for 'InPriv'.
+41:9 MissingJavadocType Missing a Javadoc comment for 'Local'.
+46:1 MissingJavadocType Missing a Javadoc comment for 'PkgTop'.

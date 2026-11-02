@@ -1,0 +1,41 @@
+15:8 JavadocParagraph <p> tag should be preceded with an empty line.
+21:7 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+29:8 JavadocParagraph <p> tag should be placed immediately before the first word, with no space after.
+42:8 JavadocParagraph Redundant <p> tag.
+47:8 JavadocParagraph Redundant <p> tag.
+58:7 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+74:8 JavadocParagraph <p> tag should not precede HTML block-tag '<ul>', <p> tag should be removed.
+83:8 JavadocParagraph <p> tag should not precede HTML block-tag '<ul>', <p> tag should be removed.
+93:8 JavadocParagraph <p> tag should not precede HTML block-tag '<pre>', <p> tag should be removed.
+102:8 JavadocParagraph <p> tag should not precede HTML block-tag '<table>', <p> tag should be removed.
+109:8 JavadocParagraph <p> tag should not precede HTML block-tag '<h2>', <p> tag should be removed.
+116:8 JavadocParagraph <p> tag should not precede HTML block-tag '<div>', <p> tag should be removed.
+123:8 JavadocParagraph <p> tag should not precede HTML block-tag '<blockquote>', <p> tag should be removed.
+130:8 JavadocParagraph <p> tag should not precede HTML block-tag '<dl>', <p> tag should be removed.
+137:8 JavadocParagraph <p> tag should not precede HTML block-tag '<ol>', <p> tag should be removed.
+151:8 JavadocParagraph <p> tag should not precede HTML block-tag '<address>', <p> tag should be removed.
+179:8 JavadocParagraph <p> tag should not precede HTML block-tag '<ul>', <p> tag should be removed.
+248:7 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+288:7 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+349:8 JavadocParagraph <p> tag should be preceded with an empty line.
+366:8 JavadocParagraph <p> tag should be preceded with an empty line.
+373:9 JavadocParagraph Redundant <p> tag.
+376:18 JavadocParagraph <p> tag should be preceded with an empty line.
+380:17 JavadocParagraph <p> tag should be preceded with an empty line.
+386:7 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+388:7 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+395:7 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+408:7 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+415:8 JavadocParagraph Redundant <p> tag.
+421:7 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+422:7 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+423:7 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+430:7 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+457:7 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+497:8 JavadocParagraph <p> tag should be placed immediately before the first word, with no space after.
+512:7 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+610:8 JavadocParagraph <p> tag should be preceded with an empty line.
+615:8 JavadocParagraph Redundant <p> tag.
+616:8 JavadocParagraph <p> tag should be preceded with an empty line.
+642:8 JavadocParagraph <p> tag should be preceded with an empty line.
+670:8 JavadocParagraph <p> tag should not precede HTML block-tag '<pre>', <p> tag should be removed.

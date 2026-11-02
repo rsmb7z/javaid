@@ -1,0 +1,206 @@
+5:7 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+5:10 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+6:8 TextBlockGoogleStyleFormatting Closing quotes (""") of text-block should not be preceded by non-whitespace characters.
+6:8 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+8:17 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+8:20 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+10:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+11:18 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+11:21 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+13:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+14:22 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+14:25 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+16:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+17:27 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+17:30 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+19:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+20:23 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+20:26 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+22:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+27:23 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+27:26 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+28:13 TextBlockGoogleStyleFormatting Closing quotes (""") of text-block should not be preceded by non-whitespace characters.
+28:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+29:24 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+29:27 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+30:16 TextBlockGoogleStyleFormatting Closing quotes (""") of text-block should not be preceded by non-whitespace characters.
+30:16 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+31:24 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+31:27 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+33:16 TextBlockGoogleStyleFormatting Closing quotes (""") of text-block should not be preceded by non-whitespace characters.
+33:16 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+34:25 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+34:28 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+36:7 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+37:26 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+37:29 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+39:11 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+40:27 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+40:30 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+43:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+44:25 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+44:28 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+48:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+49:17 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+49:20 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+53:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+54:19 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+54:22 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+57:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+58:20 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+59:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+60:17 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+61:5 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+62:18 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+62:21 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+64:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+65:28 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+65:31 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+67:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+67:17 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+69:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+70:29 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+70:32 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+72:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+76:27 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+76:30 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+78:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+80:11 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+80:14 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+82:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+83:26 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+83:29 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+85:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+85:15 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+85:18 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+87:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+89:11 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+89:14 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+91:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+92:11 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+92:14 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+94:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+96:19 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+96:22 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+98:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+103:17 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+103:20 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+105:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+109:11 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+109:14 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+111:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+115:20 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+115:23 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+117:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+118:13 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+121:18 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+121:21 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+123:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+128:17 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+128:20 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+130:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+135:20 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+135:23 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+137:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+138:20 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+138:23 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+140:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+141:25 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+141:28 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+143:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+144:32 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+144:35 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+146:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+148:17 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+148:20 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+150:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+152:18 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+152:21 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+154:17 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+161:11 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+163:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+164:14 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+164:17 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+166:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+173:17 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+177:33 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+177:36 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+179:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+183:20 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+183:23 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+185:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+187:20 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+187:23 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+189:17 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+194:20 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+194:23 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+196:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+198:24 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+198:27 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+200:17 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+203:31 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+203:34 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+205:33 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+206:39 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+206:42 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+208:33 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+209:32 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+209:35 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+211:25 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+212:25 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+212:28 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+214:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+215:16 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+215:19 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+217:8 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+218:20 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+218:23 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+220:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+221:21 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+221:24 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+223:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+230:22 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+230:25 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+232:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+233:26 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+233:29 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+235:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+236:32 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+236:35 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+238:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+238:17 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+240:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+249:37 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+249:40 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+251:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+252:31 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+252:34 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+254:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+259:20 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+259:23 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+261:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+262:22 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+262:25 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+264:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+265:33 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+265:36 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+267:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+268:21 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+268:24 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+270:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+312:11 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+312:14 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+314:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+315:11 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+315:14 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+317:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+319:12 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+327:15 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+327:18 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+329:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+337:13 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+337:16 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+339:9 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.
+369:28 TextBlockGoogleStyleFormatting Opening quotes (""") of text-block must be on the new line.
+369:31 TextBlockGoogleStyleFormatting Each line of text in the text block must be indented at least as much as the opening and closing quotes.
+371:13 TextBlockGoogleStyleFormatting Text-block quotes are not vertically aligned.

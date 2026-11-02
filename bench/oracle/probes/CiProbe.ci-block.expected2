@@ -1,0 +1,4 @@
+6:4 CommentsIndentation Block comment has incorrect indentation level 3, expected is 0, indentation should be the same level as line 8.
+17:4 CommentsIndentation Block comment has incorrect indentation level 3, expected is 4, indentation should be the same level as line 21.
+263:7 CommentsIndentation Block comment has incorrect indentation level 6, expected is 8, indentation should be the same level as line 266.
+268:5 CommentsIndentation Block comment has incorrect indentation level 4, expected is 8, indentation should be the same level as line 267.

@@ -1,0 +1,5 @@
+8:5 ModuleDirectiveOrder Empty line not allowed inside 'requires' directive block.
+9:5 ModuleDirectiveOrder 'exports' directive block should be separated from the previous block by exactly one empty line.
+12:5 ModuleDirectiveOrder Empty line not allowed inside 'exports' directive block.
+14:5 ModuleDirectiveOrder 'opens' directive should be before 'exports' directive.
+16:5 ModuleDirectiveOrder 'uses' directive should be before 'opens' directive.

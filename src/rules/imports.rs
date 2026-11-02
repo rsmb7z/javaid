@@ -4,7 +4,7 @@
 //! counts as a reference was settled against Checkstyle's output, case by case: see the
 //! regression tests in `rules/tests.rs`.
 
-use crate::engine::{Ctx, Diagnostic};
+use crate::engine::Ctx;
 use crate::javadoc;
 use crate::syntax::Act;
 use rustc_hash::FxHashMap;
@@ -186,7 +186,7 @@ pub fn on_import<'a>(cx: &Ctx<'a>, st: &mut State<'a>, node: Node) {
         },
         _ => cx.text(full),
     };
-    let p = node.start_position();
+    let p = full.start_position();
     let idx = st.imports.len() as u32;
     let next = st.wanted.insert(simple, idx).unwrap_or(u32::MAX);
     st.imports.push(ImportRef { full: cx.text(full), line: p.row as u32 + 1, col: p.column as u32 + 1, used: false, next });
@@ -295,12 +295,7 @@ pub fn finish<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>) {
     }
     for imp in &st.imports {
         if !imp.used {
-            cx.out.push(Diagnostic {
-                rule: "UnusedImports",
-                line: imp.line,
-                col: imp.col,
-                message: format!("Unused import - {}.", String::from_utf8_lossy(imp.full)),
-            });
+            cx.diag_at("UnusedImports", imp.line, imp.col, format!("Unused import - {}.", String::from_utf8_lossy(imp.full)));
         }
     }
 }

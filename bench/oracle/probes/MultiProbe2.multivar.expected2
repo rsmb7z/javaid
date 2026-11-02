@@ -1,0 +1,19 @@
+6:9 MultipleVariableDeclarations Only one variable definition per line allowed.
+7:9 MultipleVariableDeclarations Only one variable definition per line allowed.
+10:9 MultipleVariableDeclarations Each variable declaration must be in its own statement.
+12:9 MultipleVariableDeclarations Each variable declaration must be in its own statement.
+14:9 MultipleVariableDeclarations Each variable declaration must be in its own statement.
+16:9 MultipleVariableDeclarations Only one variable definition per line allowed.
+18:9 MultipleVariableDeclarations Only one variable definition per line allowed.
+19:9 MultipleVariableDeclarations Only one variable definition per line allowed.
+20:9 MultipleVariableDeclarations Only one variable definition per line allowed.
+21:9 MultipleVariableDeclarations Only one variable definition per line allowed.
+22:9 MultipleVariableDeclarations Only one variable definition per line allowed.
+25:9 MultipleVariableDeclarations Each variable declaration must be in its own statement.
+25:9 MultipleVariableDeclarations Only one variable definition per line allowed.
+26:9 MultipleVariableDeclarations Only one variable definition per line allowed.
+26:17 MultipleVariableDeclarations Each variable declaration must be in its own statement.
+27:9 MultipleVariableDeclarations Each variable declaration must be in its own statement.
+32:5 MultipleVariableDeclarations Only one variable definition per line allowed.
+33:5 MultipleVariableDeclarations Each variable declaration must be in its own statement.
+35:5 MultipleVariableDeclarations Only one variable definition per line allowed.

@@ -1,0 +1,61 @@
+7:15 UpperEll Should use uppercase 'L'.
+9:15 UpperEll Should use uppercase 'L'.
+9:24 MethodName Name 'Bad_B' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+9:32 WhitespaceAround '{' is not followed by whitespace.
+9:33 WhitespaceAround '}' is not preceded with whitespace.
+11:15 UpperEll Should use uppercase 'L'.
+13:15 UpperEll Should use uppercase 'L'.
+13:24 MethodName Name 'Bad_C' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+13:32 WhitespaceAround '{' is not followed by whitespace.
+13:33 WhitespaceAround '}' is not preceded with whitespace.
+15:15 UpperEll Should use uppercase 'L'.
+15:24 MethodName Name 'Bad_D' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+15:32 WhitespaceAround '{' is not followed by whitespace.
+15:33 WhitespaceAround '}' is not preceded with whitespace.
+18:15 UpperEll Should use uppercase 'L'.
+18:29 EmptyStatement Empty statement.
+18:33 TodoComment Comment matches to-do format 'TODO'.
+21:7 TodoComment Comment matches to-do format 'TODO'.
+23:7 TodoComment Comment matches to-do format 'TODO'.
+25:22 constName Name 'bad_const' must match pattern '^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$'.
+27:22 constName Name 'bad_const2' must match pattern '^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$'.
+31:10 MethodName Name 'Bad_E' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+31:18 WhitespaceAround '{' is not followed by whitespace.
+31:19 WhitespaceAround '}' is not preceded with whitespace.
+32:0 LineLength Line is longer than 50 characters (found 52).
+32:15 UpperEll Should use uppercase 'L'.
+35:15 UpperEll Should use uppercase 'L'.
+36:1 FileTabCharacter Line contains a tab character.
+37:1 FileTabCharacter Line contains a tab character.
+40:15 UpperEll Should use uppercase 'L'.
+41:15 UpperEll Should use uppercase 'L'.
+42:15 UpperEll Should use uppercase 'L'.
+43:15 UpperEll Should use uppercase 'L'.
+45:15 UpperEll Should use uppercase 'L'.
+46:15 UpperEll Should use uppercase 'L'.
+47:15 UpperEll Should use uppercase 'L'.
+49:15 UpperEll Should use uppercase 'L'.
+50:15 UpperEll Should use uppercase 'L'.
+52:15 UpperEll Should use uppercase 'L'.
+53:15 UpperEll Should use uppercase 'L'.
+54:15 UpperEll Should use uppercase 'L'.
+55:15 UpperEll Should use uppercase 'L'.
+57:10 MethodName Name 'Bad_F' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+57:18 WhitespaceAround '{' is not followed by whitespace.
+57:19 WhitespaceAround '}' is not preceded with whitespace.
+58:10 MethodName Name 'Bad_G' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+58:18 WhitespaceAround '{' is not followed by whitespace.
+58:19 WhitespaceAround '}' is not preceded with whitespace.
+59:10 MethodName Name 'Bad_H' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+59:18 WhitespaceAround '{' is not followed by whitespace.
+59:19 WhitespaceAround '}' is not preceded with whitespace.
+61:22 constName Name 'bad_const3' must match pattern '^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$'.
+62:22 constName Name 'bad_const4' must match pattern '^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$'.
+64:22 constName Name 'bad_const5' must match pattern '^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$'.
+65:22 constName Name 'bad_const6' must match pattern '^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$'.
+66:22 constName Name 'bad_const7' must match pattern '^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$'.
+67:22 constName Name 'bad_const8' must match pattern '^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$'.
+69:15 UpperEll Should use uppercase 'L'.
+70:15 UpperEll Should use uppercase 'L'.
+75:15 UpperEll Should use uppercase 'L'.
+76:15 UpperEll Should use uppercase 'L'.

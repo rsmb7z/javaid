@@ -1,0 +1,22 @@
+13:5 OverloadMethodsDeclarationOrder All overloaded methods should be placed next to each other. Previous overloaded method located at line '7'.
+18:5 OverloadMethodsDeclarationOrder All overloaded methods should be placed next to each other. Previous overloaded method located at line '13'.
+21:5 OverloadMethodsDeclarationOrder All overloaded methods should be placed next to each other. Previous overloaded method located at line '10'.
+24:5 OverloadMethodsDeclarationOrder Overloaded methods should be ordered by increasing parameter count.
+35:5 OverloadMethodsDeclarationOrder All overloaded methods should be placed next to each other. Previous overloaded method located at line '32'.
+41:5 OverloadMethodsDeclarationOrder Overloaded methods should be ordered by increasing parameter count.
+44:5 OverloadMethodsDeclarationOrder Overloaded methods should be ordered by increasing parameter count.
+53:5 OverloadMethodsDeclarationOrder All overloaded methods should be placed next to each other. Previous overloaded method located at line '47'.
+53:5 OverloadMethodsDeclarationOrder Overloaded methods should be ordered by increasing parameter count.
+56:5 OverloadMethodsDeclarationOrder Overloaded methods should be ordered by increasing parameter count.
+59:5 OverloadMethodsDeclarationOrder Overloaded methods should be ordered by increasing parameter count.
+62:5 OverloadMethodsDeclarationOrder Overloaded methods should be ordered by increasing parameter count.
+72:9 OverloadMethodsDeclarationOrder All overloaded methods should be placed next to each other. Previous overloaded method located at line '66'.
+72:9 OverloadMethodsDeclarationOrder Overloaded methods should be ordered by increasing parameter count.
+75:9 OverloadMethodsDeclarationOrder Overloaded methods should be ordered by increasing parameter count.
+88:9 OverloadMethodsDeclarationOrder All overloaded methods should be placed next to each other. Previous overloaded method located at line '82'.
+108:9 OverloadMethodsDeclarationOrder All overloaded methods should be placed next to each other. Previous overloaded method located at line '104'.
+120:9 OverloadMethodsDeclarationOrder All overloaded methods should be placed next to each other. Previous overloaded method located at line '114'.
+139:9 OverloadMethodsDeclarationOrder All overloaded methods should be placed next to each other. Previous overloaded method located at line '133'.
+151:13 OverloadMethodsDeclarationOrder All overloaded methods should be placed next to each other. Previous overloaded method located at line '145'.
+175:5 OverloadMethodsDeclarationOrder All overloaded methods should be placed next to each other. Previous overloaded method located at line '18'.
+175:5 OverloadMethodsDeclarationOrder Overloaded methods should be ordered by increasing parameter count.

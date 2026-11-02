@@ -1,0 +1,12 @@
+3:48 MagicNumber '3L' is a magic number.
+3:80 MagicNumber '4L' is a magic number.
+4:42 MagicNumber '5' is a magic number.
+10:18 MagicNumber '0xffffffffL' is a magic number.
+13:13 MagicNumber '0x80000000' is a magic number.
+14:13 MagicNumber '0x7fffffff' is a magic number.
+15:20 MagicNumber '-0.0' is a magic number.
+16:20 MagicNumber '9223372036854775807L' is a magic number.
+17:13 MagicNumber '-2147483648' is a magic number.
+18:13 MagicNumber '1_0' is a magic number.
+18:19 MagicNumber '0_7' is a magic number.
+18:25 MagicNumber '1__0' is a magic number.

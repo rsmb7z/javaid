@@ -1,0 +1,53 @@
+7:0 JavadocMethod @return tag should be present and have description.
+7:27 JavadocMethod Expected @param tag for 'a'.
+7:37 JavadocMethod Expected @param tag for 'b'.
+22:43 JavadocMethod Expected @param tag for 'b'.
+27:8 JavadocMethod Unused @param tag for 'z'.
+35:8 JavadocMethod Duplicate @param tag.
+44:0 JavadocMethod @return tag should be present and have description.
+49:0 JavadocMethod Unused Javadoc tag.
+57:8 JavadocMethod Duplicate @return tag.
+66:0 JavadocMethod @return tag should be present and have description.
+81:13 JavadocMethod Expected @param tag for '<U>'.
+81:16 JavadocMethod Expected @param tag for '<V>'.
+85:8 JavadocMethod Unused @param tag for '<Q>'.
+89:13 JavadocMethod Expected @param tag for '<U>'.
+138:5 JavadocMethod Invalid use of the '@inheritDoc' tag.
+141:5 JavadocMethod Invalid use of the '@inheritDoc' tag.
+144:5 JavadocMethod Invalid use of the '@inheritDoc' tag.
+154:8 JavadocMethod Unused @param tag for 'z'.
+162:0 JavadocMethod Unused Javadoc tag.
+169:24 JavadocMethod Expected @param tag for 'a'.
+169:31 JavadocMethod Expected @param tag for 'b'.
+195:31 JavadocMethod Expected @param tag for 'a'.
+210:0 JavadocMethod @return tag should be present and have description.
+213:0 JavadocMethod @return tag should be present and have description.
+213:26 JavadocMethod Expected @param tag for 'a'.
+223:0 JavadocMethod @return tag should be present and have description.
+223:26 JavadocMethod Expected @param tag for 'a'.
+228:0 JavadocMethod @return tag should be present and have description.
+228:17 JavadocMethod Expected @param tag for 'a'.
+233:0 JavadocMethod @return tag should be present and have description.
+233:28 JavadocMethod Expected @param tag for 'a'.
+238:0 JavadocMethod @return tag should be present and have description.
+238:33 JavadocMethod Expected @param tag for 'a'.
+243:0 JavadocMethod @return tag should be present and have description.
+243:31 JavadocMethod Expected @param tag for 'a'.
+249:0 JavadocMethod @return tag should be present and have description.
+249:20 JavadocMethod Expected @param tag for 'a'.
+251:0 JavadocMethod @return tag should be present and have description.
+251:28 JavadocMethod Expected @param tag for 'a'.
+256:0 JavadocMethod @return tag should be present and have description.
+259:0 JavadocMethod Unused Javadoc tag.
+266:0 JavadocMethod @return tag should be present and have description.
+274:9 JavadocMethod Expected @param tag for 'b'.
+278:22 JavadocMethod Expected @param tag for 'a'.
+278:29 JavadocMethod Expected @param tag for 'b'.
+278:36 JavadocMethod Expected @param tag for 'c'.
+283:0 JavadocMethod @return tag should be present and have description.
+283:28 JavadocMethod Expected @param tag for 'a'.
+287:0 JavadocMethod @return tag should be present and have description.
+287:30 JavadocMethod Expected @param tag for 'a'.
+289:27 JavadocMethod Expected @param tag for 'a'.
+298:0 JavadocMethod @return tag should be present and have description.
+298:27 JavadocMethod Expected @param tag for 'a'.

@@ -1,0 +1,4 @@
+4:5 ModuleDirectiveOrder 'exports' directive block should be separated from the previous block by exactly one empty line.
+11:5 ModuleDirectiveOrder Empty line not allowed inside 'opens' directive block.
+12:5 ModuleDirectiveOrder 'uses' directive block should be separated from the previous block by exactly one empty line.
+17:5 ModuleDirectiveOrder 'provides' directive block should be separated from the previous block by exactly one empty line.

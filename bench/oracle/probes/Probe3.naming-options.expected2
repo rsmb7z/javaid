@@ -1,0 +1,9 @@
+10:21 LocalVariableName Name 'Kk' must match pattern '^([a-z][a-zA-Z0-9]*|_)$'.
+11:13 LocalVariableName Name 'L' must match pattern '^([a-z][a-zA-Z0-9]*|_)$'.
+12:25 LocalVariableName Name 'J2' must match pattern '^([a-z][a-zA-Z0-9]*|_)$'.
+13:24 LocalFinalVariableName Name 'M' must match pattern '^([a-z][a-zA-Z0-9]*|_)$'.
+14:18 LocalVariableName Name 'Ab' must match pattern '^([a-z][a-zA-Z0-9]*|_)$'.
+16:17 LocalVariableName Name 'N' must match pattern '^([a-z][a-zA-Z0-9]*|_)$'.
+21:22 ParameterName Name 'Bad_P' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+28:24 ParameterName Name 'Bad_Q' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+31:18 TypeName Name 'lower' must match pattern '^[A-Z][a-zA-Z0-9]*$'.

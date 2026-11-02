@@ -1,0 +1,2 @@
+6:1 CustomImportOrder Extra separation in import group before 'com.google.common.base.Strings'
+12:1 CustomImportOrder Extra separation in import group before 'javax.swing.JFrame'

@@ -1,0 +1,2 @@
+5:29 AvoidStarImport Using the '.*' form of import should be avoided - java.lang.Math.*.
+13:42 AvoidStarImport Using the '.*' form of import should be avoided - java.util.stream.Collectors.*.

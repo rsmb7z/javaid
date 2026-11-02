@@ -1,0 +1,34 @@
+14:22 JavadocMethod Expected @param tag for 'x'.
+16:23 JavadocMethod Expected @param tag for 'x'.
+16:30 JavadocMethod Expected @param tag for 'y'.
+27:19 JavadocMethod Expected @throws tag for 'java.lang.IllegalArgumentException'.
+39:23 JavadocMethod Expected @throws tag for 'UnsupportedOperationException'.
+41:23 JavadocMethod Expected @throws tag for 'ArithmeticException'.
+52:23 JavadocMethod Expected @throws tag for 'IllegalStateException'.
+65:19 JavadocMethod Expected @throws tag for 'Error'.
+73:41 JavadocMethod Expected @param tag for 'e'.
+73:51 JavadocMethod Expected @throws tag for 'Exception'.
+115:0 JavadocMethod Javadoc comment at column 8 has parse error. Details: no viable alternative at input '</' while parsing HTML_ELEMENT
+141:0 JavadocMethod @return tag should be present and have description.
+141:28 JavadocMethod Expected @param tag for 'a'.
+171:0 JavadocMethod @return tag should be present and have description.
+171:28 JavadocMethod Expected @param tag for 'a'.
+185:0 JavadocMethod @return tag should be present and have description.
+185:19 JavadocMethod Expected @param tag for 'a'.
+210:0 JavadocMethod Javadoc comment at column 19 has parse error. Details: token recognition error at: ',' while parsing A
+230:28 JavadocMethod Expected @param tag for 'a'.
+230:38 JavadocMethod Expected @throws tag for 'java.io.IOException'.
+231:33 JavadocMethod Expected @throws tag for 'IllegalStateException'.
+241:0 JavadocMethod @return tag should be present and have description.
+241:28 JavadocMethod Expected @param tag for 'a'.
+243:0 JavadocMethod @return tag should be present and have description.
+243:21 JavadocMethod Expected @param tag for 'a'.
+246:0 JavadocMethod @return tag should be present and have description.
+246:33 JavadocMethod Expected @param tag for 'a'.
+251:0 JavadocMethod @return tag should be present and have description.
+251:29 JavadocMethod Expected @param tag for 'a'.
+254:0 JavadocMethod @return tag should be present and have description.
+254:32 JavadocMethod Expected @param tag for 'a'.
+258:0 JavadocMethod @return tag should be present and have description.
+258:26 JavadocMethod Expected @param tag for 'a'.
+266:23 JavadocMethod Expected @throws tag for 'AssertionError'.

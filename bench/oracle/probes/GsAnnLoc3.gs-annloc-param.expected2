@@ -1,0 +1,3 @@
+2:3 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 2, expected level should be 0.
+2:26 AnnotationLocation Annotation 'Deprecated' should be alone on line.
+3:9 AnnotationLocation Annotation 'C' should be alone on line.

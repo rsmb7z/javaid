@@ -1,0 +1,15 @@
+6:1 JavadocType Type Javadoc comment is missing @param '<T>' tag.
+6:1 JavadocType Type Javadoc comment is missing @param '<U>' tag.
+26:0 JavadocType Javadoc comment at column 3 has parse error. Details: token recognition error at: '@' while parsing  
+32:4 JavadocType Unknown tag 'apiNote'.
+33:4 JavadocType Unknown tag 'implSpec'.
+34:4 JavadocType Unknown tag 'custom'.
+36:4 JavadocType Unknown tag 'Override'.
+43:4 JavadocType Unused @param tag for 'c'.
+45:1 JavadocType Type Javadoc comment is missing @param 'b' tag.
+48:1 JavadocType Type Javadoc comment is missing @param '<T>' tag.
+52:4 JavadocType Unused @param tag for '<T>'.
+84:5 JavadocType Type Javadoc comment is missing @param '<Y>' tag.
+91:0 JavadocType Javadoc comment at column 8 has parse error. Details: no viable alternative at input '</' while parsing HTML_ELEMENT
+109:0 JavadocType Javadoc comment at column 17 has parse error. Details: token recognition error at: '\n' while parsing f
+130:0 JavadocType Javadoc comment at column 1 has parse error. Details: mismatched input '<EOF>' expecting JAVADOC_INLINE_TAG_END while parsing INLINE_TAG

@@ -1,0 +1,21 @@
+8:17 whitespaceCharactersMustBeEscaped Whitespace other than the ASCII space must be escaped.
+9:17 whitespaceCharactersMustBeEscaped Whitespace other than the ASCII space must be escaped.
+11:17 IllegalTokenText Consider using special escape sequence instead of octal value or Unicode escaped value.
+12:17 IllegalTokenText Consider using special escape sequence instead of octal value or Unicode escaped value.
+13:17 IllegalTokenText Consider using special escape sequence instead of octal value or Unicode escaped value.
+16:17 IllegalTokenText Consider using special escape sequence instead of octal value or Unicode escaped value.
+17:18 IllegalTokenText Consider using special escape sequence instead of octal value or Unicode escaped value.
+19:18 IllegalTokenText Consider using special escape sequence instead of octal value or Unicode escaped value.
+20:18 IllegalTokenText Consider using special escape sequence instead of octal value or Unicode escaped value.
+21:18 whitespaceCharactersMustBeEscaped Whitespace other than the ASCII space must be escaped.
+22:18 whitespaceCharactersMustBeEscaped Whitespace other than the ASCII space must be escaped.
+23:15 whitespaceCharactersMustBeEscaped Whitespace other than the ASCII space must be escaped.
+24:15 IllegalTokenText Consider using special escape sequence instead of octal value or Unicode escaped value.
+25:15 IllegalTokenText Consider using special escape sequence instead of octal value or Unicode escaped value.
+28:15 IllegalTokenText Consider using special escape sequence instead of octal value or Unicode escaped value.
+29:15 IllegalTokenText Consider using special escape sequence instead of octal value or Unicode escaped value.
+30:15 whitespaceCharactersMustBeEscaped Whitespace other than the ASCII space must be escaped.
+31:20 IllegalTokenText Consider using special escape sequence instead of octal value or Unicode escaped value.
+31:20 whitespaceCharactersMustBeEscaped Whitespace other than the ASCII space must be escaped.
+42:20 whitespaceCharactersMustBeEscaped Whitespace other than the ASCII space must be escaped.
+69:25 whitespaceCharactersMustBeEscaped Whitespace other than the ASCII space must be escaped.

@@ -41,9 +41,9 @@ fn check(cx: &mut Ctx, rule: &crate::config::DescendantToken, stmt: Node, init: 
     let counted = if depth >= rule.min_depth && depth <= rule.max_depth { count } else { 0 };
     let name = if init { "FOR_INIT" } else { "FOR_ITERATOR" };
     let message = if counted < rule.min_number {
-        rule.minimum_message.clone().unwrap_or_else(|| format!("Count of {counted} for '{name}' descendant 'COMMA' is less than minimum count {}.", rule.min_number))
+        rule.minimum_message.clone().unwrap_or_else(|| format!("Count of {} for '{name}' descendant 'COMMA' is less than minimum count {}.", crate::engine::grouped(counted), crate::engine::grouped(rule.min_number)))
     } else if counted > rule.max_number {
-        rule.maximum_message.clone().unwrap_or_else(|| format!("Count of {counted} for '{name}' descendant 'COMMA' exceeds maximum count {}.", rule.max_number))
+        rule.maximum_message.clone().unwrap_or_else(|| format!("Count of {} for '{name}' descendant 'COMMA' exceeds maximum count {}.", crate::engine::grouped(counted), crate::engine::grouped(rule.max_number)))
     } else {
         return;
     };

@@ -1,0 +1,17 @@
+26:9 VariableDeclarationUsageDistance Distance between variable 'a' declaration and its first usage is 4, but allowed 2.
+160:9 VariableDeclarationUsageDistance Distance between variable 'x' declaration and its first usage is 3, but allowed 2.
+215:9 VariableDeclarationUsageDistance Distance between variable 'g' declaration and its first usage is 3, but allowed 2.
+222:9 VariableDeclarationUsageDistance Distance between variable 'f' declaration and its first usage is 3, but allowed 2.
+293:9 VariableDeclarationUsageDistance Distance between variable 'f' declaration and its first usage is 3, but allowed 2.
+301:9 VariableDeclarationUsageDistance Distance between variable 'f' declaration and its first usage is 3, but allowed 2.
+329:9 VariableDeclarationUsageDistance Distance between variable 'c' declaration and its first usage is 3, but allowed 2.
+360:9 VariableDeclarationUsageDistance Distance between variable 'a' declaration and its first usage is 4, but allowed 2.
+361:9 VariableDeclarationUsageDistance Distance between variable 'b' declaration and its first usage is 4, but allowed 2.
+480:9 VariableDeclarationUsageDistance Distance between variable 'x' declaration and its first usage is 3, but allowed 2.
+522:9 VariableDeclarationUsageDistance Distance between variable 'x' declaration and its first usage is 3, but allowed 2.
+545:9 VariableDeclarationUsageDistance Distance between variable 'x' declaration and its first usage is 3, but allowed 2.
+572:9 VariableDeclarationUsageDistance Distance between variable 'sa' declaration and its first usage is 5, but allowed 2.
+595:17 VariableDeclarationUsageDistance Distance between variable 'ea' declaration and its first usage is 5, but allowed 2.
+611:13 VariableDeclarationUsageDistance Distance between variable 'ra' declaration and its first usage is 5, but allowed 2.
+658:9 VariableDeclarationUsageDistance Distance between variable 'a' declaration and its first usage is 5, but allowed 2.
+741:9 VariableDeclarationUsageDistance Distance between variable 'a' declaration and its first usage is 3, but allowed 2.

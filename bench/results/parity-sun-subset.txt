@@ -18,6 +18,7 @@ GenericWhitespace                   55       55      55         0        0     1
 HiddenField                      15637    15637   15637         0        0     100.0%
 HideUtilityClassConstructor         46       46      46         0        0     100.0%
 IllegalImport                       12       12      12         0        0     100.0%
+Indentation                     998100   998100  998100         0        0     100.0%
 InnerAssignment                    242      242     242         0        0     100.0%
 InterfaceIsType                      9        9       9         0        0     100.0%
 InvalidJavadocPosition               3        3       3         0        0     100.0%
@@ -58,5 +59,5 @@ UnusedImports                     1440     1440    1440         0        0     1
 VisibilityModifier                5731     5731    5731         0        0     100.0%
 WhitespaceAfter                   2415     2415    2415         0        0     100.0%
 WhitespaceAround                  8531     8531    8531         0        0     100.0%
-TOTAL                           697951   697955  697951         0        4     100.0%
+TOTAL                          1696051  1696055 1696051         0        4     100.0%
 ignored 4 reference finding(s) matching /has parse error/

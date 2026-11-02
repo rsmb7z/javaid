@@ -1,0 +1,1 @@
+package probe;class CiProbe5 {    void late() {        foo();      // bad cr        foo();    }    void foo() { }}

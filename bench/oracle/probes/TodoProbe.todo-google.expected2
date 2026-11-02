@@ -1,0 +1,6 @@
+6:7 TodoFormat 'TODO:' must be written in all caps and followed by a colon.
+7:7 TodoFormat 'TODO:' must be written in all caps and followed by a colon.
+16:7 TodoFormat 'TODO:' must be written in all caps and followed by a colon.
+34:7 BoxComments Comment uses box-like repetitive character pattern.
+38:7 BoxComments Comment uses box-like repetitive character pattern.
+42:7 BoxComments Comment uses box-like repetitive character pattern.

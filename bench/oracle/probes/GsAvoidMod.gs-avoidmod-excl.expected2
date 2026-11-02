@@ -1,0 +1,4 @@
+4:1 AvoidModuleImport Using the 'import module' form of import should be avoided - java.base.
+7:1 AvoidModuleImport Using the 'import module' form of import should be avoided - java.xml.
+10:1 AvoidModuleImport Using the 'import module' form of import should be avoided - jdk.compiler.
+12:1 AvoidModuleImport Using the 'import module' form of import should be avoided - java.logging.

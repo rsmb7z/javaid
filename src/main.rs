@@ -82,6 +82,11 @@ struct Cli {
     #[arg(long, hide = true, value_name = "LIST")]
     dump_ast_comments_list: Option<std::path::PathBuf>,
 
+    /// Debug aid: evaluate this XPath query over each file's Checkstyle-style AST (with comment
+    /// nodes) and print the selected nodes, one `TYPE -> text [line:col]` per line
+    #[arg(long, hide = true, value_name = "QUERY")]
+    xpath: Option<String>,
+
     /// Debug aid: output directory for `--dump-ast-list` (`NNNNNN.txt`, or `.err` when the AST cannot be built)
     #[arg(long, hide = true, value_name = "DIR")]
     dump_ast_out: Option<std::path::PathBuf>,
@@ -174,7 +179,8 @@ fn check_file(parser: &mut tree_sitter::Parser, syn: &Syntax, mode: Mode, explai
         Mode::ParseOnly => {}
         Mode::WalkOnly => result.nodes = syntax::walk_only(&tree),
         Mode::Lint(cfg) => {
-            engine::lint(syn, cfg, &tree, &src, &mut result.diagnostics);
+            javaid::rules::cs::set_file(path);
+            engine::lint_file(syn, cfg, &tree, &src, Some(path), &mut result.diagnostics);
             // Checkstyle reports in line order; the walk finds things in document order and the
             // line-based modules afterwards, so put them in order. Stable, so ties keep their order.
             result.diagnostics.sort_by_key(|d| (d.line, d.col));
@@ -228,6 +234,39 @@ fn main() -> ExitCode {
     }
     if let (Some(list), Some(out)) = (&cli.dump_ast_comments_list, &cli.dump_ast_out) {
         return dump_ast_batch(list, out, cli.grammar, true);
+    }
+
+    if let Some(query) = &cli.xpath {
+        let compiled = match javaid::xpath::XPath::compile(query) {
+            Ok(q) => q,
+            Err(e) => {
+                eprintln!("javaid: cannot compile the XPath query: {e}");
+                return ExitCode::from(2);
+            }
+        };
+        for path in discover(&cli.paths, !cli.no_follow_symlinks, &["java".to_string()]).0 {
+            let src = std::fs::read(&path).expect("readable file");
+            let ast = match javaid::csast::try_build_source(&src, cli.grammar, true) {
+                Ok(a) => a,
+                Err(e) => {
+                    eprintln!("javaid: {}: {e}", path.display());
+                    return ExitCode::from(2);
+                }
+            };
+            let tree = javaid::xpath::XTree::new(&ast);
+            match compiled.select(&tree) {
+                Ok(hits) => {
+                    for h in hits {
+                        println!("{}", javaid::csast::node_line(&ast, h.node));
+                    }
+                }
+                Err(e) => {
+                    eprintln!("javaid: {e}");
+                    return ExitCode::from(2);
+                }
+            }
+        }
+        return ExitCode::SUCCESS;
     }
 
     if cli.dump_ast || cli.dump_ast_comments {

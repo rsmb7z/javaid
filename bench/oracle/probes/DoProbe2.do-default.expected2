@@ -1,0 +1,18 @@
+10:5 DeclarationOrder Variable access definition in wrong order.
+13:5 DeclarationOrder Variable access definition in wrong order.
+14:5 DeclarationOrder Variable access definition in wrong order.
+17:5 DeclarationOrder Variable access definition in wrong order.
+31:5 DeclarationOrder Constructor definition in wrong order.
+32:5 DeclarationOrder Constructor definition in wrong order.
+33:5 DeclarationOrder Instance variable definition in wrong order.
+34:5 DeclarationOrder Static variable definition in wrong order.
+39:5 DeclarationOrder Instance variable definition in wrong order.
+41:5 DeclarationOrder Instance variable definition in wrong order.
+47:5 DeclarationOrder Static variable definition in wrong order.
+50:5 DeclarationOrder Static variable definition in wrong order.
+58:5 DeclarationOrder Constructor definition in wrong order.
+63:3 DeclarationOrder Static variable definition in wrong order.
+64:3 DeclarationOrder Variable access definition in wrong order.
+65:3 DeclarationOrder Variable access definition in wrong order.
+67:3 DeclarationOrder Static variable definition in wrong order.
+68:3 DeclarationOrder Instance variable definition in wrong order.

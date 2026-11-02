@@ -1,0 +1,32 @@
+3102:9 LeftCurly '{' at column 9 should be on the previous line.
+3105:34 LeftCurly '{' at column 34 should have line break after.
+3115:9 LeftCurly '{' at column 9 should be on the previous line.
+3118:34 LeftCurly '{' at column 34 should have line break after.
+3124:9 LeftCurly '{' at column 9 should be on the previous line.
+3124:9 LeftCurly '{' at column 9 should have line break after.
+3132:9 LeftCurly '{' at column 9 should be on the previous line.
+3144:34 LeftCurly '{' at column 34 should have line break after.
+3149:9 LeftCurly '{' at column 9 should be on the previous line.
+3161:9 LeftCurly '{' at column 9 should be on the previous line.
+3165:16 LeftCurly '{' at column 16 should have line break after.
+3180:9 LeftCurly '{' at column 9 should be on the previous line.
+3184:16 LeftCurly '{' at column 16 should have line break after.
+3192:9 LeftCurly '{' at column 9 should be on the previous line.
+3192:9 LeftCurly '{' at column 9 should have line break after.
+3202:9 LeftCurly '{' at column 9 should be on the previous line.
+3218:16 LeftCurly '{' at column 16 should have line break after.
+3225:9 LeftCurly '{' at column 9 should be on the previous line.
+3237:9 LeftCurly '{' at column 9 should be on the previous line.
+3250:9 LeftCurly '{' at column 9 should be on the previous line.
+3259:9 LeftCurly '{' at column 9 should be on the previous line.
+3267:9 LeftCurly '{' at column 9 should be on the previous line.
+3284:9 LeftCurly '{' at column 9 should be on the previous line.
+3294:9 LeftCurly '{' at column 9 should be on the previous line.
+3297:35 LeftCurly '{' at column 35 should have line break after.
+3307:9 LeftCurly '{' at column 9 should be on the previous line.
+3310:35 LeftCurly '{' at column 35 should have line break after.
+3316:9 LeftCurly '{' at column 9 should be on the previous line.
+3316:9 LeftCurly '{' at column 9 should have line break after.
+3324:9 LeftCurly '{' at column 9 should be on the previous line.
+3336:35 LeftCurly '{' at column 35 should have line break after.
+3341:9 LeftCurly '{' at column 9 should be on the previous line.

@@ -1,0 +1,4 @@
+
+   @Deprecated
+class GsPkg10 {
+}

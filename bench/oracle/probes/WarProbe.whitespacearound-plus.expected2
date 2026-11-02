@@ -1,0 +1,16 @@
+24:12 WhitespaceAround '+' is not followed by whitespace.
+24:12 WhitespaceAround '+' is not preceded with whitespace.
+26:15 WhitespaceAround '+' is not followed by whitespace.
+27:14 WhitespaceAround '+' is not preceded with whitespace.
+90:13 WhitespaceAround '+' is not followed by whitespace.
+100:10 WhitespaceAround '+' is not followed by whitespace.
+100:10 WhitespaceAround '+' is not preceded with whitespace.
+101:11 WhitespaceAround '+' is not followed by whitespace.
+102:16 WhitespaceAround '+' is not followed by whitespace.
+102:16 WhitespaceAround '+' is not preceded with whitespace.
+104:18 WhitespaceAround '+' is not followed by whitespace.
+104:18 WhitespaceAround '+' is not preceded with whitespace.
+233:38 WhitespaceAround '+' is not followed by whitespace.
+233:38 WhitespaceAround '+' is not preceded with whitespace.
+238:57 WhitespaceAround '+' is not followed by whitespace.
+238:57 WhitespaceAround '+' is not preceded with whitespace.

@@ -33,6 +33,13 @@ pub fn dump(ast: &CsAst) -> String {
     out
 }
 
+/// One node as the printer shows it (`TYPE -> text [line:col]`), without the tree drawing.
+pub fn node_line(ast: &CsAst, n: N) -> String {
+    let mut s = String::new();
+    node_info(ast, n, &mut s);
+    s
+}
+
 fn node_info(ast: &CsAst, n: N, out: &mut String) {
     out.push_str(ast.ty(n).name());
     out.push_str(" -> ");

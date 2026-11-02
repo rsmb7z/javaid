@@ -16,16 +16,6 @@ pub fn on_method_like(cx: &mut Ctx, node: Node) {
     parameter_number(cx, node, token);
 }
 
-/// Where `MethodLength` reports: the line of the declaration's first token, annotations included.
-/// (`ParameterNumber` reports at the method's name instead.)
-fn report_row(node: Node) -> usize {
-    node.start_position().row
-}
-
-fn at_row(cx: &mut Ctx, rule: &'static str, node: Node, message: String) {
-    let row = report_row(node);
-    cx.diag_at(rule, row as u32 + 1, 1, message);
-}
 
 /// `MethodLength`: the lines from the line of the opening brace to the line of the closing one. With
 /// `countEmpty=false`, only the lines on which some token of the body starts count (comments are not
@@ -40,7 +30,7 @@ fn method_length(cx: &mut Ctx, node: Node, token: Token) {
     let length = if count_empty { body.end_position().row - body.start_position().row + 1 } else { used_lines(body) };
     if length > max {
         let name = node.child_by_field_id(cx.syn.f.name).map(|n| String::from_utf8_lossy(cx.text(n)).into_owned()).unwrap_or_default();
-        at_row(cx, "MethodLength", node, format!("Method {name} length is {length} lines (max allowed is {max})."));
+        cx.diag("MethodLength", node, format!("Method {name} length is {} lines (max allowed is {}).", crate::engine::grouped(length), crate::engine::grouped(max)));
     }
 }
 
@@ -64,8 +54,9 @@ fn parameter_number(cx: &mut Ctx, node: Node, token: Token) {
     if !opts.ignore_annotated_by.is_empty() && annotated_by(cx, node, &opts.ignore_annotated_by) {
         return;
     }
-    let row = node.child_by_field_id(cx.syn.f.name).map_or(node.start_position().row, |n| n.start_position().row);
-    cx.diag_at("ParameterNumber", row as u32 + 1, 1, format!("More than {max} parameters (found {count})."));
+    // At the method's name.
+    let at = node.child_by_field_id(cx.syn.f.name).unwrap_or(node);
+    cx.diag("ParameterNumber", at, format!("More than {} parameters (found {}).", crate::engine::grouped(max), crate::engine::grouped(count)));
 }
 
 fn annotated_by(cx: &Ctx, decl: Node, names: &[String]) -> bool {

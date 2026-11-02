@@ -1,0 +1,2 @@
+2:1 CustomImportOrder Wrong lexicographical order for 'a.A' import. Should be before 'b.B'.
+3:1 CustomImportOrder Import statement for 'c.C.c' is in the wrong order. Should be in the 'STATIC' group, expecting not assigned imports on this line.

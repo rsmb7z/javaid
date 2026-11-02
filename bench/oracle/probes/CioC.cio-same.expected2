@@ -1,0 +1,7 @@
+4:1 CustomImportOrder Wrong lexicographical order for 'a.A.a' import. Should be before 'z.Z.z'.
+5:1 CustomImportOrder Wrong lexicographical order for 'a.A.*' import. Should be before 'z.Z.z'.
+6:1 CustomImportOrder Wrong lexicographical order for 'a.B.b' import. Should be before 'z.Z.z'.
+8:1 CustomImportOrder Import statement for 'a.b.c.Same' is in the wrong order. Should be in the 'SAME_PACKAGE' group, expecting not assigned imports on this line.
+9:1 CustomImportOrder 'a.b.d.Other' should be separated from previous import group by one line.
+11:1 CustomImportOrder Import statement for 'a.b.c.d.Deeper' is in the wrong order. Should be in the 'SAME_PACKAGE' group, expecting not assigned imports on this line.
+17:1 CustomImportOrder Wrong lexicographical order for 'junit.framework.TestCase' import. Should be before 'org.junit.jupiter.api.Test'.

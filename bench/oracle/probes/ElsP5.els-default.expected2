@@ -1,0 +1,5 @@
+2:1 EmptyLineSeparator 'METHOD_DEF' should be separated from previous line.
+4:1 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+5:1 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.
+9:1 EmptyLineSeparator 'METHOD_DEF' should be separated from previous line.
+12:1 EmptyLineSeparator 'VARIABLE_DEF' should be separated from previous line.

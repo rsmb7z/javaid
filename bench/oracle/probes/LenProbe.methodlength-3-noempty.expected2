@@ -1,0 +1,6 @@
+15:5 MethodLength Method f length is 4 lines (max allowed is 3).
+26:5 MethodLength Method LenProbe length is 4 lines (max allowed is 3).
+33:9 MethodLength Method R length is 4 lines (max allowed is 3).
+37:9 MethodLength Method m length is 6 lines (max allowed is 3).
+49:5 MethodLength Method k length is 4 lines (max allowed is 3).
+54:5 MethodLength Method l length is 4 lines (max allowed is 3).

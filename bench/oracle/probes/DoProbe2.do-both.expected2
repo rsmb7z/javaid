@@ -1,0 +1,7 @@
+33:5 DeclarationOrder Instance variable definition in wrong order.
+34:5 DeclarationOrder Static variable definition in wrong order.
+39:5 DeclarationOrder Instance variable definition in wrong order.
+41:5 DeclarationOrder Instance variable definition in wrong order.
+50:5 DeclarationOrder Static variable definition in wrong order.
+67:3 DeclarationOrder Static variable definition in wrong order.
+68:3 DeclarationOrder Instance variable definition in wrong order.

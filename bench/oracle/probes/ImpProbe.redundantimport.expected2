@@ -1,0 +1,20 @@
+3:1 RedundantImport Redundant import from the same package - a.b.Same.
+5:1 RedundantImport Redundant import from the java.lang package - java.lang.String.
+7:1 RedundantImport Redundant import from the java.lang package - java.lang.*.
+9:1 RedundantImport Duplicate import to line 8 - java.util.List.
+11:1 RedundantImport Duplicate import to line 10 - java.util.*.
+15:1 RedundantImport Duplicate import to line 14 - java.lang.Math.abs.
+17:1 RedundantImport Duplicate import to line 16 - java.lang.Math.*.
+37:1 RedundantImport Duplicate import to line 7 - java.lang.*.
+37:1 RedundantImport Redundant import from the java.lang package - java.lang.*.
+38:1 RedundantImport Duplicate import to line 37 - java.lang.*.
+38:1 RedundantImport Duplicate import to line 7 - java.lang.*.
+38:1 RedundantImport Redundant import from the java.lang package - java.lang.*.
+39:1 RedundantImport Duplicate import to line 14 - java.lang.Math.abs.
+39:1 RedundantImport Duplicate import to line 15 - java.lang.Math.abs.
+40:1 RedundantImport Duplicate import to line 14 - java.lang.Math.abs.
+40:1 RedundantImport Duplicate import to line 15 - java.lang.Math.abs.
+40:1 RedundantImport Duplicate import to line 39 - java.lang.Math.abs.
+41:1 RedundantImport Redundant import from the same package - a.b.*.
+42:1 RedundantImport Duplicate import to line 41 - a.b.*.
+42:1 RedundantImport Redundant import from the same package - a.b.*.

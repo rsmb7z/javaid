@@ -1,0 +1,36 @@
+7:27 JavadocMethod Expected @param tag for 'a'.
+7:37 JavadocMethod Expected @param tag for 'b'.
+22:43 JavadocMethod Expected @param tag for 'b'.
+27:8 JavadocMethod Unused @param tag for 'z'.
+35:8 JavadocMethod Duplicate @param tag.
+49:0 JavadocMethod Unused Javadoc tag.
+57:8 JavadocMethod Duplicate @return tag.
+81:13 JavadocMethod Expected @param tag for '<U>'.
+81:16 JavadocMethod Expected @param tag for '<V>'.
+85:8 JavadocMethod Unused @param tag for '<Q>'.
+89:13 JavadocMethod Expected @param tag for '<U>'.
+138:5 JavadocMethod Invalid use of the '@inheritDoc' tag.
+141:5 JavadocMethod Invalid use of the '@inheritDoc' tag.
+144:5 JavadocMethod Invalid use of the '@inheritDoc' tag.
+154:8 JavadocMethod Unused @param tag for 'z'.
+162:0 JavadocMethod Unused Javadoc tag.
+169:24 JavadocMethod Expected @param tag for 'a'.
+169:31 JavadocMethod Expected @param tag for 'b'.
+195:31 JavadocMethod Expected @param tag for 'a'.
+213:26 JavadocMethod Expected @param tag for 'a'.
+223:26 JavadocMethod Expected @param tag for 'a'.
+228:17 JavadocMethod Expected @param tag for 'a'.
+233:28 JavadocMethod Expected @param tag for 'a'.
+238:33 JavadocMethod Expected @param tag for 'a'.
+243:31 JavadocMethod Expected @param tag for 'a'.
+249:20 JavadocMethod Expected @param tag for 'a'.
+251:28 JavadocMethod Expected @param tag for 'a'.
+259:0 JavadocMethod Unused Javadoc tag.
+274:9 JavadocMethod Expected @param tag for 'b'.
+278:22 JavadocMethod Expected @param tag for 'a'.
+278:29 JavadocMethod Expected @param tag for 'b'.
+278:36 JavadocMethod Expected @param tag for 'c'.
+283:28 JavadocMethod Expected @param tag for 'a'.
+287:30 JavadocMethod Expected @param tag for 'a'.
+289:27 JavadocMethod Expected @param tag for 'a'.
+298:27 JavadocMethod Expected @param tag for 'a'.

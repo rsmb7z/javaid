@@ -254,8 +254,14 @@ failed to load, and I discarded that result.
 
 ## 3. Output parity: does it find the same things?
 
-Findings are matched on (file, line, rule). Columns are ignored: Checkstyle expands tabs and
-anchors some reports on a different token, which is not a semantic difference.
+Findings are matched on (file, line, rule) in the tables below, which were taken before columns
+were compared. Since then `parity.py --strict` matches on the column too and counts message
+differences, and javaid prints Checkstyle's column and message: the AST column is counted in code
+points and tab-expanded to `tabWidth` (the expansion walks UTF-16 units, so a tab after an emoji
+expands from one column too few), the text modules print what Checkstyle prints (no column for
+`LineLength`, `FileLength`, `RegexpSingleline` and `NewlineAtEndOfFile`; a UTF-16 index for
+`FileTabCharacter`), a declaration without modifiers is reported at the last `.` of a qualified
+type, and the `<message>` overrides of a configuration are applied.
 
 | rule | Checkstyle | javaid | identical |
 |---|---:|---:|---:|

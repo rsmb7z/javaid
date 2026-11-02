@@ -1,0 +1,7 @@
+4:1 CustomImportOrder Wrong lexicographical order for 'a.A.a' import. Should be before 'z.Z.z'.
+5:1 CustomImportOrder Wrong lexicographical order for 'a.A.*' import. Should be before 'z.Z.z'.
+6:1 CustomImportOrder Wrong lexicographical order for 'a.B.b' import. Should be before 'z.Z.z'.
+11:1 CustomImportOrder Wrong lexicographical order for 'a.b.c.d.Deeper' import. Should be before 'b.B'.
+13:1 CustomImportOrder Import statement for 'java.util.List' is in the wrong order. Should be in the 'STANDARD_JAVA_PACKAGE' group, expecting not assigned imports on this line.
+14:1 CustomImportOrder Import statement for 'javax.annotation.Nullable' is in the wrong order. Should be in the 'STANDARD_JAVA_PACKAGE' group, expecting not assigned imports on this line.
+17:1 CustomImportOrder Wrong lexicographical order for 'junit.framework.TestCase' import. Should be before 'org.junit.jupiter.api.Test'.

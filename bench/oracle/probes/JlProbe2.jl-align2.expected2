@@ -1,0 +1,22 @@
+5:10 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+6:10 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+7:10 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+11:12 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 3, expected is 2.
+12:10 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+13:10 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+17:9 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 0, expected is 2.
+18:18 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 9, expected is 2.
+19:10 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+23:10 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 5, expected is 2.
+24:6 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+25:6 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+34:6 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+35:5 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 0, expected is 2.
+36:6 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+46:6 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+47:6 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+48:6 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+54:0 JavadocLeadingAsteriskAlign Javadoc comment at column 5 has parse error. Details: mismatched input '<EOF>' expecting JAVADOC_INLINE_TAG_END while parsing INLINE_TAG
+58:6 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+59:6 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.
+64:6 JavadocLeadingAsteriskAlign Leading asterisk has incorrect indentation level 1, expected is 2.

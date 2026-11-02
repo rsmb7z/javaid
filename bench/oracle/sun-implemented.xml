@@ -104,6 +104,7 @@
       <property name="maximumMessage" value="Avoid using more than three variables in the for clause." />
     </module>
     <module name="FinalParameters" />
+    <module name="Indentation" />
     <module name="TodoComment" />
     <module name="UpperEll" />
     <module name="SuppressionXpathFilter">

@@ -1,0 +1,5 @@
+30:10 WhitespaceAround '*' is not followed by whitespace.
+30:10 WhitespaceAround '*' is not preceded with whitespace.
+100:12 WhitespaceAround '*' is not followed by whitespace.
+100:12 WhitespaceAround '*' is not preceded with whitespace.
+101:13 WhitespaceAround '*' is not preceded with whitespace.

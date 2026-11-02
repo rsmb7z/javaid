@@ -31,23 +31,28 @@ pub fn lines(src: &[u8]) -> impl Iterator<Item = &[u8]> {
     })
 }
 
-/// The number of columns a line occupies: one per code point (so a combining mark or an emoji
-/// counts once each, as Checkstyle does), with a tab running to the next multiple of `tab_width`.
+/// The length Checkstyle reports for a line: tabs run to the next multiple of `tab_width` counted in
+/// UTF-16 units, where a supplementary character takes two, and then each such character is taken
+/// off once (probed: `LineLength` expands over the string's units but reports in code points).
 fn expanded_length(line: &[u8], tab_width: usize) -> usize {
-    let mut len = 0;
+    let (mut len, mut pairs) = (0, 0);
     for &b in line {
         if b == b'\t' {
             len = (len / tab_width + 1) * tab_width;
         } else if b & 0xC0 != 0x80 {
             len += 1; // not a UTF-8 continuation byte, so the start of a code point
+            if b >= 0xF0 {
+                len += 1;
+                pairs += 1;
+            }
         }
     }
-    len
+    len - pairs
 }
 
-/// 1-based column of byte `at`, counting code points.
+/// 1-based column of byte `at`, counting UTF-16 code units (no tab expansion).
 fn column(line: &[u8], at: usize) -> u32 {
-    line[..at].iter().filter(|&&b| b & 0xC0 != 0x80).count() as u32 + 1
+    line[..at].iter().filter(|&&b| b & 0xC0 != 0x80).map(|&b| if b >= 0xF0 { 2 } else { 1 }).sum::<u32>() + 1
 }
 
 pub fn run(cfg: &Config, ext: &str, src: &[u8], out: &mut Vec<Diagnostic>) {
@@ -65,7 +70,7 @@ pub fn run(cfg: &Config, ext: &str, src: &[u8], out: &mut Vec<Diagnostic>) {
     if let Some(m) = size {
         let count = lines(src).count();
         if count > m.max {
-            out.push(Diagnostic { rule: cfg.display("FileLength"), line: 1, col: 1, message: format!("File length is {count} lines (max allowed is {}).", m.max) });
+            out.push(Diagnostic { rule: cfg.display("FileLength"), line: 1, col: 0, message: format!("File length is {} lines (max allowed is {}).", crate::engine::grouped(count), crate::engine::grouped(m.max)) });
         }
     }
     if tab.is_none() && length.is_none() && patterns.is_empty() {
@@ -93,8 +98,8 @@ pub fn run(cfg: &Config, ext: &str, src: &[u8], out: &mut Vec<Diagnostic>) {
             if line.len() > m.max || (file_has_tab && memchr(b'\t', line).is_some()) {
                 let found = expanded_length(line, cfg.tab_width);
                 if found > m.max && !m.ignore_pattern.matches(line) {
-                    let message = format!("Line is longer than {} characters (found {found}).", m.max);
-                    out.push(Diagnostic { rule: cfg.display("LineLength"), line: n, col: 1, message });
+                    let message = format!("Line is longer than {} characters (found {}).", crate::engine::grouped(m.max), crate::engine::grouped(found));
+                    out.push(Diagnostic { rule: cfg.display("LineLength"), line: n, col: 0, message });
                 }
             }
         }
@@ -104,7 +109,7 @@ pub fn run(cfg: &Config, ext: &str, src: &[u8], out: &mut Vec<Diagnostic>) {
                 *count += 1;
                 if *count > m.maximum {
                     let message = m.message.clone().unwrap_or_else(|| format!("Line matches the illegal pattern '{}'.", m.format.source));
-                    out.push(Diagnostic { rule: m.name, line: n, col: 1, message });
+                    out.push(Diagnostic { rule: m.name, line: n, col: 0, message });
                 }
             }
         }
@@ -114,7 +119,7 @@ pub fn run(cfg: &Config, ext: &str, src: &[u8], out: &mut Vec<Diagnostic>) {
         if count < m.minimum {
             let message =
                 m.message.clone().unwrap_or_else(|| format!("File does not contain at least {} matches for pattern '{}'.", m.minimum, m.format.source));
-            out.push(Diagnostic { rule: m.name, line: 1, col: 1, message });
+            out.push(Diagnostic { rule: m.name, line: 1, col: 0, message });
         }
     }
 }
@@ -132,7 +137,7 @@ fn newline_at_end_of_file(cfg: &Config, separator: LineSeparator, src: &[u8], ou
         LineSeparator::LfCrCrlf if !(ends_with(b"\n") || ends_with(b"\r")) => "File does not end with a newline.".to_string(),
         _ => return,
     };
-    out.push(Diagnostic { rule: cfg.display("NewlineAtEndOfFile"), line: 1, col: 1, message });
+    out.push(Diagnostic { rule: cfg.display("NewlineAtEndOfFile"), line: 1, col: 0, message });
 }
 
 /// `MultiFileRegexpHeader`: the file's first lines must match, line by line, one of the header

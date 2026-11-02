@@ -1,0 +1,8 @@
+7:9 MissingOverrideOnRecordAccessor Record component accessor method must include @java.lang.Override annotation.
+21:9 MissingOverrideOnRecordAccessor Record component accessor method must include @java.lang.Override annotation.
+54:9 MissingOverrideOnRecordAccessor Record component accessor method must include @java.lang.Override annotation.
+65:9 MissingOverrideOnRecordAccessor Record component accessor method must include @java.lang.Override annotation.
+69:9 MissingOverrideOnRecordAccessor Record component accessor method must include @java.lang.Override annotation.
+106:13 MissingOverrideOnRecordAccessor Record component accessor method must include @java.lang.Override annotation.
+123:13 MissingOverrideOnRecordAccessor Record component accessor method must include @java.lang.Override annotation.
+134:9 MissingOverrideOnRecordAccessor Record component accessor method must include @java.lang.Override annotation.

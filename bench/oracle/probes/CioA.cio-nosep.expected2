@@ -1,0 +1,12 @@
+6:1 CustomImportOrder Import statement for 'com.google.common.base.Strings' is in the wrong order. Should be in the 'SPECIAL_IMPORTS' group, expecting not assigned imports on this line.
+7:1 CustomImportOrder Import statement for 'java.util.List' is in the wrong order. Should be in the 'STANDARD_JAVA_PACKAGE' group, expecting not assigned imports on this line.
+8:1 CustomImportOrder Import statement for 'com.example.app.Sibling' is in the wrong order. Should be in the 'SPECIAL_IMPORTS' group, expecting not assigned imports on this line.
+9:1 CustomImportOrder Import statement for 'org.junit.Test' is in the wrong order. Should be in the 'THIRD_PARTY_PACKAGE' group, expecting not assigned imports on this line.
+10:1 CustomImportOrder Import statement for 'java.io.File' is in the wrong order. Should be in the 'STANDARD_JAVA_PACKAGE' group, expecting not assigned imports on this line.
+12:1 CustomImportOrder Import statement for 'javax.swing.JFrame' is in the wrong order. Should be in the 'THIRD_PARTY_PACKAGE' group, expecting not assigned imports on this line.
+14:1 CustomImportOrder Import statement for 'com.example.other.Other' is in the wrong order. Should be in the 'SPECIAL_IMPORTS' group, expecting not assigned imports on this line.
+15:1 CustomImportOrder Import statement for 'org.apache.commons.lang3.StringUtils' is in the wrong order. Should be in the 'SPECIAL_IMPORTS' group, expecting not assigned imports on this line.
+16:1 CustomImportOrder Import statement for 'com.zeta.Z' is in the wrong order. Should be in the 'SPECIAL_IMPORTS' group, expecting not assigned imports on this line.
+17:1 CustomImportOrder Import statement for 'com.alpha.A' is in the wrong order. Should be in the 'SPECIAL_IMPORTS' group, expecting not assigned imports on this line.
+18:1 CustomImportOrder Import statement for 'com.alpha.A.Inner' is in the wrong order. Should be in the 'SPECIAL_IMPORTS' group, expecting not assigned imports on this line.
+19:1 CustomImportOrder Import statement for 'com.alpha.*' is in the wrong order. Should be in the 'SPECIAL_IMPORTS' group, expecting not assigned imports on this line.

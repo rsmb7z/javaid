@@ -51,11 +51,44 @@ pub fn on_statement(cx: &mut Ctx, st: &mut State, node: Node) {
         _ => true,
     };
     if checked && (st.last_end == Some(row) || shares_a_line_with_a_member(cx, node, row)) {
-        cx.diag("OneStatementPerLine", node, "Only one statement per line allowed.".into());
+        cx.diag("OneStatementPerLine", reported_at(node), "Only one statement per line allowed.".into());
     }
     // The children of an import or package statement are not walked, so its `;` is recorded here.
     if matches!(kind, "import_declaration" | "package_declaration") {
         st.last_end = Some(node.end_position().row);
+    }
+}
+
+/// Where Checkstyle puts the report for a statement. A declaration or a control statement is at its
+/// first token. An expression statement, and the expression of a `throw`, is at the position of
+/// its expression node, which is not always the expression's first token (probed): a prefix
+/// operator, `new` and the parenthesis of a cast do not count, so `++i` is at `i`, `new T()` at
+/// `T` and `(T) e` at `T`; a chain of calls, fields, indexes or operators is at its leftmost part.
+fn reported_at(statement: Node) -> Node {
+    let mut e = match statement.kind() {
+        "expression_statement" | "throw_statement" => match statement.named_child(0) {
+            Some(e) => e,
+            None => return statement,
+        },
+        _ => return statement,
+    };
+    loop {
+        let next = match e.kind() {
+            "unary_expression" | "update_expression" => e.named_child(0),
+            "cast_expression" => e.child_by_field_name("type"),
+            "object_creation_expression" if e.child(0).is_some_and(|c| c.kind() != "new") => e.named_child(0),
+            "object_creation_expression" | "array_creation_expression" => e.child_by_field_name("type"),
+            "method_invocation" => e.child_by_field_name("object"),
+            "field_access" => e.child_by_field_name("object"),
+            "array_access" => e.child_by_field_name("array"),
+            "assignment_expression" | "binary_expression" | "instanceof_expression" => e.child_by_field_name("left"),
+            "ternary_expression" => e.child_by_field_name("condition"),
+            _ => None,
+        };
+        match next {
+            Some(n) => e = n,
+            None => return e,
+        }
     }
 }
 

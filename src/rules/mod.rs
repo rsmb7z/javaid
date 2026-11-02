@@ -8,8 +8,10 @@ pub mod descendant;
 pub mod design;
 pub mod extension;
 pub mod fallthrough;
+pub mod gs;
 pub mod hidden;
 pub mod importcheck;
+pub mod indentation;
 pub mod imports;
 pub mod javadoc;
 pub mod javadoc_style;
@@ -23,6 +25,10 @@ pub mod abbr;
 pub mod commentfilter;
 pub mod customimport;
 pub mod unicode;
+pub mod cs;
+pub mod textblock;
+pub mod googlerightcurly;
+pub mod emptyline;
 pub mod googlenames;
 pub mod naming;
 pub mod pad;
@@ -34,6 +40,10 @@ pub mod tokens;
 pub mod util;
 pub mod whitespace;
 pub mod wrap;
+pub mod vdud;
+pub mod commentsindent;
+pub mod csast_checks;
+pub mod xpathfilter;
 
 #[cfg(test)]
 mod tests;
@@ -80,6 +90,7 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
     }
     imports::leave_scopes(&mut st.imports, node);
     declorder::on_node(cx, &mut st.declorder, node);
+    gs::on_node(cx, node);
     match node.kind() {
         "enum_constant" => javadoc::on_variable(cx, node),
         "annotation_type_element_declaration" => {

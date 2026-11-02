@@ -1,0 +1,162 @@
+8:18 GoogleRightCurly Empty block should be concise {}.
+11:16 GoogleRightCurly '}' at column 16 should be alone on a line.
+16:31 GoogleRightCurly '}' at column 31 should be alone on a line.
+22:20 GoogleRightCurly Empty block should be concise {}.
+26:29 GoogleRightCurly '}' at column 29 should be alone on a line.
+27:22 GoogleRightCurly Empty block should be concise {}.
+33:21 GoogleRightCurly Empty block should be concise {}.
+35:30 GoogleRightCurly '}' at column 30 should be alone on a line.
+38:16 GoogleRightCurly '}' at column 16 should be alone on a line.
+45:25 GoogleRightCurly '}' at column 25 should be alone on a line.
+46:25 GoogleRightCurly '}' at column 25 should have line break before.
+46:41 GoogleRightCurly '}' at column 41 should be alone on a line.
+54:9 GoogleRightCurly '}' at column 9 should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally).
+59:20 GoogleRightCurly '}' at column 20 should have line break before.
+65:18 GoogleRightCurly '}' at column 18 should have line break before.
+65:27 GoogleRightCurly '}' at column 27 should be alone on a line.
+66:17 GoogleRightCurly '}' at column 17 should have line break before.
+66:25 GoogleRightCurly '}' at column 25 should be alone on a line.
+75:9 GoogleRightCurly '}' at column 9 should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally).
+79:20 GoogleRightCurly '}' at column 20 should be alone on a line.
+98:37 GoogleRightCurly '}' at column 37 should be alone on a line.
+99:25 GoogleRightCurly '}' at column 25 should have line break before.
+106:25 GoogleRightCurly '}' at column 25 should have line break before.
+106:48 GoogleRightCurly '}' at column 48 should have line break before.
+106:64 GoogleRightCurly '}' at column 64 should be alone on a line.
+110:22 GoogleRightCurly '}' at column 22 should have line break before.
+110:53 GoogleRightCurly '}' at column 53 should have line break before.
+110:72 GoogleRightCurly '}' at column 72 should be alone on a line.
+120:9 GoogleRightCurly '}' at column 9 should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally).
+123:9 GoogleRightCurly '}' at column 9 should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally).
+128:32 GoogleRightCurly '}' at column 32 should be alone on a line.
+132:20 GoogleRightCurly '}' at column 20 should be alone on a line.
+133:41 GoogleRightCurly Empty block should be concise {}.
+135:20 GoogleRightCurly '}' at column 20 should be alone on a line.
+142:20 GoogleRightCurly '}' at column 20 should be alone on a line.
+147:28 GoogleRightCurly '}' at column 28 should be alone on a line.
+148:15 GoogleRightCurly '}' at column 15 should have line break before.
+148:27 GoogleRightCurly '}' at column 27 should be alone on a line.
+149:14 GoogleRightCurly '}' at column 14 should have line break before.
+149:25 GoogleRightCurly '}' at column 25 should be alone on a line.
+156:46 GoogleRightCurly '}' at column 46 should be alone on a line.
+157:37 GoogleRightCurly '}' at column 37 should be alone on a line.
+158:30 GoogleRightCurly Empty block should be concise {}.
+162:28 GoogleRightCurly '}' at column 28 should be alone on a line.
+167:20 GoogleRightCurly '}' at column 20 should be alone on a line.
+168:21 GoogleRightCurly '}' at column 21 should have line break before.
+173:20 GoogleRightCurly '}' at column 20 should have line break before.
+180:9 GoogleRightCurly '}' at column 9 should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally).
+186:38 GoogleRightCurly '}' at column 38 should be alone on a line.
+187:31 GoogleRightCurly Empty block should be concise {}.
+191:20 GoogleRightCurly '}' at column 20 should be alone on a line.
+198:60 GoogleRightCurly '}' at column 60 should be alone on a line.
+205:24 GoogleRightCurly '}' at column 24 should be alone on a line.
+209:30 GoogleRightCurly '}' at column 30 should be alone on a line.
+213:23 GoogleRightCurly Empty block should be concise {}.
+213:34 GoogleRightCurly '}' at column 34 should be alone on a line.
+220:22 GoogleRightCurly Empty block should be concise {}.
+221:21 GoogleRightCurly Empty block should be concise {}.
+223:32 GoogleRightCurly '}' at column 32 should be alone on a line.
+228:24 GoogleRightCurly '}' at column 24 should be alone on a line.
+229:25 GoogleRightCurly Empty block should be concise {}.
+240:32 GoogleRightCurly '}' at column 32 should be alone on a line.
+240:54 GoogleRightCurly '}' at column 54 should be alone on a line.
+245:13 GoogleRightCurly '}' at column 13 should be alone on a line.
+245:27 GoogleRightCurly Empty block should be concise {}.
+246:26 GoogleRightCurly Empty block should be concise {}.
+249:34 GoogleRightCurly '}' at column 34 should be alone on a line.
+254:26 GoogleRightCurly '}' at column 26 should be alone on a line.
+256:57 GoogleRightCurly '}' at column 57 should be alone on a line.
+258:32 GoogleRightCurly '}' at column 32 should be alone on a line.
+272:26 GoogleRightCurly '}' at column 26 should be alone on a line.
+276:26 GoogleRightCurly '}' at column 26 should be alone on a line.
+277:39 GoogleRightCurly '}' at column 39 should be alone on a line.
+292:22 GoogleRightCurly '}' at column 22 should be alone on a line.
+294:17 GoogleRightCurly '}' at column 17 should be alone on a line.
+295:14 GoogleRightCurly Empty block should be concise {}.
+299:14 GoogleRightCurly '}' at column 14 should be alone on a line.
+301:16 GoogleRightCurly '}' at column 16 should be alone on a line.
+302:7 GoogleRightCurly Empty block should be concise {}.
+381:15 GoogleRightCurly Empty block should be concise {}.
+386:24 GoogleRightCurly Empty block should be concise {}.
+392:32 GoogleRightCurly '}' at column 32 should be alone on a line.
+408:20 GoogleRightCurly Empty block should be concise {}.
+416:23 GoogleRightCurly Empty block should be concise {}.
+416:25 GoogleRightCurly '}' at column 25 should be alone on a line.
+418:16 GoogleRightCurly Empty block should be concise {}.
+422:23 GoogleRightCurly '}' at column 23 should be alone on a line.
+424:16 GoogleRightCurly '}' at column 16 should be alone on a line.
+426:23 GoogleRightCurly Empty block should be concise {}.
+428:30 GoogleRightCurly Empty block should be concise {}.
+428:32 GoogleRightCurly '}' at column 32 should be alone on a line.
+432:20 GoogleRightCurly '}' at column 20 should be alone on a line.
+432:22 GoogleRightCurly '}' at column 22 should be alone on a line.
+433:20 GoogleRightCurly Empty block should be concise {}.
+437:30 GoogleRightCurly '}' at column 30 should be alone on a line.
+439:19 GoogleRightCurly '}' at column 19 should be alone on a line.
+440:21 GoogleRightCurly Empty block should be concise {}.
+444:30 GoogleRightCurly '}' at column 30 should be alone on a line.
+446:18 GoogleRightCurly '}' at column 18 should be alone on a line.
+447:19 GoogleRightCurly Empty block should be concise {}.
+451:35 GoogleRightCurly Empty block should be concise {}.
+451:37 GoogleRightCurly '}' at column 37 should be alone on a line.
+453:20 GoogleRightCurly Empty block should be concise {}.
+453:22 GoogleRightCurly '}' at column 22 should be alone on a line.
+455:22 GoogleRightCurly '}' at column 22 should be alone on a line.
+459:21 GoogleRightCurly '}' at column 21 should be alone on a line.
+462:14 GoogleRightCurly Empty block should be concise {}.
+487:50 GoogleRightCurly '}' at column 50 should be alone on a line.
+489:33 GoogleRightCurly '}' at column 33 should be alone on a line.
+490:46 GoogleRightCurly Empty block should be concise {}.
+503:46 GoogleRightCurly Empty block should be concise {}.
+512:32 GoogleRightCurly '}' at column 11 should be alone on a line.
+518:32 GoogleRightCurly '}' at column 11 should be alone on a line.
+520:41 GoogleRightCurly '}' at column 27 should be alone on a line.
+524:46 GoogleRightCurly '}' at column 46 should be alone on a line.
+526:20 GoogleRightCurly '}' at column 20 should be alone on a line.
+554:26 GoogleRightCurly '}' at column 26 should have line break before.
+554:43 GoogleRightCurly '}' at column 43 should be alone on a line.
+555:26 GoogleRightCurly '}' at column 26 should be alone on a line.
+555:51 GoogleRightCurly '}' at column 51 should be alone on a line.
+557:20 GoogleRightCurly '}' at column 20 should be alone on a line.
+558:20 GoogleRightCurly '}' at column 20 should be alone on a line.
+562:74 GoogleRightCurly '}' at column 74 should be alone on a line.
+570:29 GoogleRightCurly '}' at column 29 should be alone on a line.
+594:9 GoogleRightCurly '}' at column 9 should be alone on a line.
+595:40 GoogleRightCurly '}' at column 40 should be alone on a line.
+605:20 GoogleRightCurly '}' at column 20 should have line break after.
+606:20 GoogleRightCurly '}' at column 20 should have line break after.
+607:19 GoogleRightCurly '}' at column 19 should have line break after.
+608:23 GoogleRightCurly '}' at column 23 should have line break after.
+609:18 GoogleRightCurly '}' at column 18 should have line break after.
+610:22 GoogleRightCurly '}' at column 22 should have line break after.
+611:24 GoogleRightCurly '}' at column 24 should have line break after.
+612:13 GoogleRightCurly '}' at column 13 should have line break after.
+613:6 GoogleRightCurly '}' at column 6 should have line break after.
+614:15 GoogleRightCurly '}' at column 15 should have line break after.
+616:21 GoogleRightCurly '}' at column 21 should have line break after.
+617:24 GoogleRightCurly '}' at column 24 should have line break after.
+618:19 GoogleRightCurly '}' at column 19 should have line break after.
+619:14 GoogleRightCurly '}' at column 14 should have line break before.
+619:25 GoogleRightCurly '}' at column 25 should be alone on a line.
+620:14 GoogleRightCurly '}' at column 14 should have line break before.
+620:37 GoogleRightCurly '}' at column 37 should be alone on a line.
+621:30 GoogleRightCurly '}' at column 30 should have line break after.
+622:21 GoogleRightCurly Empty block should be concise {}.
+623:34 GoogleRightCurly '}' at column 34 should have line break after.
+623:36 GoogleRightCurly '}' at column 36 should be alone on a line.
+624:32 GoogleRightCurly '}' at column 32 should have line break after.
+624:41 GoogleRightCurly '}' at column 41 should be alone on a line.
+633:21 GoogleRightCurly '}' at column 21 should have line break before.
+633:29 GoogleRightCurly '}' at column 29 should be alone on a line.
+636:17 GoogleRightCurly '}' at column 17 should be alone on a line.
+637:29 GoogleRightCurly '}' at column 29 should be alone on a line.
+638:32 GoogleRightCurly '}' at column 32 should be alone on a line.
+639:27 GoogleRightCurly '}' at column 27 should be alone on a line.
+640:22 GoogleRightCurly '}' at column 22 should have line break before.
+640:41 GoogleRightCurly '}' at column 41 should be alone on a line.
+649:22 GoogleRightCurly '}' at column 22 should have line break after.
+650:30 GoogleRightCurly '}' at column 30 should be alone on a line.
+654:33 GoogleRightCurly '}' at column 33 should be alone on a line.
+658:49 GoogleRightCurly '}' at column 49 should be alone on a line.
+658:51 GoogleRightCurly '}' at column 51 should be alone on a line.

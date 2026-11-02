@@ -1,0 +1,12 @@
+20:5 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '14'.
+24:5 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '14'.
+29:5 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '14'.
+53:9 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '50'.
+56:9 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '50'.
+67:9 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '61'.
+73:9 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '61'.
+94:9 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '88'.
+117:9 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '110'.
+150:13 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '144'.
+169:13 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '164'.
+173:9 ConstructorsDeclarationGrouping Constructors should be grouped together. The last grouped constructor is declared at line '160'.

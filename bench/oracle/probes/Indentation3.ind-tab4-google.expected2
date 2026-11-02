@@ -1,0 +1,63 @@
+10:5 Indentation 'case' child has incorrect indentation level 4, expected level should be 6.
+11:7 Indentation 'block' child has incorrect indentation level 6, expected level should be 8.
+13:5 Indentation 'case' child has incorrect indentation level 4, expected level should be 6.
+15:3 Indentation 'case' child has incorrect indentation level 2, expected level should be 6.
+16:7 Indentation 'block' child has incorrect indentation level 6, expected level should be 8.
+21:7 Indentation 'switch' has incorrect indentation level 6, expected level should be 4.
+22:9 Indentation 'case' child has incorrect indentation level 8, expected level should be 6.
+23:9 Indentation 'case' child has incorrect indentation level 8, expected level should be 6.
+24:13 Indentation 'block' child has incorrect indentation level 12, expected level should be 8.
+25:11 Indentation 'block rcurly' has incorrect indentation level 10, expected level should be 6.
+26:9 Indentation 'case' child has incorrect indentation level 8, expected level should be 6.
+30:9 Indentation 'case' child has incorrect indentation level 8, expected level should be 6.
+31:11 Indentation 'block' child has incorrect indentation level 10, expected level should be 8.
+32:7 Indentation 'switch rcurly' has incorrect indentation level 6, expected level should be 4.
+34:5 Indentation 'switch lcurly' has incorrect indentation level 4, expected level should be 6.
+37:5 Indentation 'switch rcurly' has incorrect indentation level 4, expected level should be 6.
+41:9 Indentation 'lambda' child has incorrect indentation level 8, expected level should be 10.
+43:11 Indentation 'block' child has incorrect indentation level 10, expected level should be 8.
+46:7 Indentation 'lambda' child has incorrect indentation level 6, expected level should be 10.
+49:5 Indentation 'case' child has incorrect indentation level 4, expected level should be 6.
+56:9 Indentation 'case' child has incorrect indentation level 8, expected level should be 6.
+58:11 Indentation 'block rcurly' has incorrect indentation level 10, expected level should be 6.
+60:9 Indentation 'lambda' child has incorrect indentation level 8, expected level should be 10.
+62:7 Indentation 'yield' has incorrect indentation level 6, expected level should be 8.
+67:7 Indentation 'switch' has incorrect indentation level 6, expected level should be 8.
+68:9 Indentation 'case' child has incorrect indentation level 8, expected level should be 10.
+69:9 Indentation 'case' child has incorrect indentation level 8, expected level should be 10.
+70:7 Indentation 'switch rcurly' has incorrect indentation level 6, expected level should be 8.
+72:5 Indentation 'case' child has incorrect indentation level 4, expected level should be 6.
+73:7 Indentation 'yield' has incorrect indentation level 6, expected level should be 8.
+76:7 Indentation '2' has incorrect indentation level 6, expected level should be 8.
+79:9 Indentation 'case' child has incorrect indentation level 8, expected level should be 6.
+87:9 Indentation 'case' child has incorrect indentation level 8, expected level should be 10.
+97:7 Indentation '&&' has incorrect indentation level 6, expected level should be 8.
+110:7 Indentation 'try resource' has incorrect indentation level 6, expected level should be 8.
+121:7 Indentation 'try resource' has incorrect indentation level 6, expected level should be 8.
+128:7 Indentation 'catch' child has incorrect indentation level 6, expected level should be 8.
+155:11 Indentation 'method def' child has incorrect indentation level 10, expected level should be 8.
+159:5 Indentation 'method def modifier' has incorrect indentation level 4, expected level should be 6.
+186:3 Indentation 'interface' has incorrect indentation level 2, expected level should be 6.
+190:5 Indentation 'method def modifier' has incorrect indentation level 4, expected level should be 2.
+191:9 Indentation 'method def' child has incorrect indentation level 8, expected level should be 4.
+192:7 Indentation 'method def' child has incorrect indentation level 6, expected level should be 4.
+194:9 Indentation 'if' has incorrect indentation level 8, expected level should be 4.
+196:13 Indentation 'if' child has incorrect indentation level 12, expected level should be 6.
+197:11 Indentation 'if rcurly' has incorrect indentation level 10, expected level should be 4.
+198:9 Indentation 'method def' child has incorrect indentation level 8, expected level should be 4.
+200:11 Indentation '3' has incorrect indentation level 10, expected level should be 12.
+201:9 Indentation 'method def' child has incorrect indentation level 8, expected level should be 4.
+203:9 Indentation '+' has incorrect indentation level 8, expected level should be 12.
+204:5 Indentation 'method def rcurly' has incorrect indentation level 4, expected level should be 2.
+208:7 Indentation 'y' has incorrect indentation level 6, expected level should be 8.
+210:7 Indentation '2' has incorrect indentation level 6, expected level should be 8.
+218:7 Indentation '2' has incorrect indentation level 6, expected level should be 8.
+221:7 Indentation '+' has incorrect indentation level 6, expected level should be 8.
+223:7 Indentation 'method def' child has incorrect indentation level 6, expected level should be 4.
+228:10 Indentation 'method def' child has incorrect indentation level 6, expected level should be 4.
+229:5 Indentation '2' has incorrect indentation level 4, expected level should be 10.
+231:5 Indentation 'method call' child has incorrect indentation level 4, expected level should be 6.
+250:3 Indentation 'array initialization' child has incorrect indentation level 2, expected level should be one of the following: 4, 6.
+252:9 Indentation 'array initialization' child has incorrect indentation level 8, expected level should be one of the following: 4, 6, 24, 26.
+259:9 Indentation 'array initialization lcurly' has incorrect indentation level 8, expected level should be one of the following: 4, 6, 10.
+260:5 Indentation 'array initialization' child has incorrect indentation level 4, expected level should be one of the following: 6, 8, 10.

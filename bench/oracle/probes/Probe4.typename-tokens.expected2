@@ -1,0 +1,12 @@
+7:11 TypeName Type name 'Bad_Class' must match pattern '^[A-Z][a-zA-Z0-9]*(?:[0-9](?:_[0-9]+)*)?$'.
+11:15 TypeName Type name 'Iface1_2' must match pattern '^[A-Z][a-zA-Z0-9]*$'.
+13:15 TypeName Type name 'Bad_Iface' must match pattern '^[A-Z][a-zA-Z0-9]*$'.
+15:10 TypeName Type name 'Enum1_2' must match pattern '^[A-Z][a-zA-Z0-9]*$'.
+19:10 TypeName Type name 'Bad_Enum' must match pattern '^[A-Z][a-zA-Z0-9]*$'.
+23:16 TypeName Type name 'Ann1_2' must match pattern '^[A-Z][a-zA-Z0-9]*$'.
+25:16 TypeName Type name 'Bad_Ann' must match pattern '^[A-Z][a-zA-Z0-9]*$'.
+27:12 TypeName Type name 'Rec1_2' must match pattern '^[A-Z][a-zA-Z0-9]*$'.
+29:12 TypeName Type name 'Bad_Rec' must match pattern '^[A-Z][a-zA-Z0-9]*$'.
+33:15 TypeName Type name 'Local_Bad' must match pattern '^[A-Z][a-zA-Z0-9]*(?:[0-9](?:_[0-9]+)*)?$'.
+34:16 TypeName Type name 'LocalRec1_2' must match pattern '^[A-Z][a-zA-Z0-9]*$'.
+35:19 TypeName Type name 'LocalIface1_2' must match pattern '^[A-Z][a-zA-Z0-9]*$'.

@@ -1,0 +1,33 @@
+4:0 LineLength Line is longer than 50 characters (found 57).
+5:0 noTrailingWhitespace Trailing whitespace is not allowed
+5:1 FileTabCharacter Line contains a tab character.
+6:0 noTrailingWhitespace Trailing whitespace is not allowed
+6:1 FileTabCharacter Line contains a tab character.
+7:0 noTrailingWhitespace Trailing whitespace is not allowed
+7:1 FileTabCharacter Line contains a tab character.
+8:0 LineLength Line is longer than 50 characters (found 51).
+9:0 LineLength Line is longer than 50 characters (found 71).
+10:0 LineLength Line is longer than 50 characters (found 73).
+12:0 LineLength Line is longer than 50 characters (found 69).
+13:0 LineLength Line is longer than 50 characters (found 103).
+16:15 UpperEll Should use uppercase 'L'.
+17:15 UpperEll Should use uppercase 'L'.
+19:0 noTrailingWhitespace Trailing whitespace is not allowed
+20:0 noTrailingWhitespace Trailing whitespace is not allowed
+21:0 noTrailingWhitespace Trailing whitespace is not allowed
+24:0 LineLength Line is longer than 50 characters (found 73).
+26:0 LineLength Line is longer than 50 characters (found 73).
+28:0 noTrailingWhitespace Trailing whitespace is not allowed
+30:0 noTrailingWhitespace Trailing whitespace is not allowed
+32:15 UpperEll Should use uppercase 'L'.
+34:15 UpperEll Should use uppercase 'L'.
+35:10 MethodName Name 'Bad_Method' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+35:29 LocalVariableName Name 'Bad_Local' must match pattern '^([a-z][a-zA-Z0-9]*|_)$'.
+35:44 EmptyStatement Empty statement.
+37:0 LineLength Line is longer than 50 characters (found 67).
+38:0 LineLength Line is longer than 50 characters (found 66).
+40:0 LineLength Line is longer than 50 characters (found 75).
+42:15 UpperEll Should use uppercase 'L'.
+46:15 UpperEll Should use uppercase 'L'.
+48:15 UpperEll Should use uppercase 'L'.
+49:0 LineLength Line is longer than 50 characters (found 77).

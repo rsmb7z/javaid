@@ -1,0 +1,4 @@
+8:3 JavadocParagraph Empty line should be followed by <p> tag on the next line.
+10:4 JavadocParagraph <p> tag should be preceded with an empty line.
+23:12 JavadocParagraph <p> tag should be preceded with an empty line.
+61:19 JavadocParagraph Empty line should be followed by <p> tag on the next line.

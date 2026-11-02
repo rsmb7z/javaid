@@ -1,0 +1,5 @@
+28:10 WhitespaceAround '-' is not followed by whitespace.
+28:10 WhitespaceAround '-' is not preceded with whitespace.
+92:12 WhitespaceAround '-' is not preceded with whitespace.
+100:14 WhitespaceAround '-' is not followed by whitespace.
+100:14 WhitespaceAround '-' is not preceded with whitespace.

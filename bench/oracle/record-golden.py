@@ -3,6 +3,10 @@
 
 usage: record-golden.py <checkstyle.jar> <config.xml> <probe.java> <out.expected>
 
+Next to `<out>.expected` it writes `<out>.expected2`, the richer form the probe test compares:
+one `<line>:<col> <Name> <message>` row per finding (`<line>:0` when Checkstyle prints no column),
+sorted by line, column and name. The column and message are exactly what Checkstyle printed.
+
 Each line of the fixture is `<line> <Name>`, sorted, where Name is what Checkstyle prints in
 brackets: the module name, or the module's `id` if the configuration gives it one. The fixture is
 what the integration test `tests/oracle_probes.rs` requires javaid to reproduce. Re-record only
@@ -22,18 +26,24 @@ res = subprocess.run(["java", "-jar", jar, "-c", config, probe], capture_output=
 broken = [l for l in (res.stdout + res.stderr).splitlines() if "Exception" in l and not l.startswith(("[WARN]", "[ERROR]", "[INFO]"))]
 if "Audit done." not in res.stdout or broken:
     sys.exit(f"Checkstyle did not complete the audit of {probe} with {config}:\n{res.stdout}\n{res.stderr}")
-rx = re.compile(r"^\[(?:WARN|ERROR|INFO)\] .*?:(\d+)(?::\d+)?: .* \[(\w+)\]$")
+rx = re.compile(r"^\[(?:WARN|ERROR|INFO)\] .*?:(\d+)(?::(\d+))?: (.*) \[(\w+)\]$")
 rows = []
 for line in res.stdout.splitlines():
     if line.startswith("[") and not rx.match(line):
         sys.exit(f"unparsed finding: {line}")
     m = rx.match(line)
     if m:
-        rows.append((int(m.group(1)), m.group(2)))
-rows.sort()
+        rows.append((int(m.group(1)), m.group(4), int(m.group(2) or 0), m.group(3)))
+rich = sorted((l, c, r, msg) for l, r, c, msg in rows)
+rows = sorted((l, r) for l, r, _c, _m in rows)
 with open(out, "w") as fh:
     if not rows:
         fh.write("# no findings; Checkstyle completed the audit\n")
     for ln, rule in rows:
         fh.write(f"{ln} {rule}\n")
+with open(out + "2", "w") as fh:
+    if not rich:
+        fh.write("# no findings; Checkstyle completed the audit\n")
+    for ln, col, rule, msg in rich:
+        fh.write(f"{ln}:{col} {rule} {msg}\n")
 print(f"{probe}: {len(rows)} findings -> {out}")

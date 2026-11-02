@@ -187,7 +187,7 @@ fn expanded_len(s: &str, tab_width: usize) -> usize {
 
 /// `JavadocLeadingAsteriskAlign`.
 fn asterisk_align(cx: &mut Ctx, comment: Node, text: &str, first_line: u32, indentation: usize) {
-    let tab = cx.cfg.tab_width;
+    let tab = cx.cfg.walker_tab();
     let lines: Vec<&str> = text.split('\n').map(|l| l.strip_suffix('\r').unwrap_or(l)).collect();
     // What stands before the comment on its first line.
     let line_start = cx.src[..comment.start_byte()].iter().rposition(|b| *b == b'\n').map_or(0, |i| i + 1);

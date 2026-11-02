@@ -1,0 +1,4 @@
+3:5 ModuleDirectiveOrder 'requires' directive should be before 'exports' directive.
+5:5 ModuleDirectiveOrder All 'exports' directives should be in a single block.
+7:5 ModuleDirectiveOrder All 'requires' directives should be in a single block.
+13:5 ModuleDirectiveOrder All 'exports' directives should be in a single block.

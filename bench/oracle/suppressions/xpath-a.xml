@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+    "-//Checkstyle//DTD SuppressionXpathFilter Experimental Configuration 1.2//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2_xpath_experimental.dtd">
+<suppressions>
+  <suppress-xpath checks="MethodName" query="//METHOD_DEF[./MODIFIERS/ANNOTATION//IDENT[contains(@text, 'Test')]]/IDENT"/>
+  <suppress-xpath checks="MagicNumber" files="XfProbe" id="myid" query="//VARIABLE_DEF//NUM_INT[@text='42']"/>
+  <suppress-xpath message="should be final" query="//PARAMETER_DEF[IDENT/@text='x']"/>
+</suppressions>

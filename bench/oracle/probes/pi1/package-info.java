@@ -1,0 +1,5 @@
+/*
+ * header
+ */
+@Deprecated
+package p;

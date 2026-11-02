@@ -1,7 +1,7 @@
 # javaid
 
 A fast Java linter written in Rust, built to **reproduce Checkstyle's findings exactly**. It is a
-v0.1 preview (see [CHANGELOG.md](CHANGELOG.md)): 81 modules, a `checkstyle.xml` reader, no cache, no
+v0.1 preview (see [CHANGELOG.md](CHANGELOG.md)): 128 modules, a `checkstyle.xml` reader, no cache, no
 fixes. The goal is a drop-in for Checkstyle configurations; today it runs the modules it has and
 lists, by name, every one it skips. The project began with one question, answered with evidence:
 
@@ -76,6 +76,7 @@ shallow clones). The scripts in `bench/` take the directory that holds them as t
 cargo test                                   # unit tests and the Checkstyle-derived probe fixtures
 python3 bench/run_bench.py --help            # the timing harness
 python3 bench/parity.py reference.out javaid.out    # per-module diff against Checkstyle (or PMD) output
+python3 bench/parity.py --strict reference.out javaid.out   # also match on the column, and count message differences
 bench/oracle/make-reference.sh <dir> bench/oracle/naming.xml naming    # Checkstyle's reference output
 bench/oracle/config-parity.sh <dir> <dir>/google_checks.xml google     # a bundled config, cut to what javaid runs
 python3 bench/oracle/mutate_corpus.py <src> <dst>                      # a copy of a corpus edited so the rare rules fire
@@ -121,15 +122,16 @@ one file (Checkstyle 4.0 ms), at 733 MB. See [FINDINGS.md](FINDINGS.md) section 
 
 ## Known limits
 
-- **81 modules.** Checkstyle 14.4 has 243 rule modules; its two bundled configs name 128 distinct
-  modules, filters included. javaid runs every instance of the modules it implements, which is
-  49 of the 106 in `google_checks.xml` and 72 of the 73 in `sun_checks.xml`, and
-  says which it skips and why. Most of what is missing is Javadoc style, `Indentation`, the
-  suppression filters and the rest of the whitespace family (`SingleSpaceSeparator`,
-  `EmptyLineSeparator`, `GoogleRightCurly` and a few more), so javaid is **not yet a drop-in for those
-  configs**. The speed figures below were measured with the first 33 modules. A
-  42-module run on a loaded machine gave 6-9x per core and about 50x on all threads against
-  Checkstyle, with identical findings (FINDINGS.md section 8); a quiet re-run is still to do.
+- **128 modules.** Checkstyle 14.4 has 243 rule modules; its two bundled configs name 128 distinct
+  modules, filters included, and javaid implements all of them. `google_checks.xml` (106 instances)
+  and `sun_checks.xml` (73) run in full and give Checkstyle's findings exactly (line, column and
+  message) on Guava and Spring Framework. Modules outside those two configs are not all there yet;
+  javaid says which module or property it cannot honour when a configuration loads. XPath constructs
+  outside the subset listed in `src/xpath.rs` are refused the same way.
+- **Speed figures are old.** They were measured with the first 33 to 42 modules (a 42-module run on a
+  loaded machine gave 6-9x per core and about 50x on all threads against Checkstyle, with identical
+  findings, FINDINGS.md section 8). They have not been re-measured with the full 128 modules: the
+  machine was too busy for a clean run.
 - **Syntax-only.** No type resolution, so nothing that needs symbol or type information. This
   matches Checkstyle, which is also purely syntactic.
 - **Grammar.** The default is the maintained fork `tree-sitter-java-orchard`. Upstream

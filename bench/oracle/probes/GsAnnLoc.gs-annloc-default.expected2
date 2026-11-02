@@ -1,0 +1,27 @@
+14:17 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+17:7 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 6, expected level should be 4.
+20:17 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+24:5 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+26:5 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+30:5 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+32:17 AnnotationLocation Annotation 'Override' should be alone on line.
+40:5 AnnotationLocation Annotation 'C' should be alone on line.
+42:5 AnnotationLocation Annotation 'Retention' should be alone on line.
+66:19 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+73:17 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+73:40 AnnotationLocation Annotation 'SafeVarargs' should be alone on line.
+76:9 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+76:32 AnnotationLocation Annotation 'SafeVarargs' should be alone on line.
+86:17 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+90:7 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 6, expected level should be 4.
+101:5 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+130:17 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+133:5 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+153:17 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+157:7 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 6, expected level should be 4.
+168:5 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+175:21 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+177:11 AnnotationLocation Annotation 'SuppressWarnings' have incorrect indentation level 10, expected level should be 8.
+180:9 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+197:21 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
+251:21 AnnotationLocation Annotation 'SuppressWarnings' should be alone on line.
