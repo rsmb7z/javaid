@@ -1,6 +1,7 @@
 //! `RedundantImport`, `IllegalImport` and `IllegalInstantiation`.
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use rustc_hash::FxHashMap;
 use tree_sitter::Node;
 
@@ -23,7 +24,7 @@ fn compact(cx: &Ctx, n: Node) -> String {
 pub fn on_package(cx: &Ctx, st: &mut State, node: Node) {
     if cx.cfg.redundant_import || cx.cfg.illegal_instantiation.is_some() {
         let mut cur = node.walk();
-        let name = node.children(&mut cur).find(|c| matches!(c.kind(), "scoped_identifier" | "identifier"));
+        let name = node.children(&mut cur).find(|c| matches!(c.kind_s(), "scoped_identifier" | "identifier"));
         st.package = name.map(|n| compact(cx, n)).unwrap_or_default();
         st.inst_package = Some(st.package.clone());
     }
@@ -31,7 +32,7 @@ pub fn on_package(cx: &Ctx, st: &mut State, node: Node) {
 
 /// A class or record declaration: `new X()` is the file's own `X`, not `java.lang.X`, from then on.
 pub fn on_class_decl(cx: &Ctx, st: &mut State, node: Node) {
-    if cx.cfg.illegal_instantiation.is_some() && matches!(node.kind(), "class_declaration" | "record_declaration") {
+    if cx.cfg.illegal_instantiation.is_some() && matches!(node.kind_s(), "class_declaration" | "record_declaration") {
         if let Some(name) = node.child_by_field_id(cx.syn.f.name) {
             st.inst_classes.insert(compact(cx, name));
         }
@@ -43,7 +44,7 @@ pub fn on_new(cx: &Ctx, st: &mut State, node: Node) {
         return;
     }
     let Some(ty) = node.child_by_field_name("type") else { return };
-    let base = if ty.kind() == "generic_type" { ty.child(0).unwrap_or(ty) } else { ty };
+    let base = if ty.kind_s() == "generic_type" { ty.child(0).unwrap_or(ty) } else { ty };
     let p = node.start_position();
     st.inst_new.push((p.row as u32 + 1, p.column as u32 + 1, compact(cx, base)));
 }
@@ -87,7 +88,7 @@ pub fn on_import(cx: &mut Ctx, st: &mut State, node: Node) {
     let (mut name, mut star, mut is_static) = (None, false, false);
     let mut cur = node.walk();
     for c in node.children(&mut cur) {
-        match c.kind() {
+        match c.kind_s() {
             "identifier" | "scoped_identifier" => name = Some(c),
             "asterisk" => star = true,
             "static" => is_static = true,

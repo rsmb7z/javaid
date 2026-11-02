@@ -2,6 +2,7 @@
 //! `VisibilityModifier`.
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use crate::rules::util::has_modifier;
 use tree_sitter::Node;
 
@@ -49,7 +50,7 @@ impl State {
 
 /// The name of a type as written, without its type arguments or any blank.
 fn type_name(cx: &Ctx, ty: Node) -> String {
-    let base = if ty.kind() == "generic_type" { ty.child(0).unwrap_or(ty) } else { ty };
+    let base = if ty.kind_s() == "generic_type" { ty.child(0).unwrap_or(ty) } else { ty };
     String::from_utf8_lossy(cx.text(base)).chars().filter(|c| !c.is_whitespace()).collect()
 }
 
@@ -58,7 +59,7 @@ pub fn on_package(cx: &Ctx, st: &mut State, node: Node) {
         return;
     }
     let mut cur = node.walk();
-    let name = node.children(&mut cur).find(|c| matches!(c.kind(), "scoped_identifier" | "identifier"));
+    let name = node.children(&mut cur).find(|c| matches!(c.kind_s(), "scoped_identifier" | "identifier"));
     st.package = name.map(|n| String::from_utf8_lossy(cx.text(n)).chars().filter(|c| !c.is_whitespace()).collect()).unwrap_or_default();
 }
 
@@ -75,10 +76,10 @@ pub fn on_type_decl(cx: &Ctx, st: &mut State, node: Node) {
         None if st.package.is_empty() => name,
         None => format!("{}.{name}", st.package),
     };
-    let is_class = node.kind() == "class_declaration";
+    let is_class = node.kind_s() == "class_declaration";
     let class = is_class.then(|| {
         let body = node.child_by_field_id(cx.syn.f.body);
-        let no_constructor = body.is_none_or(|b| !b.children(&mut b.walk()).any(|c| c.kind() == "constructor_declaration"));
+        let no_constructor = body.is_none_or(|b| !b.children(&mut b.walk()).any(|c| c.kind_s() == "constructor_declaration"));
         let super_name = node.child_by_field_name("superclass").and_then(|s| s.named_child(0)).map(|t| type_name(cx, t));
         let c = Class {
             qualified: qualified.clone(),
@@ -106,11 +107,11 @@ pub fn on_type_decl(cx: &Ctx, st: &mut State, node: Node) {
             }
         }
     });
-    st.stack.push(Open { qualified, end: node.end_byte(), class, is_enum_or_record: matches!(node.kind(), "enum_declaration" | "record_declaration") });
+    st.stack.push(Open { qualified, end: node.end_byte(), class, is_enum_or_record: matches!(node.kind_s(), "enum_declaration" | "record_declaration") });
 }
 
 pub fn on_constructor(cx: &Ctx, st: &mut State, node: Node) {
-    if !cx.cfg.final_class || node.kind() != "constructor_declaration" {
+    if !cx.cfg.final_class || node.kind_s() != "constructor_declaration" {
         return;
     }
     st.pop_until(node.start_byte());
@@ -125,22 +126,22 @@ pub fn on_constructor(cx: &Ctx, st: &mut State, node: Node) {
 
 /// `new X() { ... }`: remember which type declaration it sits in, and the class it extends.
 pub fn on_new(cx: &Ctx, st: &mut State, node: Node) {
-    if !cx.cfg.final_class || !node.children(&mut node.walk()).any(|c| c.kind() == "class_body") {
+    if !cx.cfg.final_class || !node.children(&mut node.walk()).any(|c| c.kind_s() == "class_body") {
         return;
     }
     // Found by probing: when a member is selected from the new object (`new B() { }.go()`), Checkstyle's
     // tree no longer ends the `new` with the class body, and the class is not counted as extended.
-    if node.parent().is_some_and(|p| {
-        (matches!(p.kind(), "method_invocation" | "field_access") && p.child_by_field_name("object").is_some_and(|o| o.id() == node.id()))
-            || (p.kind() == "object_creation_expression" && p.child(0).is_some_and(|c| c.id() == node.id()))
+    if cx.parent_of(node).is_some_and(|p| {
+        (matches!(p.kind_s(), "method_invocation" | "field_access") && p.child_by_field_name("object").is_some_and(|o| o.id() == node.id()))
+            || (p.kind_s() == "object_creation_expression" && p.child(0).is_some_and(|c| c.id() == node.id()))
     }) {
         return;
     }
     // Found by probing: neither is one that is, through operators, casts and `?:`, the value assigned by
     // an assignment expression (`o = new B() { }`; a declaration's initialiser and an argument are fine).
     let mut up = node;
-    while let Some(p) = up.parent() {
-        match p.kind() {
+    while let Some(p) = cx.parent_of(up) {
+        match p.kind_s() {
             "assignment_expression" => return,
             "parenthesized_expression" | "cast_expression" | "ternary_expression" | "binary_expression" | "unary_expression" | "array_access" | "instanceof_expression" => up = p,
             _ => break,
@@ -223,7 +224,7 @@ pub fn finish(cx: &mut Ctx, st: &mut State) {
 /// `HideUtilityClassConstructor`: a class that holds only static members but offers a public or
 /// default constructor. A `static` nested class, an abstract one and one with an `extends` clause are left alone.
 pub fn on_class(cx: &mut Ctx, node: Node) {
-    if !cx.cfg.hide_utility_class_constructor || node.kind() != "class_declaration" {
+    if !cx.cfg.hide_utility_class_constructor || node.kind_s() != "class_declaration" {
         return;
     }
     if has_modifier(cx, node, b"abstract") || has_modifier(cx, node, b"static") || node.child_by_field_name("superclass").is_some() {
@@ -233,7 +234,7 @@ pub fn on_class(cx: &mut Ctx, node: Node) {
     let (mut default_ctor, mut public_ctor, mut instance_member, mut static_member) = (true, false, false, false);
     let mut cur = body.walk();
     for member in body.children(&mut cur) {
-        match member.kind() {
+        match member.kind_s() {
             "constructor_declaration" => {
                 default_ctor = false;
                 if !has_modifier(cx, member, b"private") && !has_modifier(cx, member, b"protected") {
@@ -265,7 +266,7 @@ pub fn on_interface(cx: &mut Ctx, node: Node) {
     let mut cur = body.walk();
     let (mut methods, mut fields) = (false, false);
     for m in body.children(&mut cur) {
-        match m.kind() {
+        match m.kind_s() {
             "method_declaration" => methods = true,
             "constant_declaration" | "field_declaration" => fields = true,
             _ => {}
@@ -283,11 +284,11 @@ pub fn on_final_parameter(cx: &mut Ctx, node: Node) {
     let Some(opts) = &cx.cfg.final_parameters else { return };
     let (tokens, ignore_primitive) = (opts.tokens, opts.ignore_primitive_types);
     use crate::rules::tokens::Token;
-    let name = match node.kind() {
+    let name = match node.kind_s() {
         "formal_parameter" | "spread_parameter" => {
-            let Some(list) = node.parent().filter(|p| p.kind() == "formal_parameters") else { return };
-            let Some(owner) = list.parent() else { return };
-            let wanted = match owner.kind() {
+            let Some(list) = cx.parent_of(node).filter(|p| p.kind_s() == "formal_parameters") else { return };
+            let Some(owner) = cx.parent_of(list) else { return };
+            let wanted = match owner.kind_s() {
                 "method_declaration" => tokens.contains(Token::MethodDef) && owner.child_by_field_id(cx.syn.f.body).is_some(),
                 "constructor_declaration" => tokens.contains(Token::CtorDef),
                 _ => false,
@@ -295,7 +296,7 @@ pub fn on_final_parameter(cx: &mut Ctx, node: Node) {
             if !wanted {
                 return;
             }
-            node.children(&mut node.walk()).filter(|c| c.kind() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)).or_else(|| node.child_by_field_id(cx.syn.f.name))
+            node.children(&mut node.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)).or_else(|| node.child_by_field_id(cx.syn.f.name))
         }
         "catch_formal_parameter" => {
             if !tokens.contains(Token::LiteralCatch) {
@@ -317,9 +318,9 @@ pub fn on_final_parameter(cx: &mut Ctx, node: Node) {
     }
     if ignore_primitive {
         // The type is a direct child; upstream grammars do not name it in a spread parameter.
-        let primitive = node.children(&mut node.walk()).any(|t| matches!(t.kind(), "integral_type" | "floating_point_type" | "boolean_type"));
+        let primitive = node.children(&mut node.walk()).any(|t| matches!(t.kind_s(), "integral_type" | "floating_point_type" | "boolean_type"));
         // `int x[]` keeps its brackets after the name: an array.
-        let c_style_array = node.children(&mut node.walk()).any(|c| c.kind() == "dimensions") || name.parent().is_some_and(|p| p.children(&mut p.walk()).any(|c| c.kind() == "dimensions"));
+        let c_style_array = node.children(&mut node.walk()).any(|c| c.kind_s() == "dimensions") || cx.parent_of(name).is_some_and(|p| p.children(&mut p.walk()).any(|c| c.kind_s() == "dimensions"));
         if primitive && !c_style_array {
             return;
         }
@@ -327,8 +328,8 @@ pub fn on_final_parameter(cx: &mut Ctx, node: Node) {
     let text = String::from_utf8_lossy(cx.text(name)).into_owned();
     // Reported where the parameter starts, which for the variable of an enhanced `for` is its first
     // modifier or type, not the `for`.
-    let anchor = if node.kind() == "enhanced_for_statement" {
-        node.children(&mut node.walk()).find(|c| c.kind() == "modifiers" || Some(c.id()) == node.child_by_field_id(cx.syn.f.type_).map(|t| t.id())).unwrap_or(name)
+    let anchor = if node.kind_s() == "enhanced_for_statement" {
+        node.children(&mut node.walk()).find(|c| c.kind_s() == "modifiers" || Some(c.id()) == node.child_by_field_id(cx.syn.f.type_).map(|t| t.id())).unwrap_or(name)
     } else {
         node
     };
@@ -341,16 +342,16 @@ pub fn on_final_parameter(cx: &mut Ctx, node: Node) {
 /// a class nested in one is checked like any other. Local and anonymous classes are checked too.
 pub fn on_visibility(cx: &mut Ctx, field: Node) {
     let Some(opts) = &cx.cfg.visibility_modifier else { return };
-    if cx.parent().is_some_and(|p| matches!(p.kind(), "interface_body" | "annotation_type_body")) {
+    if cx.parent().is_some_and(|p| matches!(p.kind_s(), "interface_body" | "annotation_type_body")) {
         return;
     }
     let mut scope = "package";
     let mut is_static = false;
     let mut is_final = false;
     let mut ignored = false;
-    if let Some(mods) = field.children(&mut field.walk()).find(|c| c.kind() == "modifiers") {
+    if let Some(mods) = field.children(&mut field.walk()).find(|c| c.kind_s() == "modifiers") {
         for m in mods.children(&mut mods.walk()) {
-            match m.kind() {
+            match m.kind_s() {
                 "marker_annotation" | "annotation" => {
                     let name = m.child_by_field_id(cx.syn.f.name).map(|n| cx.text(n).iter().filter(|b| !b.is_ascii_whitespace()).map(|b| *b as char).collect::<String>());
                     ignored |= name.is_some_and(|n| opts.ignore_annotations.contains(&n));

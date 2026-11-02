@@ -6,6 +6,7 @@
 //! name only counts once its field has been seen (a nested class's fields included).
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use std::collections::HashSet;
 use tree_sitter::Node;
 
@@ -34,8 +35,9 @@ pub fn on_node(cx: &mut Ctx, st: &mut State, node: Node) {
     while st.bodies.last().is_some_and(|b| node.start_byte() >= b.end) {
         st.bodies.pop();
     }
-    let in_body = node.parent().is_some_and(|p| matches!(p.kind(), "class_body" | "interface_body" | "annotation_type_body" | "enum_body_declarations"));
-    match node.kind() {
+    // The walk keeps the ancestors: the parent costs nothing, where tree-sitter searches from the root.
+    let in_body = cx.parent().is_some_and(|p| matches!(p.kind_s(), "class_body" | "interface_body" | "annotation_type_body" | "enum_body_declarations"));
+    match cx.kind_name {
         "class_body" | "enum_body" => st.bodies.push(Body { end: node.end_byte(), state: STATIC_VARIABLE, access: 0, interface: false }),
         "interface_body" | "annotation_type_body" => st.bodies.push(Body { end: node.end_byte(), state: STATIC_VARIABLE, access: 0, interface: true }),
         "method_declaration" if in_body => {
@@ -61,7 +63,7 @@ pub fn on_node(cx: &mut Ctx, st: &mut State, node: Node) {
 fn field(cx: &mut Ctx, st: &mut State, decl: Node, ignore_modifiers: bool) {
     let mut scope = 2u8;
     let mut is_static = false;
-    if let Some(mods) = decl.children(&mut decl.walk()).find(|c| c.kind() == "modifiers") {
+    if let Some(mods) = decl.children(&mut decl.walk()).find(|c| c.kind_s() == "modifiers") {
         for m in mods.children(&mut mods.walk()) {
             match cx.text(m) {
                 b"public" => scope = 0,
@@ -117,7 +119,7 @@ fn forward_reference(cx: &Ctx, st: &State, declarator: Node) -> bool {
         }
     }
     while let Some(n) = stack.pop() {
-        if matches!(n.kind(), "identifier" | "type_identifier") && st.fields.contains(cx.text(n)) {
+        if matches!(n.kind_s(), "identifier" | "type_identifier") && st.fields.contains(cx.text(n)) {
             return true;
         }
         let mut c = n.walk();

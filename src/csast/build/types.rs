@@ -10,6 +10,7 @@
 //! Types, names, annotations and modifiers.
 
 use tree_sitter::Node;
+use crate::syntax::KindExt;
 
 use super::{B, kids};
 use crate::csast::ast::{N, NIL};
@@ -36,7 +37,7 @@ struct Seg<'t> {
 }
 
 pub(crate) fn is_annotation(n: Node) -> bool {
-    matches!(n.kind(), "marker_annotation" | "annotation")
+    matches!(n.kind_s(), "marker_annotation" | "annotation")
 }
 
 impl<'s> B<'s> {
@@ -65,7 +66,7 @@ impl<'s> B<'s> {
 
     /// `qualifiedName`: `a.b.c` as left-nested `DOT`s. Accepts identifiers and `scoped_identifier`s.
     pub fn qualified_name(&mut self, n: Node) -> N {
-        if n.kind() == "scoped_identifier" {
+        if n.kind_s() == "scoped_identifier" {
             let k = kids(n);
             let scope = self.qualified_name(k[0]);
             let dot = self.punct(k[1]);
@@ -103,7 +104,7 @@ impl<'s> B<'s> {
         if let Some(args) = k.get(2) {
             // annotation_argument_list: ( value | pairs )
             for x in kids(*args) {
-                let part = match x.kind() {
+                let part = match x.kind_s() {
                     "(" | ")" | "," => self.punct(x),
                     _ => self.element_value(x),
                 };
@@ -115,11 +116,11 @@ impl<'s> B<'s> {
 
     /// `elementValue` or `elementValuePair`.
     pub fn element_value(&mut self, x: Node) -> N {
-        match x.kind() {
+        match x.kind_s() {
             "element_value_pair" => {
                 let pair = self.imag(Tok::ANNOTATION_MEMBER_VALUE_PAIR);
                 for (i, y) in kids(x).into_iter().enumerate() {
-                    let part = match (i, y.kind()) {
+                    let part = match (i, y.kind_s()) {
                         (_, "=") => self.punct(y),
                         (0, _) => self.ident(y),
                         _ => self.element_value(y),
@@ -132,7 +133,7 @@ impl<'s> B<'s> {
                 let k = kids(x);
                 let init = self.tok_text(Tok::ANNOTATION_ARRAY_INIT, k[0], "{");
                 for y in &k[1..] {
-                    let part = match y.kind() {
+                    let part = match y.kind_s() {
                         "," | "}" => self.punct(*y),
                         _ => self.element_value(*y),
                     };
@@ -167,12 +168,12 @@ impl<'s> B<'s> {
     // ---- types ----
 
     fn collect_segs<'t>(&self, n: Node<'t>, out: &mut Vec<Seg<'t>>) {
-        match n.kind() {
+        match n.kind_s() {
             "scoped_type_identifier" => {
                 let k = kids(n);
                 self.collect_segs(k[0], out);
-                let dot = k.iter().position(|x| x.kind() == ".").map(|i| k[i]);
-                let after_dot = k.iter().position(|x| x.kind() == ".").unwrap() + 1;
+                let dot = k.iter().position(|x| x.kind_s() == ".").map(|i| k[i]);
+                let after_dot = k.iter().position(|x| x.kind_s() == ".").unwrap() + 1;
                 let annos: Vec<Node> = k[after_dot..k.len() - 1].iter().copied().filter(|x| is_annotation(*x)).collect();
                 out.push(Seg { dot, annos, id: *k.last().unwrap(), targs: None });
             }
@@ -211,7 +212,7 @@ impl<'s> B<'s> {
 
     /// The children of the `TYPE` node of `typeType`: annotations, the base type, array declarators.
     pub fn type_content(&mut self, t: Node) -> N {
-        match t.kind() {
+        match t.kind_s() {
             "annotated_type" => {
                 let k = kids(t);
                 let annos: Vec<Node> = k.iter().copied().filter(|x| is_annotation(*x)).collect();
@@ -251,7 +252,7 @@ impl<'s> B<'s> {
         let mut annos: Vec<Node> = Vec::new();
         let mut lbrack: Option<Node> = None;
         for x in kids(d) {
-            match x.kind() {
+            match x.kind_s() {
                 "[" => lbrack = Some(x),
                 "]" => {
                     let l = lbrack.take().expect("[");
@@ -277,7 +278,7 @@ impl<'s> B<'s> {
     pub fn type_arguments(&mut self, t: Node) -> N {
         let ta = self.imag(Tok::TYPE_ARGUMENTS);
         for x in kids(t) {
-            let part = match x.kind() {
+            let part = match x.kind_s() {
                 "<" => self.tok(Tok::GENERIC_START, x),
                 ">" => self.tok(Tok::GENERIC_END, x),
                 "," => self.punct(x),
@@ -300,11 +301,11 @@ impl<'s> B<'s> {
         let annos: Vec<Node> = k.iter().copied().filter(|x| is_annotation(*x)).collect();
         let an = self.annotations(&annos, false);
         self.add(arg, an);
-        let q = k.iter().position(|x| x.kind() == "?").unwrap();
+        let q = k.iter().position(|x| x.kind_s() == "?").unwrap();
         let wt = self.tok(Tok::WILDCARD_TYPE, k[q]);
         self.add(arg, wt);
         if let Some(kw) = k.get(q + 1) {
-            let ty = if kw.kind() == "extends" { Tok::TYPE_UPPER_BOUNDS } else { Tok::TYPE_LOWER_BOUNDS };
+            let ty = if kw.kind_s() == "extends" { Tok::TYPE_UPPER_BOUNDS } else { Tok::TYPE_LOWER_BOUNDS };
             let bound = self.tok(ty, *kw);
             let c = self.type_content(k[q + 2]);
             self.add(bound, c);
@@ -317,7 +318,7 @@ impl<'s> B<'s> {
     pub fn type_parameters(&mut self, t: Node) -> N {
         let tp = self.imag(Tok::TYPE_PARAMETERS);
         for x in kids(t) {
-            let part = match x.kind() {
+            let part = match x.kind_s() {
                 "<" => self.tok(Tok::GENERIC_START, x),
                 ">" => self.tok(Tok::GENERIC_END, x),
                 "," => self.punct(x),
@@ -335,7 +336,7 @@ impl<'s> B<'s> {
         let an = self.annotations(&annos, false);
         self.add(tp, an);
         for x in k.iter().filter(|x| !is_annotation(**x)) {
-            let part = if x.kind() == "type_bound" { self.type_bound(*x) } else { self.ident(*x) };
+            let part = if x.kind_s() == "type_bound" { self.type_bound(*x) } else { self.ident(*x) };
             self.add(tp, part);
         }
         tp
@@ -345,7 +346,7 @@ impl<'s> B<'s> {
         let k = kids(t);
         let ub = self.tok(Tok::TYPE_UPPER_BOUNDS, k[0]);
         for x in &k[1..] {
-            let part = if x.kind() == "&" {
+            let part = if x.kind_s() == "&" {
                 self.tok(Tok::TYPE_EXTENSION_AND, *x)
             } else {
                 self.type_content(*x)
@@ -358,7 +359,7 @@ impl<'s> B<'s> {
     /// `typeList`-like sequences (`implements A, B`): the contents of each type with `COMMA`s.
     pub fn type_list_into(&mut self, parent: N, list: Node) {
         for x in kids(list) {
-            let part = if x.kind() == "," { self.punct(x) } else { self.type_content(x) };
+            let part = if x.kind_s() == "," { self.punct(x) } else { self.type_content(x) };
             self.add(parent, part);
         }
     }

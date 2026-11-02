@@ -128,10 +128,10 @@ one file (Checkstyle 4.0 ms), at 733 MB. See [FINDINGS.md](FINDINGS.md) section 
   message) on Guava and Spring Framework. Modules outside those two configs are not all there yet;
   javaid says which module or property it cannot honour when a configuration loads. XPath constructs
   outside the subset listed in `src/xpath.rs` are refused the same way.
-- **Speed figures are old.** They were measured with the first 33 to 42 modules (a 42-module run on a
-  loaded machine gave 6-9x per core and about 50x on all threads against Checkstyle, with identical
-  findings, FINDINGS.md section 8). They have not been re-measured with the full 128 modules: the
-  machine was too busy for a clean run.
+- **Speed against Checkstyle is not re-measured for the full configs.** Single-threaded on
+  spring-core (1,101 files), javaid's user CPU is about 5.3 s for the whole Google config and 2.4 s
+  for the whole Sun config (machine load about 7, not idle). The older 6-9x per core and about 50x
+  on all threads figures (FINDINGS.md section 8) were measured with 42 modules.
 - **Syntax-only.** No type resolution, so nothing that needs symbol or type information. This
   matches Checkstyle, which is also purely syntactic.
 - **Grammar.** The default is the maintained fork `tree-sitter-java-orchard`. Upstream

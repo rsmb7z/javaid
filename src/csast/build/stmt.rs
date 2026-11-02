@@ -10,6 +10,7 @@
 //! Statements, blocks, switch, try, patterns.
 
 use tree_sitter::Node;
+use crate::syntax::KindExt;
 
 use super::{B, kids};
 use crate::csast::ast::{N, NIL};
@@ -20,7 +21,7 @@ fn field<'t>(n: Node<'t>, name: &str) -> Option<Node<'t>> {
 }
 
 fn modifiers_of<'t>(n: Node<'t>) -> Option<Node<'t>> {
-    kids(n).into_iter().find(|k| k.kind() == "modifiers")
+    kids(n).into_iter().find(|k| k.kind_s() == "modifiers")
 }
 
 impl<'s> B<'s> {
@@ -29,7 +30,7 @@ impl<'s> B<'s> {
         let k = kids(n);
         let slist = self.tok(Tok::SLIST, k[0]);
         for x in &k[1..] {
-            let part = if x.kind() == "}" { self.punct(*x) } else { self.block_statement(*x) };
+            let part = if x.kind_s() == "}" { self.punct(*x) } else { self.block_statement(*x) };
             self.add(slist, part);
         }
         slist
@@ -39,7 +40,7 @@ impl<'s> B<'s> {
         let k = kids(n);
         let slist = self.tok(Tok::SLIST, k[0]);
         for x in &k[1..] {
-            let part = match x.kind() {
+            let part = match x.kind_s() {
                 "}" => self.punct(*x),
                 "explicit_constructor_invocation" => self.explicit_constructor_invocation(*x),
                 _ => self.block_statement(*x),
@@ -59,7 +60,7 @@ impl<'s> B<'s> {
             let root = self.tok(Tok::SUPER_CTOR_CALL, ctor);
             let o = self.expr(obj);
             self.add(root, o);
-            let dot = k.iter().find(|x| x.kind() == ".").unwrap();
+            let dot = k.iter().find(|x| x.kind_s() == ".").unwrap();
             let d = self.punct(*dot);
             self.add(root, d);
             if let Some(t) = targs {
@@ -72,7 +73,7 @@ impl<'s> B<'s> {
             self.add(root, s);
             root
         } else {
-            let ty = if ctor.kind() == "this" { Tok::CTOR_CALL } else { Tok::SUPER_CTOR_CALL };
+            let ty = if ctor.kind_s() == "this" { Tok::CTOR_CALL } else { Tok::SUPER_CTOR_CALL };
             let root = self.tok(ty, ctor);
             if let Some(t) = targs {
                 let ta = self.type_arguments(t);
@@ -88,10 +89,10 @@ impl<'s> B<'s> {
 
     /// `blockStatement`.
     pub fn block_statement(&mut self, x: Node) -> N {
-        match x.kind() {
+        match x.kind_s() {
             "local_variable_declaration" => {
                 let decls = self.variable_declarators(x);
-                let semi = kids(x).into_iter().rev().find(|y| y.kind() == ";").unwrap();
+                let semi = kids(x).into_iter().rev().find(|y| y.kind_s() == ";").unwrap();
                 let s = self.punct(semi);
                 self.chain(&[decls, s])
             }
@@ -113,9 +114,9 @@ impl<'s> B<'s> {
     }
 
     pub fn statement(&mut self, x: Node) -> N {
-        match x.kind() {
+        match x.kind_s() {
             "block" => self.block(x),
-            "expression_statement" if kids(x)[0].kind() == "switch_expression" => {
+            "expression_statement" if kids(x)[0].kind_s() == "switch_expression" => {
                 // `switch (x) { ... };`: a switch statement followed by an empty statement.
                 let k = kids(x);
                 let sw = self.switch(k[0]);
@@ -180,7 +181,7 @@ impl<'s> B<'s> {
                 let k = kids(x);
                 let root = self.tok(Tok::LITERAL_ASSERT, k[0]);
                 for y in &k[1..] {
-                    let part = match y.kind() {
+                    let part = match y.kind_s() {
                         ":" | ";" => self.punct(*y),
                         _ => self.expression(*y),
                     };
@@ -192,9 +193,9 @@ impl<'s> B<'s> {
                 let k = kids(x);
                 let root = self.punct(k[0]);
                 for y in &k[1..] {
-                    let part = match y.kind() {
+                    let part = match y.kind_s() {
                         ";" => self.punct(*y),
-                        "identifier" if matches!(x.kind(), "break_statement" | "continue_statement") => self.ident(*y),
+                        "identifier" if matches!(x.kind_s(), "break_statement" | "continue_statement") => self.ident(*y),
                         _ => self.expression(*y),
                     };
                     self.add(root, part);
@@ -214,7 +215,7 @@ impl<'s> B<'s> {
                 let k = kids(x);
                 let root = self.punct(k[0]);
                 for y in &k[1..] {
-                    let part = match y.kind() {
+                    let part = match y.kind_s() {
                         "block" => self.block(*y),
                         "catch_clause" => self.catch_clause(*y),
                         "finally_clause" => {
@@ -250,19 +251,19 @@ impl<'s> B<'s> {
         // FOR_INIT and the first `;`
         let for_init = self.imag(Tok::FOR_INIT);
         let semi0;
-        if k[i].kind() == "local_variable_declaration" {
+        if k[i].kind_s() == "local_variable_declaration" {
             let decls = self.variable_declarators(k[i]);
             self.add(for_init, decls);
-            let s = kids(k[i]).into_iter().rev().find(|y| y.kind() == ";").unwrap();
+            let s = kids(k[i]).into_iter().rev().find(|y| y.kind_s() == ";").unwrap();
             semi0 = self.punct(s);
             i += 1;
         } else {
             let mut elist = NIL;
-            while k[i].kind() != ";" {
+            while k[i].kind_s() != ";" {
                 if elist == NIL {
                     elist = self.imag(Tok::ELIST);
                 }
-                let part = if k[i].kind() == "," { self.punct(k[i]) } else { self.expression(k[i]) };
+                let part = if k[i].kind_s() == "," { self.punct(k[i]) } else { self.expression(k[i]) };
                 self.add(elist, part);
                 i += 1;
             }
@@ -273,7 +274,7 @@ impl<'s> B<'s> {
         self.add(root, for_init);
         self.add(root, semi0);
         let cond = self.imag(Tok::FOR_CONDITION);
-        if k[i].kind() != ";" {
+        if k[i].kind_s() != ";" {
             let e = self.expression(k[i]);
             self.add(cond, e);
             i += 1;
@@ -284,11 +285,11 @@ impl<'s> B<'s> {
         i += 1;
         let iter = self.imag(Tok::FOR_ITERATOR);
         let mut elist = NIL;
-        while k[i].kind() != ")" {
+        while k[i].kind_s() != ")" {
             if elist == NIL {
                 elist = self.imag(Tok::ELIST);
             }
-            let part = if k[i].kind() == "," { self.punct(k[i]) } else { self.expression(k[i]) };
+            let part = if k[i].kind_s() == "," { self.punct(k[i]) } else { self.expression(k[i]) };
             self.add(elist, part);
             i += 1;
         }
@@ -319,17 +320,17 @@ impl<'s> B<'s> {
                 self.add(ty, decl);
             }
         }
-        let colon = k.iter().find(|y| y.kind() == ":").unwrap();
+        let colon = k.iter().find(|y| y.kind_s() == ":").unwrap();
         let c = self.punct(*colon);
         self.last_sibling(def, c);
         let value = self.expression(field(x, "value").unwrap());
         self.last_sibling(def, value);
         self.add(clause, def);
         self.add(root, clause);
-        let rparen = k.iter().rev().find(|y| y.kind() == ")").unwrap();
+        let rparen = k.iter().rev().find(|y| y.kind_s() == ")").unwrap();
         // The closing paren is the last `)` before the body.
         let body = field(x, "body").unwrap();
-        let rp = k.iter().filter(|y| y.kind() == ")" && y.end_byte() <= body.start_byte()).last().unwrap_or(rparen);
+        let rp = k.iter().filter(|y| y.kind_s() == ")" && y.end_byte() <= body.start_byte()).last().unwrap_or(rparen);
         let r = self.punct(*rp);
         self.add(root, r);
         let b = self.statement(body);
@@ -341,7 +342,7 @@ impl<'s> B<'s> {
         let k = kids(x);
         let root = self.punct(k[0]);
         for y in &k[1..] {
-            let part = match y.kind() {
+            let part = match y.kind_s() {
                 "(" | ")" => self.punct(*y),
                 "catch_formal_parameter" => self.catch_parameter(*y),
                 "block" => self.block(*y),
@@ -357,19 +358,19 @@ impl<'s> B<'s> {
         let mods = self.modifiers(modifiers_of(x));
         self.add(def, mods);
         let k = kids(x);
-        let ct = k.iter().find(|y| y.kind() == "catch_type").unwrap();
+        let ct = k.iter().find(|y| y.kind_s() == "catch_type").unwrap();
         let ty = self.imag(Tok::TYPE);
         for y in kids(*ct) {
-            let part = if y.kind() == "|" {
+            let part = if y.kind_s() == "|" {
                 self.tok(Tok::BOR, y)
             } else {
-                let inner = if y.kind() == "annotated_type" { *kids(y).last().unwrap() } else { y };
+                let inner = if y.kind_s() == "annotated_type" { *kids(y).last().unwrap() } else { y };
                 self.class_type(inner)
             };
             self.add(ty, part);
         }
         self.add(def, ty);
-        let id = self.ident(field(x, "name").unwrap_or_else(|| *k.iter().rev().find(|y| y.kind() == "identifier").unwrap()));
+        let id = self.ident(field(x, "name").unwrap_or_else(|| *k.iter().rev().find(|y| y.kind_s() == "identifier").unwrap()));
         self.add(def, id);
         def
     }
@@ -383,7 +384,7 @@ impl<'s> B<'s> {
         let mut trailing_semi = NIL;
         let last = k.len() - 1;
         for (i, y) in k.iter().enumerate().take(last).skip(1) {
-            match y.kind() {
+            match y.kind_s() {
                 ";" => {
                     let s = self.punct(*y);
                     if i == last - 1 {
@@ -414,7 +415,7 @@ impl<'s> B<'s> {
             self.add(res, ty);
             let id = self.ident(field(x, "name").unwrap());
             self.add(res, id);
-            let eq = kids(x).into_iter().find(|y| y.kind() == "=").unwrap();
+            let eq = kids(x).into_iter().find(|y| y.kind_s() == "=").unwrap();
             let assign = self.punct(eq);
             self.add(res, assign);
             let e = self.expression(value);
@@ -440,8 +441,8 @@ impl<'s> B<'s> {
         self.add(root, lcurly);
         let mut pending: Vec<N> = Vec::new();
         let mut i = 1;
-        while bk[i].kind() != "}" {
-            match bk[i].kind() {
+        while bk[i].kind_s() != "}" {
+            match bk[i].kind_s() {
                 "switch_rule" => {
                     let rule = self.imag(Tok::SWITCH_RULE);
                     let rk = kids(bk[i]);
@@ -450,7 +451,7 @@ impl<'s> B<'s> {
                     let lambda = self.punct(rk[1]);
                     self.add(rule, lambda);
                     let b = rk[2];
-                    match b.kind() {
+                    match b.kind_s() {
                         "expression_statement" => {
                             let ek = kids(b);
                             let e = self.expression(ek[0]);
@@ -474,7 +475,7 @@ impl<'s> B<'s> {
                     // `switchLabel+ blockStatement+`, so labels wait for the next statements.
                     let k = kids(bk[i]);
                     let mut j = 0;
-                    while j < k.len() && k[j].kind() == "switch_label" {
+                    while j < k.len() && k[j].kind_s() == "switch_label" {
                         let label = self.switch_label(k[j], k.get(j + 1).copied());
                         pending.push(label);
                         j += 2;
@@ -513,10 +514,10 @@ impl<'s> B<'s> {
     fn switch_label(&mut self, l: Node, colon: Option<Node>) -> N {
         let k = kids(l);
         let root = self.punct(k[0]);
-        if k[0].kind() == "case" {
+        if k[0].kind_s() == "case" {
             let mut parts: Vec<N> = Vec::new();
             for y in &k[1..] {
-                match y.kind() {
+                match y.kind_s() {
                     "," => parts.push(self.punct(*y)),
                     "pattern" => parts.push(self.pattern(*y)),
                     "guard" => {
@@ -550,14 +551,14 @@ impl<'s> B<'s> {
 
     /// A `pattern` (or `record_pattern_component`/`record_pattern`) node.
     pub fn pattern(&mut self, x: Node) -> N {
-        match x.kind() {
+        match x.kind_s() {
             "pattern" => self.pattern(kids(x)[0]),
             "type_pattern" => {
                 let def = self.imag(Tok::PATTERN_VARIABLE_DEF);
                 let k = kids(x);
                 let mods = self.modifiers(modifiers_of(x));
                 self.add(def, mods);
-                let tpos = k.iter().position(|y| y.kind() != "modifiers").unwrap();
+                let tpos = k.iter().position(|y| y.kind_s() != "modifiers").unwrap();
                 let ty = self.type_type(k[tpos]);
                 self.add(def, ty);
                 let id = self.ident(*k.last().unwrap());
@@ -566,13 +567,13 @@ impl<'s> B<'s> {
             }
             "record_pattern_component" => {
                 let k = kids(x);
-                if k[0].kind() == "underscore_pattern" {
+                if k[0].kind_s() == "underscore_pattern" {
                     return self.tok(Tok::UNNAMED_PATTERN_DEF, k[0]);
                 }
                 let def = self.imag(Tok::PATTERN_VARIABLE_DEF);
                 let mods = self.modifiers(modifiers_of(x));
                 self.add(def, mods);
-                let tpos = k.iter().position(|y| y.kind() != "modifiers").unwrap();
+                let tpos = k.iter().position(|y| y.kind_s() != "modifiers").unwrap();
                 let ty = self.type_type(k[tpos]);
                 self.add(def, ty);
                 let id = self.ident(*k.last().unwrap());
@@ -592,7 +593,7 @@ impl<'s> B<'s> {
                 if body.len() > 2 {
                     let comps = self.imag(Tok::RECORD_PATTERN_COMPONENTS);
                     for y in &body[1..body.len() - 1] {
-                        let part = if y.kind() == "," { self.punct(*y) } else { self.pattern(*y) };
+                        let part = if y.kind_s() == "," { self.punct(*y) } else { self.pattern(*y) };
                         self.add(comps, part);
                     }
                     self.add(def, comps);

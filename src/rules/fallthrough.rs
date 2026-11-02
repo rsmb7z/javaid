@@ -7,6 +7,7 @@
 //! and not derived from what the code means.
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 /// Checkstyle's case group: a run of case labels and the statements after them. Tree-sitter starts
@@ -21,13 +22,13 @@ struct Group<'t> {
 fn groups<'t>(switch_block: Node<'t>) -> Vec<Group<'t>> {
     let mut out: Vec<Group<'t>> = Vec::new();
     let mut cur = switch_block.walk();
-    for g in switch_block.children(&mut cur).filter(|g| g.kind() == "switch_block_statement_group") {
+    for g in switch_block.children(&mut cur).filter(|g| g.kind_s() == "switch_block_statement_group") {
         let mut inner = g.walk();
-        let label = g.children(&mut inner).find(|c| c.kind() == "switch_label");
+        let label = g.children(&mut inner).find(|c| c.kind_s() == "switch_label");
         let Some(label) = label else { continue };
         let mut inner = g.walk();
         // The `:` after a label is an unnamed token and not code; a lone `;` is an empty statement and is.
-        let last_statement = g.children(&mut inner).filter(|c| !c.is_extra() && c.kind() != "switch_label" && (c.is_named() || c.kind() == ";")).last();
+        let last_statement = g.children(&mut inner).filter(|c| !c.is_extra() && c.kind_s() != "switch_label" && (c.is_named() || c.kind_s() == ";")).last();
         match out.last_mut() {
             Some(prev) if prev.last_statement.is_none() => prev.last_statement = last_statement,
             _ => out.push(Group { first_label: label, last_statement }),
@@ -42,10 +43,10 @@ fn last_statement(block: Node) -> Option<Node> {
     while i > 0 {
         i -= 1;
         let c = block.child(i)?;
-        if c.is_extra() || c.kind() == "}" {
+        if c.is_extra() || c.kind_s() == "}" {
             continue;
         }
-        return (c.kind() != "{").then_some(c);
+        return (c.kind_s() != "{").then_some(c);
     }
     None
 }
@@ -78,7 +79,7 @@ pub fn on_switch(cx: &mut Ctx, switch: Node) {
 /// nested switch, where they only leave that.
 fn terminated(cx: &Ctx, n: Node, use_break: bool, use_continue: bool) -> bool {
     let f = &cx.syn.f;
-    match n.kind() {
+    match n.kind_s() {
         "return_statement" | "throw_statement" | "yield_statement" => true,
         "break_statement" => use_break,
         "continue_statement" => use_continue,
@@ -92,7 +93,7 @@ fn terminated(cx: &Ctx, n: Node, use_break: bool, use_continue: bool) -> bool {
             let mut finally = false;
             let mut cur = n.walk();
             for c in n.named_children(&mut cur) {
-                match c.kind() {
+                match c.kind_s() {
                     "catch_clause" => body_and_catches &= c.child_by_field_id(f.body).is_some_and(|b| terminated(cx, b, use_break, use_continue)),
                     "finally_clause" => finally = c.named_child(0).is_some_and(|b| terminated(cx, b, use_break, use_continue)),
                     _ => {}
@@ -132,9 +133,9 @@ fn last_named(n: Node) -> Option<Node> {
 /// `while (true)`, `do ... while (true)`, `for (;;)`, `for (;true;)`: the condition is the literal
 /// and nothing else, so `while ((true))` and `while (!false)` are ordinary loops.
 fn is_infinite(cx: &Ctx, n: Node) -> bool {
-    match n.kind() {
-        "while_statement" | "do_statement" => n.child_by_field_id(cx.syn.f.condition).is_some_and(|c| c.named_child_count() == 1 && c.named_child(0).is_some_and(|l| l.kind() == "true")),
-        "for_statement" => n.child_by_field_id(cx.syn.f.condition).is_none_or(|c| c.kind() == "true"),
+    match n.kind_s() {
+        "while_statement" | "do_statement" => n.child_by_field_id(cx.syn.f.condition).is_some_and(|c| c.named_child_count() == 1 && c.named_child(0).is_some_and(|l| l.kind_s() == "true")),
+        "for_statement" => n.child_by_field_id(cx.syn.f.condition).is_none_or(|c| c.kind_s() == "true"),
         _ => false,
     }
 }
@@ -144,12 +145,12 @@ fn is_infinite(cx: &Ctx, n: Node) -> bool {
 /// `catch`, `synchronized` and a labelled block, but not into a nested `if`, loop or switch. An `if`
 /// whose other branch returns is left alone. These are the shapes the probes found it to see.
 fn exits_by_break(body: Node) -> bool {
-    let last = if body.kind() == "block" { last_statement(body) } else { Some(body) };
+    let last = if body.kind_s() == "block" { last_statement(body) } else { Some(body) };
     last.is_some_and(tail_break)
 }
 
 fn tail_break(s: Node) -> bool {
-    match s.kind() {
+    match s.kind_s() {
         "break_statement" => true,
         "block" => block_ends_with_break(s),
         "if_statement" => {
@@ -160,13 +161,13 @@ fn tail_break(s: Node) -> bool {
         }
         "try_statement" => {
             let mut cur = s.walk();
-            let has_catch = s.named_children(&mut cur).any(|c| c.kind() == "catch_clause");
+            let has_catch = s.named_children(&mut cur).any(|c| c.kind_s() == "catch_clause");
             let mut cur = s.walk();
-            let finally = s.named_children(&mut cur).find(|c| c.kind() == "finally_clause").and_then(|f| f.named_child(0));
+            let finally = s.named_children(&mut cur).find(|c| c.kind_s() == "finally_clause").and_then(|f| f.named_child(0));
             !has_catch && (s.child_by_field_name("body").is_some_and(block_ends_with_break) || finally.is_some_and(block_ends_with_break))
         }
         "synchronized_statement" => s.child_by_field_name("body").is_some_and(block_ends_with_break),
-        "labeled_statement" => last_named(s).is_some_and(|inner| match inner.kind() {
+        "labeled_statement" => last_named(s).is_some_and(|inner| match inner.kind_s() {
             "block" => block_ends_with_break(inner),
             "labeled_statement" => tail_break(inner),
             _ => false,
@@ -176,20 +177,20 @@ fn tail_break(s: Node) -> bool {
 }
 
 fn branch_breaks(b: Node) -> bool {
-    b.kind() == "break_statement" || (b.kind() == "block" && block_ends_with_break(b))
+    b.kind_s() == "break_statement" || (b.kind_s() == "block" && block_ends_with_break(b))
 }
 
 fn block_ends_with_break(b: Node) -> bool {
     match last_statement(b) {
-        Some(l) if l.kind() == "break_statement" => true,
-        Some(l) if l.kind() == "block" => block_ends_with_break(l),
+        Some(l) if l.kind_s() == "break_statement" => true,
+        Some(l) if l.kind_s() == "block" => block_ends_with_break(l),
         _ => false,
     }
 }
 
 /// A branch that cannot continue the loop: it returns or throws, as itself or at the end of a block.
 fn always_returns(b: Node) -> bool {
-    match b.kind() {
+    match b.kind_s() {
         "return_statement" | "throw_statement" => true,
         "block" => last_statement(b).is_some_and(always_returns),
         _ => false,
@@ -205,13 +206,13 @@ fn has_relief(cx: &Ctx, switch_block: Node, last: Node, until: usize, relief: &c
     let from = last.end_byte();
     // Only whitespace and comments lie between the statement and `until`, so the last line with
     // anything on it is the one where the statement or the latest comment ends.
-    let comment_between = |c: Node| c.is_extra() && matches!(c.kind(), "line_comment" | "block_comment") && c.start_byte() >= from && c.end_byte() <= until;
+    let comment_between = |c: Node| c.is_extra() && matches!(c.kind_s(), "line_comment" | "block_comment") && c.start_byte() >= from && c.end_byte() <= until;
     let for_each_candidate = |f: &mut dyn FnMut(Node)| {
         let mut cur = switch_block.walk();
         for child in switch_block.children(&mut cur) {
             if comment_between(child) {
                 f(child);
-            } else if child.kind() == "switch_block_statement_group" {
+            } else if child.kind_s() == "switch_block_statement_group" {
                 let mut inner = child.walk();
                 for c in child.children(&mut inner).filter(|c| comment_between(*c)) {
                     f(c);

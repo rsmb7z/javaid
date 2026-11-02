@@ -10,6 +10,7 @@
 //! Package, imports, type declarations, members, parameters.
 
 use tree_sitter::Node;
+use crate::syntax::KindExt;
 
 use super::types::is_annotation;
 use super::{B, kids};
@@ -21,18 +22,18 @@ fn field<'t>(n: Node<'t>, name: &str) -> Option<Node<'t>> {
 }
 
 fn modifiers_of<'t>(n: Node<'t>) -> Option<Node<'t>> {
-    kids(n).into_iter().find(|k| k.kind() == "modifiers")
+    kids(n).into_iter().find(|k| k.kind_s() == "modifiers")
 }
 
 impl<'s> B<'s> {
     pub fn package_declaration(&mut self, n: Node) -> N {
         let k = kids(n);
-        let kw = k.iter().find(|x| x.kind() == "package").unwrap();
+        let kw = k.iter().find(|x| x.kind_s() == "package").unwrap();
         let def = self.tok(Tok::PACKAGE_DEF, *kw);
         let annos: Vec<Node> = k.iter().copied().filter(|x| is_annotation(*x)).collect();
         let an = self.annotations(&annos, true);
         self.add(def, an);
-        let name = k.iter().find(|x| matches!(x.kind(), "identifier" | "scoped_identifier")).unwrap();
+        let name = k.iter().find(|x| matches!(x.kind_s(), "identifier" | "scoped_identifier")).unwrap();
         let q = self.qualified_name(*name);
         self.add(def, q);
         let semi = self.punct(*k.last().unwrap());
@@ -44,7 +45,7 @@ impl<'s> B<'s> {
         let k = kids(n);
         let root = self.tok(Tok::IMPORT, k[0]);
         let mut i = 1;
-        match k[i].kind() {
+        match k[i].kind_s() {
             "static" => {
                 self.a.set_type(root, Tok::STATIC_IMPORT);
                 let s = self.punct(k[i]);
@@ -61,7 +62,7 @@ impl<'s> B<'s> {
         }
         let name = k[i];
         let q = self.qualified_name(name);
-        if k.get(i + 1).map(|x| x.kind()) == Some(".") {
+        if k.get(i + 1).map(|x| x.kind_s()) == Some(".") {
             let dot = self.punct(k[i + 1]);
             self.add(dot, q);
             let star = self.tok(Tok::STAR, k[i + 2]);
@@ -82,7 +83,7 @@ impl<'s> B<'s> {
         let an = self.annotations(&annos, true);
         self.add(def, an);
         for x in k.iter().filter(|x| !is_annotation(**x)) {
-            let part = match x.kind() {
+            let part = match x.kind_s() {
                 "open" => self.tok(Tok::LITERAL_OPEN, *x),
                 "module" => self.tok(Tok::LITERAL_MODULE, *x),
                 "module_body" => self.module_body(*x),
@@ -96,7 +97,7 @@ impl<'s> B<'s> {
     fn module_body(&mut self, n: Node) -> N {
         let block = self.imag(Tok::DIRECTIVE_BLOCK);
         for x in kids(n) {
-            let part = match x.kind() {
+            let part = match x.kind_s() {
                 "{" | "}" => self.punct(x),
                 _ => self.module_directive(x),
             };
@@ -107,7 +108,7 @@ impl<'s> B<'s> {
 
     fn module_directive(&mut self, n: Node) -> N {
         let k = kids(n);
-        let ty = match n.kind() {
+        let ty = match n.kind_s() {
             "requires_module_directive" => Tok::REQUIRES,
             "exports_module_directive" => Tok::EXPORTS,
             "opens_module_directive" => Tok::OPENS,
@@ -117,7 +118,7 @@ impl<'s> B<'s> {
         let root = self.tok(ty, k[0]);
         let mut holder = root;
         for x in &k[1..] {
-            let part = match x.kind() {
+            let part = match x.kind_s() {
                 "requires_modifier" => {
                     let text = self.text(*x);
                     let t = if text == "transitive" { Tok::LITERAL_TRANSITIVE } else { Tok::LITERAL_STATIC };
@@ -150,7 +151,7 @@ impl<'s> B<'s> {
     // ---- type declarations ----
 
     pub fn type_declaration(&mut self, n: Node) -> N {
-        let (ty, bodyless) = match n.kind() {
+        let (ty, bodyless) = match n.kind_s() {
             "class_declaration" => (Tok::CLASS_DEF, false),
             "interface_declaration" => (Tok::INTERFACE_DEF, false),
             "enum_declaration" => (Tok::ENUM_DEF, false),
@@ -163,7 +164,7 @@ impl<'s> B<'s> {
         self.add(def, mods);
         let is_record = ty == Tok::RECORD_DEF;
         for x in kids(n) {
-            let part = match x.kind() {
+            let part = match x.kind_s() {
                 "modifiers" => continue,
                 "class" | "interface" | "enum" | "record" | "@" => self.punct(x),
                 "identifier" => self.ident(x),
@@ -201,7 +202,7 @@ impl<'s> B<'s> {
         let k = kids(x);
         let p = self.tok(Tok::PERMITS_CLAUSE, k[0]);
         for y in kids(k[1]) {
-            let part = if y.kind() == "," { self.punct(y) } else { self.class_type(y) };
+            let part = if y.kind_s() == "," { self.punct(y) } else { self.class_type(y) };
             self.add(p, part);
         }
         p
@@ -213,7 +214,7 @@ impl<'s> B<'s> {
         let lparen = self.punct(k[0]);
         let comps = self.imag(Tok::RECORD_COMPONENTS);
         for y in &k[1..k.len() - 1] {
-            let part = match y.kind() {
+            let part = match y.kind_s() {
                 "," => self.punct(*y),
                 _ => self.record_component(*y),
             };
@@ -232,7 +233,7 @@ impl<'s> B<'s> {
         };
         let an = self.annotations(&annos, true);
         self.add(rc, an);
-        if y.kind() == "spread_parameter" {
+        if y.kind_s() == "spread_parameter" {
             let ty = self.imag(Tok::TYPE);
             let c = self.type_content(field(y, "type").unwrap());
             self.add(ty, c);
@@ -240,10 +241,10 @@ impl<'s> B<'s> {
             let pa = self.annotations(&post, false);
             self.add(ty, pa);
             self.add(rc, ty);
-            let ell = ck.iter().find(|a| a.kind() == "...").unwrap();
+            let ell = ck.iter().find(|a| a.kind_s() == "...").unwrap();
             let e = self.punct(*ell);
             self.add(rc, e);
-            let decl = ck.iter().find(|a| a.kind() == "variable_declarator").unwrap();
+            let decl = ck.iter().find(|a| a.kind_s() == "variable_declarator").unwrap();
             let id = self.ident(field(*decl, "name").unwrap());
             self.add(rc, id);
         } else {
@@ -264,7 +265,7 @@ impl<'s> B<'s> {
     pub fn obj_block(&mut self, body: Node) -> N {
         let ob = self.imag(Tok::OBJBLOCK);
         for x in kids(body) {
-            match x.kind() {
+            match x.kind_s() {
                 "{" | "}" | "," => {
                     let t = self.punct(x);
                     self.add(ob, t);
@@ -285,7 +286,7 @@ impl<'s> B<'s> {
     }
 
     fn member(&mut self, x: Node) -> N {
-        match x.kind() {
+        match x.kind_s() {
             ";" => self.punct(x),
             "field_declaration" | "constant_declaration" => self.field_declaration(x),
             "method_declaration" => self.method_declaration(x),
@@ -331,7 +332,7 @@ impl<'s> B<'s> {
         let an = self.annotations(&annos, true);
         self.add(def, an);
         for y in kids(x) {
-            let part = match y.kind() {
+            let part = match y.kind_s() {
                 "modifiers" => continue,
                 "identifier" => self.ident(y),
                 "argument_list" => self.arguments(y),
@@ -352,7 +353,7 @@ impl<'s> B<'s> {
         let k = kids(x);
         let mut seen_name = false;
         for y in &k {
-            let part = match y.kind() {
+            let part = match y.kind_s() {
                 "modifiers" => continue,
                 "(" | ")" => self.punct(*y),
                 "identifier" if !seen_name && Some(*y) == field(x, "name") => {
@@ -389,7 +390,7 @@ impl<'s> B<'s> {
     /// `fieldDeclaration` (also used for locals): a `VARIABLE_DEF` chain; the `;` hangs off the first.
     pub fn field_declaration(&mut self, n: Node) -> N {
         let chain = self.variable_declarators(n);
-        let semi = kids(n).into_iter().rev().find(|x| x.kind() == ";");
+        let semi = kids(n).into_iter().rev().find(|x| x.kind_s() == ";");
         if let Some(s) = semi {
             let st = self.punct(s);
             self.add(chain, st);
@@ -403,7 +404,7 @@ impl<'s> B<'s> {
         let tnode = field(n, "type").unwrap();
         let mut parts = Vec::new();
         for x in kids(n) {
-            match x.kind() {
+            match x.kind_s() {
                 "variable_declarator" => parts.push(self.variable_def(mods, tnode, x)),
                 "," => parts.push(self.punct(x)),
                 _ => {}
@@ -426,7 +427,7 @@ impl<'s> B<'s> {
             }
         }
         if let Some(v) = field(d, "value") {
-            let eq = kids(d).into_iter().find(|x| x.kind() == "=").unwrap();
+            let eq = kids(d).into_iter().find(|x| x.kind_s() == "=").unwrap();
             let assign = self.punct(eq);
             self.add(def, assign);
             let init = self.variable_initializer(v);
@@ -436,7 +437,7 @@ impl<'s> B<'s> {
     }
 
     pub fn variable_initializer(&mut self, v: Node) -> N {
-        if v.kind() == "array_initializer" {
+        if v.kind_s() == "array_initializer" {
             self.array_initializer(v)
         } else {
             self.expression(v)
@@ -447,7 +448,7 @@ impl<'s> B<'s> {
         let k = kids(v);
         let init = self.tok_text(Tok::ARRAY_INIT, k[0], "{");
         for x in &k[1..] {
-            let part = match x.kind() {
+            let part = match x.kind_s() {
                 "," | "}" => self.punct(*x),
                 _ => self.variable_initializer(*x),
             };
@@ -468,7 +469,7 @@ impl<'s> B<'s> {
         let post: Vec<Node> = k.iter().copied().filter(|x| is_annotation(*x)).collect();
         let mut ty = NIL;
         for x in &k {
-            match x.kind() {
+            match x.kind_s() {
                 "modifiers" => {}
                 _ if is_annotation(*x) => {}
                 "type_parameters" => {
@@ -519,7 +520,7 @@ impl<'s> B<'s> {
         let k = kids(x);
         let t = self.punct(k[0]);
         for y in &k[1..] {
-            let part = if y.kind() == "," { self.punct(*y) } else { self.type_content(*y) };
+            let part = if y.kind_s() == "," { self.punct(*y) } else { self.type_content(*y) };
             self.add(t, part);
         }
         t
@@ -530,7 +531,7 @@ impl<'s> B<'s> {
         let mods = self.modifiers(modifiers_of(n));
         self.add(def, mods);
         for x in kids(n) {
-            let part = match x.kind() {
+            let part = match x.kind_s() {
                 "modifiers" => continue,
                 "type_parameters" => self.type_parameters(x),
                 "identifier" => self.ident(x),
@@ -550,7 +551,7 @@ impl<'s> B<'s> {
         let lparen = self.punct(k[0]);
         let params = self.imag(Tok::PARAMETERS);
         for x in &k[1..k.len() - 1] {
-            let part = match x.kind() {
+            let part = match x.kind_s() {
                 "," => self.punct(*x),
                 "formal_parameter" => self.formal_parameter(*x),
                 "spread_parameter" => self.spread_parameter(*x),
@@ -588,8 +589,8 @@ impl<'s> B<'s> {
         self.add(def, mods);
         let ty = self.type_type(field(x, "type").unwrap());
         self.add(def, ty);
-        let decl = k.iter().find(|a| a.kind() == "variable_declarator").unwrap();
-        let ell = k.iter().find(|a| a.kind() == "...").unwrap();
+        let decl = k.iter().find(|a| a.kind_s() == "variable_declarator").unwrap();
+        let ell = k.iter().find(|a| a.kind_s() == "...").unwrap();
         let e = self.punct(*ell);
         self.add(def, e);
         let id = self.ident(field(*decl, "name").unwrap());
@@ -618,14 +619,14 @@ impl<'s> B<'s> {
         let tpos = k.iter().position(|a| !is_annotation(*a)).unwrap();
         let ty = self.type_type(k[tpos]);
         self.add(def, ty);
-        let this = k.iter().find(|a| a.kind() == "this").unwrap();
-        let idents: Vec<Node> = k[tpos + 1..].iter().copied().filter(|a| a.kind() == "identifier").collect();
+        let this = k.iter().find(|a| a.kind_s() == "this").unwrap();
+        let idents: Vec<Node> = k[tpos + 1..].iter().copied().filter(|a| a.kind_s() == "identifier").collect();
         if idents.is_empty() {
             let t = self.punct(*this);
             self.add(def, t);
         } else {
             // qualifiedName DOT this
-            let dots: Vec<Node> = k[tpos + 1..].iter().copied().filter(|a| a.kind() == ".").collect();
+            let dots: Vec<Node> = k[tpos + 1..].iter().copied().filter(|a| a.kind_s() == ".").collect();
             let mut q = self.ident(idents[0]);
             for (i, id) in idents.iter().enumerate().skip(1) {
                 let dot = self.punct(dots[i - 1]);

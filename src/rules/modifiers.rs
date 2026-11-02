@@ -1,6 +1,7 @@
 //! `ModifierOrder`.
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 /// The order the Java Language Specification suggests, which is the order Checkstyle enforces.
@@ -37,7 +38,7 @@ pub fn on_modifiers(cx: &mut Ctx, modifiers: Node) {
         if m.is_extra() {
             continue;
         }
-        if matches!(m.kind(), "marker_annotation" | "annotation") {
+        if matches!(m.kind_s(), "marker_annotation" | "annotation") {
             if seen_keyword {
                 if !annotation_may_follow_modifiers(cx) {
                     let name = m.child_by_field_id(cx.syn.f.name).map(|n| String::from_utf8_lossy(cx.text(n)).replace(char::is_whitespace, "")).unwrap_or_default();
@@ -61,10 +62,10 @@ pub fn on_modifiers(cx: &mut Ctx, modifiers: Node) {
 /// Could an annotation after the modifiers be one on the declaration's type?
 fn annotation_may_follow_modifiers(cx: &Ctx) -> bool {
     let Some(decl) = cx.parent() else { return false };
-    match decl.kind() {
+    match decl.kind_s() {
         "field_declaration" | "constant_declaration" | "local_variable_declaration" | "formal_parameter" | "spread_parameter" | "catch_formal_parameter"
         | "constructor_declaration" | "enhanced_for_statement" => true,
-        "method_declaration" => decl.child_by_field_id(cx.syn.f.type_).is_some_and(|t| t.kind() != "void_type"),
+        "method_declaration" => decl.child_by_field_id(cx.syn.f.type_).is_some_and(|t| t.kind_s() != "void_type"),
         _ => false,
     }
 }

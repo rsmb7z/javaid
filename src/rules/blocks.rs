@@ -1,6 +1,7 @@
 //! `EmptyCatchBlock`, `NeedBraces` and `AvoidNestedBlocks`.
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 pub fn on_catch(cx: &mut Ctx, node: Node) {
@@ -12,7 +13,7 @@ pub fn on_catch(cx: &mut Ctx, node: Node) {
     let mut cur = body.walk();
     let mut first_comment = None;
     for c in body.children(&mut cur) {
-        match c.kind() {
+        match c.kind_s() {
             "{" | "}" => {}
             "line_comment" | "block_comment" => {
                 first_comment.get_or_insert(c);
@@ -23,7 +24,7 @@ pub fn on_catch(cx: &mut Ctx, node: Node) {
     // Allowed by the catch variable's name (`ignored`, `expected`, ...)?
     if let Some(fmt) = &opts.exception_variable_name {
         let mut cur = node.walk();
-        let param = node.children(&mut cur).find(|c| c.kind() == "catch_formal_parameter");
+        let param = node.children(&mut cur).find(|c| c.kind_s() == "catch_formal_parameter");
         if let Some(name) = param.and_then(|p| p.child_by_field_id(cx.syn.f.name)) {
             if fmt.matches(cx.text(name)) {
                 return;
@@ -88,11 +89,11 @@ pub fn on_loop(cx: &mut Ctx, node: Node, keyword: &str) {
 pub fn on_block(cx: &mut Ctx, block: Node) {
     let Some(opts) = &cx.cfg.avoid_nested_blocks else { return };
     let Some(parent) = cx.parent() else { return };
-    let nested = match parent.kind() {
+    let nested = match parent.kind_s() {
         "block" | "constructor_body" => true,
         "switch_block_statement_group" => {
             let mut cur = parent.walk();
-            let alone = parent.children(&mut cur).all(|c| c.id() == block.id() || matches!(c.kind(), "switch_label" | ":" | "line_comment" | "block_comment"));
+            let alone = parent.children(&mut cur).all(|c| c.id() == block.id() || matches!(c.kind_s(), "switch_label" | ":" | "line_comment" | "block_comment"));
             !(opts.allow_in_switch_case && alone)
         }
         _ => false,

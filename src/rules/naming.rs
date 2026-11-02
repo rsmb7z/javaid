@@ -8,6 +8,7 @@
 //! `PatternVariableName` alone.
 
 use crate::config::Format;
+use crate::syntax::KindExt;
 use crate::engine::Ctx;
 use crate::rules::util::{enclosing_type_name, has_modifier, has_override_annotation};
 use tree_sitter::Node;
@@ -24,14 +25,14 @@ pub fn on_package(cx: &mut Ctx, node: Node) {
     let cfg = cx.cfg;
     let Some(fmt) = &cfg.naming.package_name else { return };
     let mut cur = node.walk();
-    let Some(name) = node.children(&mut cur).find(|c| matches!(c.kind(), "scoped_identifier" | "identifier")) else { return };
+    let Some(name) = node.children(&mut cur).find(|c| matches!(c.kind_s(), "scoped_identifier" | "identifier")) else { return };
     report(cx, "PackageName", name, fmt);
 }
 
 pub fn on_type_decl(cx: &mut Ctx, node: Node) {
     let cfg = cx.cfg;
     let t = &cfg.naming.type_name;
-    let fmt = match node.kind() {
+    let fmt = match node.kind_s() {
         "class_declaration" => &t.class,
         "interface_declaration" => &t.interface,
         "enum_declaration" => &t.enumeration,
@@ -70,7 +71,7 @@ pub fn on_field(cx: &mut Ctx, node: Node) {
         return;
     }
     // Interface and annotation fields are constants whatever their modifiers say.
-    let in_interface = cx.parent().is_some_and(|p| matches!(p.kind(), "interface_body" | "annotation_type_body"));
+    let in_interface = cx.parent().is_some_and(|p| matches!(p.kind_s(), "interface_body" | "annotation_type_body"));
     let is_static = has_modifier(cx, node, b"static");
     let is_final = has_modifier(cx, node, b"final");
     let mut cur = node.walk();
@@ -103,7 +104,7 @@ pub fn on_local_var(cx: &mut Ctx, node: Node) {
         return;
     }
     let is_final = has_modifier(cx, node, b"final");
-    let in_for_init = cx.parent().is_some_and(|p| p.kind() == "for_statement");
+    let in_for_init = cx.parent().is_some_and(|p| p.kind_s() == "for_statement");
     let mut cur = node.walk();
     for d in node.children_by_field_id(cx.syn.f.declarator, &mut cur) {
         let Some(name) = d.child_by_field_id(cx.syn.f.name) else { continue };
@@ -160,9 +161,9 @@ pub fn on_catch_param(cx: &mut Ctx, node: Node) {
 
 /// The name of a `formal_parameter`, or of a varargs `spread_parameter` (which nests it in a declarator).
 fn param_name<'t>(cx: &Ctx, param: Node<'t>) -> Option<Node<'t>> {
-    if param.kind() == "spread_parameter" {
+    if param.kind_s() == "spread_parameter" {
         let mut cur = param.walk();
-        let d = param.children(&mut cur).find(|c| c.kind() == "variable_declarator")?;
+        let d = param.children(&mut cur).find(|c| c.kind_s() == "variable_declarator")?;
         d.child_by_field_id(cx.syn.f.name)
     } else {
         param.child_by_field_id(cx.syn.f.name)
@@ -174,14 +175,14 @@ fn param_name<'t>(cx: &Ctx, param: Node<'t>) -> Option<Node<'t>> {
 pub fn on_param(cx: &mut Ctx, node: Node) {
     let Some(owner) = cx.ancestor(1) else { return };
     let cfg = cx.cfg;
-    match owner.kind() {
+    match owner.kind_s() {
         "method_declaration" | "constructor_declaration" => {
             let Some(opts) = &cfg.naming.parameter_name else { return };
             let Some(name) = param_name(cx, node) else { return };
             if opts.format.matches(cx.text(name)) {
                 return;
             }
-            if opts.ignore_overridden && owner.kind() == "method_declaration" && has_override_annotation(cx, owner) {
+            if opts.ignore_overridden && owner.kind_s() == "method_declaration" && has_override_annotation(cx, owner) {
                 return;
             }
             report(cx, "ParameterName", name, &opts.format);
@@ -205,11 +206,11 @@ pub fn on_lambda(cx: &mut Ctx, node: Node) {
     let cfg = cx.cfg;
     let Some(fmt) = &cfg.naming.lambda_parameter_name else { return };
     let Some(params) = node.child_by_field_id(cx.syn.f.parameters) else { return };
-    match params.kind() {
+    match params.kind_s() {
         "identifier" => report(cx, "LambdaParameterName", params, fmt),
         "inferred_parameters" => {
             let mut cur = params.walk();
-            for p in params.named_children(&mut cur).filter(|p| p.kind() == "identifier") {
+            for p in params.named_children(&mut cur).filter(|p| p.kind_s() == "identifier") {
                 report(cx, "LambdaParameterName", p, fmt);
             }
         }
@@ -241,7 +242,7 @@ fn pattern_variable(cx: &mut Ctx, node: Node) {
     let Some(fmt) = &cfg.naming.pattern_variable_name else { return };
     // The variable is the last child; a nested record pattern has none.
     let last = node.named_child_count().checked_sub(1).and_then(|i| node.named_child(i as u32));
-    if let Some(last) = last.filter(|c| c.kind() == "identifier") {
+    if let Some(last) = last.filter(|c| c.kind_s() == "identifier") {
         report(cx, "PatternVariableName", last, fmt);
     }
 }
@@ -249,7 +250,7 @@ fn pattern_variable(cx: &mut Ctx, node: Node) {
 pub fn on_type_param(cx: &mut Ctx, node: Node) {
     let Some(owner) = cx.ancestor(1) else { return };
     let cfg = cx.cfg;
-    let (rule, fmt) = match owner.kind() {
+    let (rule, fmt) = match owner.kind_s() {
         "class_declaration" => ("ClassTypeParameterName", &cfg.naming.class_type_parameter_name),
         "interface_declaration" => ("InterfaceTypeParameterName", &cfg.naming.interface_type_parameter_name),
         "method_declaration" => ("MethodTypeParameterName", &cfg.naming.method_type_parameter_name),
@@ -258,7 +259,7 @@ pub fn on_type_param(cx: &mut Ctx, node: Node) {
     };
     let Some(fmt) = fmt else { return };
     let mut cur = node.walk();
-    if let Some(name) = node.children(&mut cur).find(|c| c.kind() == "type_identifier") {
+    if let Some(name) = node.children(&mut cur).find(|c| c.kind_s() == "type_identifier") {
         report(cx, rule, name, fmt);
     }
 }

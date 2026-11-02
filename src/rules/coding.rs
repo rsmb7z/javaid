@@ -1,6 +1,7 @@
 //! `EqualsHashCode`.
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use crate::syntax::Act;
 use tree_sitter::Node;
 
@@ -32,7 +33,7 @@ pub fn on_type_body(cx: &mut Ctx, body: Node) {
 }
 
 fn is_concrete_public_instance(cx: &Ctx, method: Node) -> bool {
-    let Some(mods) = method.child(0).filter(|c| c.kind() == "modifiers") else { return false };
+    let Some(mods) = method.child(0).filter(|c| c.kind_s() == "modifiers") else { return false };
     let mut cur = mods.walk();
     let (mut public, mut stat, mut native) = (false, false, false);
     for c in mods.children(&mut cur) {
@@ -56,7 +57,7 @@ fn has_single_object_param(cx: &Ctx, method: Node) -> bool {
         return false;
     }
     let Some(param) = params.named_child(0) else { return false };
-    param.kind() == "formal_parameter"
+    param.kind_s() == "formal_parameter"
         && param.child_by_field_id(cx.syn.f.type_).is_some_and(|t| matches!(cx.text(t), b"Object" | b"java.lang.Object"))
 }
 
@@ -69,7 +70,7 @@ pub fn on_switch(cx: &mut Ctx, switch: Node) {
     }
     let is_statement = cx.parent().is_some_and(|p| {
         matches!(
-            p.kind(),
+            p.kind_s(),
             "block"
                 | "constructor_body"
                 | "switch_block_statement_group"
@@ -85,10 +86,10 @@ pub fn on_switch(cx: &mut Ctx, switch: Node) {
     let mut cur = body.walk();
     for group in body.named_children(&mut cur) {
         let mut inner = group.walk();
-        for label in group.named_children(&mut inner).filter(|l| l.kind() == "switch_label") {
+        for label in group.named_children(&mut inner).filter(|l| l.kind_s() == "switch_label") {
             let mut parts = label.walk();
             for part in label.children(&mut parts) {
-                if cx.text(part) == b"default" || matches!(part.kind(), "pattern" | "type_pattern" | "record_pattern" | "null_literal") {
+                if cx.text(part) == b"default" || matches!(part.kind_s(), "pattern" | "type_pattern" | "record_pattern" | "null_literal") {
                     return;
                 }
             }
@@ -108,14 +109,14 @@ pub fn on_declaration(cx: &mut Ctx, decl: Node) {
     if !cx.cfg.multiple_variable_declarations {
         return;
     }
-    let in_for_header = cx.parent().is_some_and(|p| p.kind() == "for_statement");
+    let in_for_header = cx.parent().is_some_and(|p| p.kind_s() == "for_statement");
     if !in_for_header && decl.children_by_field_id(cx.syn.f.declarator, &mut decl.walk()).count() > 1 {
         cx.diag_start("MultipleVariableDeclarations", decl, "Each variable declaration must be in its own statement.".into());
     }
     // Looked at from the later declaration: the one before it ended on the line where this starts.
     // The finding is still reported at the earlier one.
     if let Some(before) = cx.previous_sibling() {
-        if matches!(before.kind(), "local_variable_declaration" | "field_declaration" | "constant_declaration") && before.end_position().row == decl.start_position().row {
+        if matches!(before.kind_s(), "local_variable_declaration" | "field_declaration" | "constant_declaration") && before.end_position().row == decl.start_position().row {
             cx.diag_start("MultipleVariableDeclarations", before, "Only one variable definition per line allowed.".into());
         }
     }
@@ -132,19 +133,19 @@ pub fn on_assignment(cx: &mut Ctx, assignment: Node) {
     }
     // Parentheses are not nodes of their own to Checkstyle.
     let mut top = assignment;
-    while let Some(p) = top.parent().filter(|p| p.kind() == "parenthesized_expression") {
+    while let Some(p) = top.parent().filter(|p| p.kind_s() == "parenthesized_expression") {
         top = p;
     }
     let Some(parent) = top.parent() else { return };
     let f = &cx.syn.f;
-    let allowed = match parent.kind() {
+    let allowed = match parent.kind_s() {
         "expression_statement" => match parent.parent() {
-            Some(g) => match g.kind() {
+            Some(g) => match g.kind_s() {
                 "block" | "constructor_body" | "switch_block_statement_group" => true,
                 // The body of an `if`, `else` or loop without braces.
                 "if_statement" => g.child_by_field_id(f.consequence).is_some_and(|c| c.id() == parent.id()) || g.child_by_field_id(f.alternative).is_some_and(|c| c.id() == parent.id()),
                 "while_statement" | "for_statement" | "enhanced_for_statement" | "do_statement" => g.child_by_field_id(f.body).is_some_and(|c| c.id() == parent.id()),
-                "switch_rule" => g.parent().and_then(|b| b.parent()).and_then(|sw| sw.parent()).is_some_and(|s| matches!(s.kind(), "block" | "constructor_body" | "switch_block_statement_group")),
+                "switch_rule" => g.parent().and_then(|b| b.parent()).and_then(|sw| sw.parent()).is_some_and(|s| matches!(s.kind_s(), "block" | "constructor_body" | "switch_block_statement_group")),
                 _ => false,
             },
             None => false,
@@ -163,20 +164,20 @@ pub fn on_assignment(cx: &mut Ctx, assignment: Node) {
 /// Is `top` an operand of a comparison that makes up the condition of a `while`, `do` or `for`?
 fn in_loop_idiom(cx: &Ctx, top: Node) -> bool {
     let Some(comparison) = top.parent().filter(|p| {
-        p.kind() == "binary_expression" && p.child_by_field_name("operator").is_some_and(|o| matches!(cx.text(o), b"==" | b"!=" | b"<" | b">" | b"<=" | b">="))
+        p.kind_s() == "binary_expression" && p.child_by_field_name("operator").is_some_and(|o| matches!(cx.text(o), b"==" | b"!=" | b"<" | b">" | b"<=" | b">="))
     }) else {
         return false;
     };
     let mut node = comparison;
     while let Some(parent) = node.parent() {
-        let skip = match parent.kind() {
+        let skip = match parent.kind_s() {
             "parenthesized_expression" => true,
             "binary_expression" => parent.child_by_field_name("operator").is_some_and(|o| matches!(cx.text(o), b"&&" | b"||" | b"&" | b"|")),
-            "unary_expression" => parent.child(0).is_some_and(|o| o.kind() == "!"),
+            "unary_expression" => parent.child(0).is_some_and(|o| o.kind_s() == "!"),
             _ => false,
         };
         if !skip {
-            return match parent.kind() {
+            return match parent.kind_s() {
                 "while_statement" | "do_statement" => true,
                 "for_statement" => parent.child_by_field_name("condition").is_some_and(|c| c.id() == node.id()),
                 _ => false,
@@ -195,11 +196,11 @@ pub fn on_boolean_literal(cx: &mut Ctx, literal: Node) {
         return;
     }
     let mut top = literal;
-    while let Some(p) = top.parent().filter(|p| p.kind() == "parenthesized_expression") {
+    while let Some(p) = top.parent().filter(|p| p.kind_s() == "parenthesized_expression") {
         top = p;
     }
     let Some(parent) = top.parent() else { return };
-    match parent.kind() {
+    match parent.kind_s() {
         "binary_expression" => {
             let Some(op) = parent.child_by_field_name("operator") else { return };
             if matches!(cx.text(op), b"==" | b"!=" | b"&&" | b"||") {
@@ -207,19 +208,19 @@ pub fn on_boolean_literal(cx: &mut Ctx, literal: Node) {
             }
         }
         "unary_expression" => {
-            if let Some(op) = parent.child(0).filter(|o| o.kind() == "!") {
+            if let Some(op) = parent.child(0).filter(|o| o.kind_s() == "!") {
                 cx.diag_once("SimplifyBooleanExpression", op, "Expression can be simplified.".into());
             }
         }
         "ternary_expression" => {
             fn strip(mut n: Node<'_>) -> bool {
-                while n.kind() == "parenthesized_expression" {
+                while n.kind_s() == "parenthesized_expression" {
                     match n.named_child(0) {
                         Some(inner) => n = inner,
                         None => break,
                     }
                 }
-                matches!(n.kind(), "true" | "false")
+                matches!(n.kind_s(), "true" | "false")
             }
             let (Some(cond), Some(then), Some(other)) =
                 (parent.child_by_field_name("condition"), parent.child_by_field_name("consequence"), parent.child_by_field_name("alternative"))
@@ -228,7 +229,7 @@ pub fn on_boolean_literal(cx: &mut Ctx, literal: Node) {
             };
             let flagged = strip(cond) || (then.id() == top.id() && strip(other));
             if flagged {
-                if let Some(question) = parent.children(&mut parent.walk()).find(|c| c.kind() == "?") {
+                if let Some(question) = parent.children(&mut parent.walk()).find(|c| c.kind_s() == "?") {
                     cx.diag_once("SimplifyBooleanExpression", question, "Expression can be simplified.".into());
                 }
             }
@@ -252,15 +253,15 @@ pub fn on_simplify_return(cx: &mut Ctx, node: Node) {
 
 fn returns_only_a_boolean(statement: Node) -> bool {
     fn literal_return(n: Node) -> bool {
-        matches!(n.kind(), "return_statement" | "yield_statement") && n.named_child(0).is_some_and(|v| matches!(v.kind(), "true" | "false"))
+        matches!(n.kind_s(), "return_statement" | "yield_statement") && n.named_child(0).is_some_and(|v| matches!(v.kind_s(), "true" | "false"))
     }
     if literal_return(statement) {
         return true;
     }
-    if statement.kind() != "block" {
+    if statement.kind_s() != "block" {
         return false;
     }
     let mut cur = statement.walk();
-    let first = statement.children(&mut cur).find(|c| !matches!(c.kind(), "{" | "line_comment" | "block_comment"));
+    let first = statement.children(&mut cur).find(|c| !matches!(c.kind_s(), "{" | "line_comment" | "block_comment"));
     first.is_some_and(literal_return)
 }

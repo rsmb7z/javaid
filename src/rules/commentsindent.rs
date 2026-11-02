@@ -33,6 +33,22 @@ struct Ck<'a> {
     raw: &'a [&'a [u8]],
     tab_width: usize,
     out: &'a mut Vec<Diagnostic>,
+    index: std::cell::OnceCell<Index>,
+    /// Running count of blank lines (`totals[i]` counts those before line index `i`).
+    blank_totals: std::cell::OnceCell<Vec<u32>>,
+}
+
+/// Where the nodes sit in document order, and which of them can begin the statement before a comment.
+struct Index {
+    /// Document-order position of each node, and where its subtree ends (exclusive).
+    pos: Vec<u32>,
+    end: Vec<u32>,
+    /// By position: the node that begins the statement there (`NIL` for none, or a comment).
+    begins: Vec<N>,
+    /// Positions whose `begins` node is on a line, when no comment follows it.
+    by_line: std::collections::HashMap<i32, Vec<u32>>,
+    /// Positions whose `begins` node is followed by a comment.
+    complex: Vec<u32>,
 }
 
 pub fn run(a: &CsAst, o: &Opts, raw: &[&[u8]], tab_width: usize, out: &mut Vec<Diagnostic>) {
@@ -40,7 +56,7 @@ pub fn run(a: &CsAst, o: &Opts, raw: &[&[u8]], tab_width: usize, out: &mut Vec<D
         return;
     }
     let lines = raw.iter().map(|l| String::from_utf8_lossy(l).chars().collect()).collect();
-    let mut ck = Ck { a, lines, raw, tab_width, out };
+    let mut ck = Ck { a, lines, raw, tab_width, out, index: Default::default(), blank_totals: Default::default() };
     let mut stack = vec![a.root];
     while let Some(n) = stack.pop() {
         if let Some(s) = a.next_sibling(n) {
@@ -248,6 +264,99 @@ impl Ck<'_> {
             }
             root = a.parent(r);
         }
+        let Some(start) = root else { return None };
+        // A comment in a switch block asks `prev_statement_from_switch_block` too; those are rare
+        // and keep the plain search below.
+        if self.prev_statement_from_switch_block(comment).is_none() {
+            return self.first_previous_statement(comment, start);
+        }
+        self.one_line_previous_statement_scan(comment, root)
+    }
+
+    /// What the scan below finds, without visiting every node before the answer again for each
+    /// comment: the scan walks the nodes in document order from `start` through the end of
+    /// `start`'s parent, and stops at the first one that begins a statement on the line before
+    /// the comment. Without a switch-block predecessor that is all `find_previous_statement`
+    /// asks, so the nodes that can answer are found through an index built once per file: those
+    /// beginning on the line above the comment (when the token after them is not a comment, the
+    /// line distance is all there is to check) and the few followed by a comment.
+    fn first_previous_statement(&self, comment: N, start: N) -> Option<N> {
+        let a = self.a;
+        let ix = self.index.get_or_init(|| self.build_index());
+        let lo = ix.pos[start as usize];
+        let hi = ix.end[a.parent(start).unwrap_or(start) as usize];
+        let mut best: Option<u32> = None;
+        if let Some(v) = ix.by_line.get(&(self.line(comment) - 1)) {
+            let i = v.partition_point(|&p| p < lo);
+            best = v.get(i).copied().filter(|&p| p < hi);
+        }
+        let cap = best.unwrap_or(hi);
+        let from = ix.complex.partition_point(|&p| p < lo);
+        for &p in &ix.complex[from..] {
+            if p >= cap {
+                break;
+            }
+            if self.on_previous_line_ignoring_comments(comment, ix.begins[p as usize]) {
+                best = Some(p);
+                break;
+            }
+        }
+        best.map(|p| ix.begins[p as usize])
+    }
+
+    /// `find_previous_statement`'s `begins` node for `root`.
+    fn begins_of(&self, root: N) -> Option<N> {
+        match self.ty(root) {
+            Tok::EXPR => self.start_token_of_method_call_chain(root),
+            Tok::PLUS => self.a.first_child(root),
+            _ => Some(root),
+        }
+    }
+
+    fn build_index(&self) -> Index {
+        let a = self.a;
+        let n = a.len();
+        let mut pre: Vec<N> = Vec::with_capacity(n);
+        let mut pos = vec![0u32; n];
+        let mut stack = vec![a.root];
+        while let Some(x) = stack.pop() {
+            pos[x as usize] = pre.len() as u32;
+            pre.push(x);
+            if let Some(s) = a.next_sibling(x).filter(|_| x != a.root) {
+                stack.push(s);
+            }
+            if let Some(c) = a.first_child(x) {
+                stack.push(c);
+            }
+        }
+        // End of each subtree (exclusive), in document-order positions.
+        let mut size = vec![1u32; n];
+        for &x in pre.iter().rev() {
+            if let Some(p) = a.parent(x) {
+                size[p as usize] += size[x as usize];
+            }
+        }
+        let mut end = vec![0u32; n];
+        for &x in &pre {
+            end[x as usize] = pos[x as usize] + size[x as usize];
+        }
+        let mut begins = vec![crate::csast::NIL; pre.len()];
+        let mut by_line: std::collections::HashMap<i32, Vec<u32>> = Default::default();
+        let mut complex = Vec::new();
+        for (p, &x) in pre.iter().enumerate() {
+            let Some(t) = self.begins_of(x).filter(|&t| !is_comment(a, t)) else { continue };
+            begins[p] = t;
+            if self.next_token(t).is_some_and(|n| is_comment(a, n)) {
+                complex.push(p as u32);
+            } else {
+                by_line.entry(self.line(t)).or_default().push(p as u32);
+            }
+        }
+        Index { pos, end, begins, by_line, complex }
+    }
+
+    fn one_line_previous_statement_scan(&self, comment: N, mut root: Option<N>) -> Option<N> {
+        let a = self.a;
         let mut stack: Vec<N> = Vec::new();
         let mut previous = None;
         while root.is_some() || !stack.is_empty() {
@@ -338,14 +447,19 @@ impl Ck<'_> {
     }
 
     fn count_empty_lines(&self, start: N, end: N) -> i32 {
-        let mut count = 0;
-        let end_line = self.line(end);
-        for line_no in self.line(start)..end_line {
-            if self.lines.get(line_no as usize).is_some_and(|l| l.iter().all(|&c| is_ws(c))) {
-                count += 1;
+        // Blank lines among the 0-based lines `line(start)..line(end)`, from running totals over the file.
+        let totals = self.blank_totals.get_or_init(|| {
+            let mut totals = Vec::with_capacity(self.lines.len() + 1);
+            totals.push(0u32);
+            for l in &self.lines {
+                let blank = l.iter().all(|&c| is_ws(c));
+                totals.push(totals[totals.len() - 1] + u32::from(blank));
             }
-        }
-        count
+            totals
+        });
+        let lo = self.line(start).max(0) as usize;
+        let hi = (self.line(end).max(0) as usize).min(self.lines.len());
+        if hi > lo { (totals[hi] - totals[lo]) as i32 } else { 0 }
     }
 
     fn log_multiline(&mut self, prev: N, comment: N, next: N) {

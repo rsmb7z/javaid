@@ -27,7 +27,7 @@ pub const NO_SPAN: u32 = u32::MAX;
 #[derive(Debug, Clone)]
 pub struct Node {
     pub ty: Tok,
-    pub text: String,
+    pub text: std::borrow::Cow<'static, str>,
     line: i32,
     col: i32,
     parent: N,
@@ -53,9 +53,14 @@ impl CsAst {
 
     /// A token node: type, text and 0-based position.
     pub fn token(&mut self, ty: Tok, text: &str, line: u32, col: u32) -> N {
+        self.token_text(ty, std::borrow::Cow::Owned(text.to_string()), line, col)
+    }
+
+    /// As [`CsAst::token`], taking the text over (no copy) or borrowing a static one.
+    pub fn token_text(&mut self, ty: Tok, text: std::borrow::Cow<'static, str>, line: u32, col: u32) -> N {
         self.push(Node {
             ty,
-            text: text.to_string(),
+            text,
             line: line as i32 + 1,
             col: col as i32,
             parent: NIL,
@@ -83,7 +88,7 @@ impl CsAst {
     pub fn imaginary(&mut self, ty: Tok) -> N {
         self.push(Node {
             ty,
-            text: ty.name().to_string(),
+            text: std::borrow::Cow::Borrowed(ty.name()),
             line: NOT_INITIALIZED,
             col: NOT_INITIALIZED,
             parent: NIL,
@@ -121,7 +126,7 @@ impl CsAst {
     }
 
     pub fn set_text(&mut self, n: N, text: &str) {
-        self.nodes[n as usize].text = text.to_string();
+        self.nodes[n as usize].text = std::borrow::Cow::Owned(text.to_string());
     }
 
     pub fn parent(&self, n: N) -> Option<N> {

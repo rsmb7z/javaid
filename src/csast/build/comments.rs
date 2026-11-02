@@ -16,6 +16,7 @@
 //! visitor turns into several nodes (the type of `int a, b;`) gets its comments several times.
 
 use tree_sitter::Node;
+use crate::syntax::KindExt;
 
 use super::{B, is_comment};
 use crate::csast::ast::{N, NIL};
@@ -41,7 +42,7 @@ impl<'s> B<'s> {
             let n = cursor.node();
             if is_comment(n) {
                 let start = n.start_byte();
-                if n.kind() == "line_comment" {
+                if n.kind_s() == "line_comment" {
                     let mut end = start;
                     while end < self.src.len() && self.src[end] != b'\n' && self.src[end] != b'\r' {
                         end += 1;

@@ -1,13 +1,14 @@
 //! `MethodLength` and `ParameterNumber`: how big a method or constructor is.
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use crate::rules::tokens::Token;
 use crate::rules::util::has_override_annotation;
 use tree_sitter::Node;
 
 /// A method, constructor or compact constructor, as the two modules see it.
 pub fn on_method_like(cx: &mut Ctx, node: Node) {
-    let token = match node.kind() {
+    let token = match node.kind_s() {
         "method_declaration" => Token::MethodDef,
         "constructor_declaration" => Token::CtorDef,
         _ => Token::CompactCtorDef,
@@ -44,7 +45,7 @@ fn parameter_number(cx: &mut Ctx, node: Node, token: Token) {
     let max = opts.max;
     let Some(params) = node.child_by_field_id(cx.syn.f.parameters) else { return };
     let mut cur = params.walk();
-    let count = params.children(&mut cur).filter(|c| matches!(c.kind(), "formal_parameter" | "spread_parameter")).count();
+    let count = params.children(&mut cur).filter(|c| matches!(c.kind_s(), "formal_parameter" | "spread_parameter")).count();
     if count <= max {
         return;
     }
@@ -61,10 +62,10 @@ fn parameter_number(cx: &mut Ctx, node: Node, token: Token) {
 
 fn annotated_by(cx: &Ctx, decl: Node, names: &[String]) -> bool {
     let mut cur = decl.walk();
-    let Some(mods) = decl.children(&mut cur).find(|c| c.kind() == "modifiers") else { return false };
+    let Some(mods) = decl.children(&mut cur).find(|c| c.kind_s() == "modifiers") else { return false };
     let mut inner = mods.walk();
     let found = mods.children(&mut inner).any(|c| {
-        matches!(c.kind(), "marker_annotation" | "annotation")
+        matches!(c.kind_s(), "marker_annotation" | "annotation")
             && c.child_by_field_id(cx.syn.f.name).is_some_and(|n| names.iter().any(|w| w.as_bytes() == cx.text(n)))
     });
     found
@@ -76,9 +77,9 @@ fn used_lines(body: Node) -> usize {
     let mut cursor = body.walk();
     'walk: loop {
         let node = cursor.node();
-        if matches!(node.kind(), "line_comment" | "block_comment") {
+        if matches!(node.kind_s(), "line_comment" | "block_comment") {
             // not a token to Checkstyle
-        } else if node.kind() == "string_literal" && node.start_position().row != node.end_position().row {
+        } else if node.kind_s() == "string_literal" && node.start_position().row != node.end_position().row {
             rows.extend(node.start_position().row..=node.end_position().row);
         } else if cursor.goto_first_child() {
             continue;

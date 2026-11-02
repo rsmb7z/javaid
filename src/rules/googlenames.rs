@@ -4,6 +4,7 @@
 //! without them (the character classes at each seam are disjoint, so no backtracking differs).
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use regex::Regex;
 use std::sync::LazyLock;
 use tree_sitter::Node;
@@ -43,10 +44,10 @@ fn strip_numbering(name: &str) -> &str {
 
 fn annotation_names(cx: &Ctx, decl: Node) -> Vec<String> {
     let mut cur = decl.walk();
-    let Some(mods) = decl.children(&mut cur).find(|c| c.kind() == "modifiers") else { return Vec::new() };
+    let Some(mods) = decl.children(&mut cur).find(|c| c.kind_s() == "modifiers") else { return Vec::new() };
     let mut inner = mods.walk();
     mods.children(&mut inner)
-        .filter(|c| matches!(c.kind(), "marker_annotation" | "annotation"))
+        .filter(|c| matches!(c.kind_s(), "marker_annotation" | "annotation"))
         .filter_map(|c| c.child_by_field_id(cx.syn.f.name))
         .map(|n| String::from_utf8_lossy(cx.text(n)).into_owned())
         .collect()
@@ -88,7 +89,7 @@ pub fn on_field(cx: &mut Ctx, node: Node) {
     if !cx.cfg.google_non_constant_field_name {
         return;
     }
-    if crate::rules::util::has_modifier(cx, node, b"static") || cx.parent().is_some_and(|p| matches!(p.kind(), "interface_body" | "annotation_type_body")) {
+    if crate::rules::util::has_modifier(cx, node, b"static") || cx.parent().is_some_and(|p| matches!(p.kind_s(), "interface_body" | "annotation_type_body")) {
         return;
     }
     let mut cur = node.walk();

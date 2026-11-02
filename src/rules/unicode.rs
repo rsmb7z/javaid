@@ -5,6 +5,7 @@
 //! its line cancels it.
 
 use crate::config::AvoidEscapedUnicode;
+use crate::syntax::KindExt;
 use crate::engine::Ctx;
 use regex::Regex;
 use std::sync::LazyLock;
@@ -121,7 +122,7 @@ pub fn on_literal(cx: &mut Ctx, st: &mut State, node: Node) {
     let cfg = cx.cfg;
     let Some(opts) = &cfg.avoid_escaped_unicode else { return };
     let raw = String::from_utf8_lossy(cx.text(node)).into_owned();
-    let text_block = node.kind() == "string_literal" && raw.starts_with("\"\"\"");
+    let text_block = node.kind_s() == "string_literal" && raw.starts_with("\"\"\"");
     let literal = if text_block { strip_indent(raw.get(3..raw.len().saturating_sub(3)).unwrap_or("")) } else { strip_indent(&raw) };
     if !has_unicode(&literal) || excused(opts, &literal) {
         return;
@@ -154,7 +155,7 @@ pub fn on_comment(cx: &mut Ctx, st: &mut State, node: Node) {
     let line = node.start_position().row as u32 + 1;
     let trailing = match next {
         None => true,
-        Some(n) if n.kind() == "line_comment" || n.kind() == "block_comment" => n.start_position().row as u32 + 1 != line,
+        Some(n) if n.kind_s() == "line_comment" || n.kind_s() == "block_comment" => n.start_position().row as u32 + 1 != line,
         Some(n) => !starts_with_infix(n) && n.start_position().row as u32 + 1 != line,
     };
     if trailing {
@@ -170,20 +171,20 @@ fn starts_with_infix(node: Node) -> bool {
     }
     let Some(parent) = leaf.parent() else { return false };
     let mut before = leaf.prev_sibling();
-    while before.is_some_and(|p| matches!(p.kind(), "line_comment" | "block_comment")) {
+    while before.is_some_and(|p| matches!(p.kind_s(), "line_comment" | "block_comment")) {
         before = before.and_then(|p| p.prev_sibling());
     }
     let has_left = before.is_some();
-    match leaf.kind() {
-        "." => has_left && matches!(parent.kind(), "method_invocation" | "field_access" | "scoped_identifier" | "scoped_type_identifier"),
-        "?" => parent.kind() == "ternary_expression",
-        "instanceof" => parent.kind() == "instanceof_expression",
-        "[" => has_left && parent.kind() == "array_access",
-        "++" | "--" => has_left && parent.kind() == "update_expression",
-        "::" => parent.kind() == "method_reference",
-        "->" => has_left && parent.kind() == "lambda_expression",
-        "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>=" | ">>>=" => parent.kind() == "assignment_expression",
-        "+" | "-" | "*" | "/" | "%" | "<<" | ">>" | ">>>" | "&" | "|" | "^" | "&&" | "||" | "==" | "!=" | "<" | ">" | "<=" | ">=" => parent.kind() == "binary_expression",
+    match leaf.kind_s() {
+        "." => has_left && matches!(parent.kind_s(), "method_invocation" | "field_access" | "scoped_identifier" | "scoped_type_identifier"),
+        "?" => parent.kind_s() == "ternary_expression",
+        "instanceof" => parent.kind_s() == "instanceof_expression",
+        "[" => has_left && parent.kind_s() == "array_access",
+        "++" | "--" => has_left && parent.kind_s() == "update_expression",
+        "::" => parent.kind_s() == "method_reference",
+        "->" => has_left && parent.kind_s() == "lambda_expression",
+        "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>=" | ">>>=" => parent.kind_s() == "assignment_expression",
+        "+" | "-" | "*" | "/" | "%" | "<<" | ">>" | ">>>" | "&" | "|" | "^" | "&&" | "||" | "==" | "!=" | "<" | ">" | "<=" | ">=" => parent.kind_s() == "binary_expression",
         _ => false,
     }
 }

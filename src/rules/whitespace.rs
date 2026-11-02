@@ -5,6 +5,7 @@
 //! `PadProbe*` fixtures show, one token at a time, and not what the grammar suggests.
 
 use super::pad::{self, Gap};
+use crate::syntax::KindExt;
 use super::tokens::Token;
 use crate::engine::Ctx;
 use tree_sitter::Node;
@@ -12,8 +13,8 @@ use tree_sitter::Node;
 /// The Checkstyle token that owns the parenthesis `paren`, whose parent is `parent`.
 fn paren_owner(cx: &Ctx, parent: Node) -> Option<Token> {
     let grand = cx.ancestor(1);
-    let grand_kind = grand.map(|g| g.kind());
-    Some(match parent.kind() {
+    let grand_kind = grand.map(|g| g.kind_s());
+    Some(match parent.kind_s() {
         "annotation_argument_list" => Token::Annotation,
         "annotation_type_element_declaration" => Token::AnnotationFieldDef,
         "formal_parameters" => match grand_kind? {
@@ -29,7 +30,7 @@ fn paren_owner(cx: &Ctx, parent: Node) -> Option<Token> {
             "object_creation_expression" => Token::LiteralNew,
             "enum_constant" => Token::EnumConstantDef,
             "explicit_constructor_invocation" => {
-                if grand?.child(0)?.kind() == "this" {
+                if grand?.child(0)?.kind_s() == "this" {
                     Token::CtorCall
                 } else {
                     Token::SuperCtorCall
@@ -55,7 +56,7 @@ fn paren_owner(cx: &Ctx, parent: Node) -> Option<Token> {
             _ => {
                 let (mut level, mut in_ternary) = (1, false);
                 while let Some(a) = cx.ancestor(level) {
-                    match a.kind() {
+                    match a.kind_s() {
                         "ternary_expression" => {
                             in_ternary = true;
                             break;
@@ -86,21 +87,21 @@ pub fn on_paren(cx: &mut Ctx, paren: Node) {
         return;
     }
     let Some(parent) = cx.parent() else { return };
-    if parent.kind() == "cast_expression" {
+    if parent.kind_s() == "cast_expression" {
         typecast_paren_pad(cx, paren);
         // The `)` of a cast is the token WhitespaceAfter calls TYPECAST.
-        if paren.kind() == ")" {
+        if paren.kind_s() == ")" {
             whitespace_after(cx, paren, Token::Typecast);
             no_whitespace_after_cast(cx, paren, parent);
         }
         return;
     }
-    if paren.kind() == ")" {
+    if paren.kind_s() == ")" {
         empty_for_iterator_pad(cx, parent);
     }
     let Some(owner) = paren_owner(cx, parent) else { return };
     paren_pad(cx, paren, parent, owner);
-    if paren.kind() == "(" {
+    if paren.kind_s() == "(" {
         method_param_pad(cx, paren, owner);
     }
 }
@@ -136,11 +137,11 @@ fn paren_pad(cx: &mut Ctx, paren: Node, parent: Node, owner: Token) {
         return;
     }
     let space = opts.space;
-    let open = paren.kind() == "(";
+    let open = paren.kind_s() == "(";
     let src = cx.src;
     // `for ( ;; )`: nothing precedes the first `;`, and nothing follows the last, so there is
     // nothing to pad. The same holds after the last `;` of a resource list.
-    let empty_clause = match (open, parent.kind()) {
+    let empty_clause = match (open, parent.kind_s()) {
         (true, "for_statement") => parent.child_by_field_name("init").is_none(),
         (false, "for_statement") => parent.child_by_field_name("update").is_none(),
         (false, "resource_specification") => semicolon_before(src, paren.start_byte()),
@@ -186,7 +187,7 @@ fn pad_message(src: &[u8], paren: Node, open: bool, space: bool) -> Option<&'sta
 /// `TypecastParenPad`: the padding inside the parentheses of a cast.
 fn typecast_paren_pad(cx: &mut Ctx, paren: Node) {
     let Some(space) = cx.cfg.typecast_paren_pad else { return };
-    if let Some(message) = pad_message(cx.src, paren, paren.kind() == "(", space) {
+    if let Some(message) = pad_message(cx.src, paren, paren.kind_s() == "(", space) {
         cx.diag("TypecastParenPad", paren, message.into());
     }
 }
@@ -194,12 +195,12 @@ fn typecast_paren_pad(cx: &mut Ctx, paren: Node) {
 /// `EmptyForIteratorPad`: the blank after the `;` that ends a `for` header whose update is empty.
 fn empty_for_iterator_pad(cx: &mut Ctx, parent: Node) {
     let Some(space) = cx.cfg.empty_for_iterator_pad else { return };
-    if parent.kind() != "for_statement" || parent.child_by_field_name("update").is_some() {
+    if parent.kind_s() != "for_statement" || parent.child_by_field_name("update").is_some() {
         return;
     }
     // Whatever the init and condition are, the header's last `;` is a child of the statement.
     let mut cur = parent.walk();
-    let Some(semi) = parent.children(&mut cur).filter(|n| n.kind() == ";").last() else { return };
+    let Some(semi) = parent.children(&mut cur).filter(|n| n.kind_s() == ";").last() else { return };
     let Some(next) = cx.src.get(semi.end_byte()).copied().filter(|b| !matches!(b, b'\n' | b'\r')) else { return };
     let padded = pad::is_blank(next);
     let message = match (space, padded) {
@@ -209,32 +210,32 @@ fn empty_for_iterator_pad(cx: &mut Ctx, parent: Node) {
     };
     // Checkstyle reports at the `)` that closes the header, not at the `;`.
     let mut cur = parent.walk();
-    let close = parent.children(&mut cur).find(|n| n.kind() == ")" && n.start_byte() > semi.start_byte()).unwrap_or(semi);
+    let close = parent.children(&mut cur).find(|n| n.kind_s() == ")" && n.start_byte() > semi.start_byte()).unwrap_or(semi);
     cx.diag("EmptyForIteratorPad", close, message.into());
 }
 
 /// The Checkstyle token a punctuation node stands for.
 pub fn punctuation_token(cx: &Ctx, node: Node) -> Option<Token> {
-    Some(match node.kind() {
+    Some(match node.kind_s() {
         "," => Token::Comma,
         ";" => Token::Semi,
         "..." => Token::Ellipsis,
         "." => Token::Dot,
         "::" => Token::MethodRef,
         // A `++` after its operand is a postfix one: it is not the first child.
-        "++" | "--" if cx.parent()?.kind() == "update_expression" && cx.previous_sibling().is_some() => {
-            if node.kind() == "++" {
+        "++" | "--" if cx.parent()?.kind_s() == "update_expression" && cx.previous_sibling().is_some() => {
+            if node.kind_s() == "++" {
                 Token::PostInc
             } else {
                 Token::PostDec
             }
         }
-        ":" if cx.parent()?.kind() == "labeled_statement" => Token::LabeledStat,
+        ":" if cx.parent()?.kind_s() == "labeled_statement" => Token::LabeledStat,
         "->" => Token::Lambda,
         "if" => Token::LiteralIf,
         "else" => Token::LiteralElse,
         "do" => Token::LiteralDo,
-        "while" if cx.parent()?.kind() == "do_statement" => Token::DoWhile,
+        "while" if cx.parent()?.kind_s() == "do_statement" => Token::DoWhile,
         "while" => Token::LiteralWhile,
         "for" => Token::LiteralFor,
         "finally" => Token::LiteralFinally,
@@ -247,7 +248,7 @@ pub fn punctuation_token(cx: &Ctx, node: Node) -> Option<Token> {
         "case" => Token::LiteralCase,
         "when" => Token::LiteralWhen,
         // As a modifier, `synchronized` is not the statement's keyword.
-        "synchronized" if cx.parent()?.kind() == "synchronized_statement" => Token::LiteralSynchronized,
+        "synchronized" if cx.parent()?.kind_s() == "synchronized_statement" => Token::LiteralSynchronized,
         _ => return None,
     })
 }
@@ -323,8 +324,8 @@ pub fn operator_token(kind: &str, parent: &str) -> Option<Token> {
 
 /// The Checkstyle token an operator, a brace or a `?` or `:` stands for, as `WhitespaceAround` sees it.
 fn around_token(cx: &Ctx, node: Node) -> Option<Token> {
-    let parent = cx.parent()?.kind();
-    let kind = node.kind();
+    let parent = cx.parent()?.kind_s();
+    let kind = node.kind_s();
     if kind == ":" && parent == "enhanced_for_statement" && cx.cfg.whitespace_around.as_ref()?.ignore_enhanced_for_colon {
         return None;
     }
@@ -343,7 +344,7 @@ fn around_token(cx: &Ctx, node: Node) -> Option<Token> {
 /// Which token a brace is: a block's `{` is an `SLIST`, the body of a type or a `switch` has `LCURLY`,
 /// an array initialiser's opening brace is `ARRAY_INIT`, and every closing brace is `RCURLY`.
 fn brace_token(_cx: &Ctx, node: Node, parent: &str) -> Option<Token> {
-    let open = node.kind() == "{";
+    let open = node.kind_s() == "{";
     Some(match parent {
         "block" | "constructor_body" => {
             if open {
@@ -369,7 +370,7 @@ fn brace_token(_cx: &Ctx, node: Node, parent: &str) -> Option<Token> {
 
 /// Is the node a comment, which Checkstyle's tree leaves out?
 pub fn is_comment(n: Node) -> bool {
-    matches!(n.kind(), "line_comment" | "block_comment")
+    matches!(n.kind_s(), "line_comment" | "block_comment")
 }
 
 fn next_sibling_skipping_comments(mut n: Node) -> Option<Node> {
@@ -392,24 +393,28 @@ fn previous_sibling_skipping_comments(mut n: Node) -> Option<Node> {
 
 /// Is `block` an instance initialiser: a block that is a member of a type body?
 fn is_instance_initializer(block: Node) -> bool {
-    block.kind() == "block" && block.parent().is_some_and(|p| p.kind() == "class_body")
+    block.kind_s() == "block" && block.parent().is_some_and(|p| p.kind_s() == "class_body")
 }
 
 /// Checkstyle looks past the doubled braces of `new T() {{ ... }}`: the first `{` need not be followed
 /// by anything, the second not preceded, and likewise the pair of closing braces.
 fn double_brace(node: Node, token: Token) -> (bool, bool) {
+    // Only braces have anything to skip, and finding a parent is a search from the root.
+    if !matches!(token, Token::Lcurly | Token::Slist | Token::Rcurly) {
+        return (false, false);
+    }
     let (mut skip_before, mut skip_after) = (false, false);
     match (token, node.parent()) {
-        (Token::Lcurly, Some(body)) if body.kind() == "class_body" => {
+        (Token::Lcurly, Some(body)) if body.kind_s() == "class_body" => {
             skip_after = next_sibling_skipping_comments(node).is_some_and(is_instance_initializer);
         }
         (Token::Slist, Some(block)) if is_instance_initializer(block) => {
-            skip_before = previous_sibling_skipping_comments(block).is_some_and(|p| p.kind() == "{");
+            skip_before = previous_sibling_skipping_comments(block).is_some_and(|p| p.kind_s() == "{");
         }
         (Token::Rcurly, Some(block)) if is_instance_initializer(block) => {
-            skip_after = next_sibling_skipping_comments(block).is_some_and(|n| n.kind() == "}");
+            skip_after = next_sibling_skipping_comments(block).is_some_and(|n| n.kind_s() == "}");
         }
-        (Token::Rcurly, Some(body)) if body.kind() == "class_body" => {
+        (Token::Rcurly, Some(body)) if body.kind_s() == "class_body" => {
             skip_before = previous_sibling_skipping_comments(node).is_some_and(is_instance_initializer);
         }
         _ => {}
@@ -422,12 +427,12 @@ fn double_brace(node: Node, token: Token) -> (bool, bool) {
 fn switch_is_whole_expression(cx: &Ctx) -> bool {
     // The `switch` keyword's parent is the switch itself, and the construct holding it is the next one up.
     let Some(up) = cx.ancestor(1) else { return false };
-    match up.kind() {
+    match up.kind_s() {
         "variable_declarator" | "argument_list" | "array_initializer" | "lambda_expression" | "return_statement" | "yield_statement"
         | "assert_statement" | "expression_statement" | "throw_statement" | "element_value_pair" | "for_statement" | "enhanced_for_statement"
         | "array_access" | "dimensions_expr" => true,
         "parenthesized_expression" => {
-            cx.ancestor(2).is_some_and(|g| matches!(g.kind(), "if_statement" | "while_statement" | "do_statement" | "synchronized_statement" | "switch_expression"))
+            cx.ancestor(2).is_some_and(|g| matches!(g.kind_s(), "if_statement" | "while_statement" | "do_statement" | "synchronized_statement" | "switch_expression"))
         }
         _ => false,
     }
@@ -436,7 +441,7 @@ fn switch_is_whole_expression(cx: &Ctx) -> bool {
 /// A block with nothing in it, comments aside. (A lone `;` is a statement.)
 fn is_empty_block(block: Node) -> bool {
     let mut cursor = block.walk();
-    let empty = block.children(&mut cursor).all(|c| matches!(c.kind(), "{" | "}") || is_comment(c));
+    let empty = block.children(&mut cursor).all(|c| matches!(c.kind_s(), "{" | "}") || is_comment(c));
     empty
 }
 
@@ -447,9 +452,9 @@ fn empty_body_allowed(cx: &Ctx, node: Node, token: Token) -> (bool, bool) {
     let Some(opts) = &cx.cfg.whitespace_around else { return (false, false) };
     let Some(parent) = cx.parent() else { return (false, false) };
     match token {
-        Token::Slist | Token::Rcurly if matches!(parent.kind(), "block" | "constructor_body") => {
+        Token::Slist | Token::Rcurly if matches!(parent.kind_s(), "block" | "constructor_body") => {
             let Some(owner) = cx.ancestor(1) else { return (false, false) };
-            let (allowed, whole) = match owner.kind() {
+            let (allowed, whole) = match owner.kind_s() {
                 "method_declaration" => (opts.allow_empty_methods, true),
                 "constructor_declaration" | "compact_constructor_declaration" => (opts.allow_empty_constructors, false),
                 "while_statement" | "for_statement" | "enhanced_for_statement" | "do_statement" => (opts.allow_empty_loops, true),
@@ -467,11 +472,11 @@ fn empty_body_allowed(cx: &Ctx, node: Node, token: Token) -> (bool, bool) {
             }
         }
         Token::Lcurly if opts.allow_empty_types => {
-            let empty = next_sibling_skipping_comments(node).is_some_and(|n| n.kind() == "}");
+            let empty = next_sibling_skipping_comments(node).is_some_and(|n| n.kind_s() == "}");
             (empty, empty)
         }
         Token::Rcurly if opts.allow_empty_types => {
-            let empty = previous_sibling_skipping_comments(node).is_some_and(|n| n.kind() == "{");
+            let empty = previous_sibling_skipping_comments(node).is_some_and(|n| n.kind_s() == "{");
             (empty, empty)
         }
         _ => (false, false),
@@ -485,7 +490,7 @@ fn whitespace_around(cx: &mut Ctx, node: Node, token: Token) {
     if !opts.tokens.contains(token) {
         return;
     }
-    if token == Token::LiteralSwitch && cx.parent().is_some_and(|p| p.kind() == "switch_expression") && switch_is_whole_expression(cx) {
+    if token == Token::LiteralSwitch && cx.parent().is_some_and(|p| p.kind_s() == "switch_expression") && switch_is_whole_expression(cx) {
         return;
     }
     let (empty_before, empty_after) = empty_body_allowed(cx, node, token);
@@ -516,13 +521,13 @@ fn whitespace_around(cx: &mut Ctx, node: Node, token: Token) {
 /// It works on the physical line, as Checkstyle does, so a bracket at either edge of a line is
 /// never padded wrongly.
 fn generic_whitespace(cx: &mut Ctx, node: Node) {
-    let open = match node.kind() {
+    let open = match node.kind_s() {
         "<" => true,
         ">" => false,
         _ => return,
     };
     let Some(parent) = cx.parent() else { return };
-    if !matches!(parent.kind(), "type_arguments" | "type_parameters") {
+    if !matches!(parent.kind_s(), "type_arguments" | "type_parameters") {
         return;
     }
     let src = cx.src;
@@ -535,9 +540,9 @@ fn generic_whitespace(cx: &mut Ctx, node: Node) {
     if open {
         // The type parameters of a method or constructor, and a constructor's own type arguments in
         // `new <T>Foo()`, are set off from what precedes them.
-        let own_parameters = cx.ancestor(1).is_some_and(|n| match parent.kind() {
-            "type_parameters" => matches!(n.kind(), "method_declaration" | "constructor_declaration"),
-            _ => n.kind() == "object_creation_expression",
+        let own_parameters = cx.ancestor(1).is_some_and(|n| match parent.kind_s() {
+            "type_parameters" => matches!(n.kind_s(), "method_declaration" | "constructor_declaration"),
+            _ => n.kind_s() == "object_creation_expression",
         });
         if own_parameters {
             if start > line_start && !pad::is_blank(src[start - 1]) {
@@ -562,7 +567,7 @@ fn generic_whitespace(cx: &mut Ctx, node: Node) {
     let mut depth = 0;
     let mut level = 0;
     while let Some(n) = cx.ancestor(level) {
-        depth += usize::from(matches!(n.kind(), "type_arguments" | "type_parameters"));
+        depth += usize::from(matches!(n.kind_s(), "type_arguments" | "type_parameters"));
         level += 1;
     }
     if depth > 1 {
@@ -593,12 +598,12 @@ fn generic_whitespace(cx: &mut Ctx, node: Node) {
 fn generic_before_name(arguments: Node) -> bool {
     let mut owner = arguments.parent();
     while let Some(n) = owner {
-        if !matches!(n.kind(), "generic_type" | "scoped_type_identifier") {
+        if !matches!(n.kind_s(), "generic_type" | "scoped_type_identifier") {
             break;
         }
         owner = n.parent();
     }
-    owner.is_some_and(|n| matches!(n.kind(), "method_invocation" | "method_reference" | "object_creation_expression" | "array_creation_expression" | "record_declaration"))
+    owner.is_some_and(|n| matches!(n.kind_s(), "method_invocation" | "method_reference" | "object_creation_expression" | "array_creation_expression" | "record_declaration"))
 }
 
 /// `WhitespaceAfter`: the character after the token must be a blank, or the line must end.
@@ -631,16 +636,16 @@ pub fn on_annotation(cx: &mut Ctx, node: Node) {
     }
     let (Some(parent), Some(grand)) = (cx.parent(), cx.ancestor(1)) else { return };
     // An annotation that is a value of another is not in a list of annotations.
-    if matches!(parent.kind(), "annotation_argument_list" | "element_value_pair" | "element_value_array_initializer") {
+    if matches!(parent.kind_s(), "annotation_argument_list" | "element_value_pair" | "element_value_array_initializer") {
         return;
     }
     // A declaration's annotations are its modifiers to Checkstyle, except an enum constant's and
     // those on the plain type of an `instanceof`, which has no pattern variable to be modified.
-    let on_plain_type = parent.kind() == "modifiers" && grand.kind() == "instanceof_expression" && grand.child_by_field_name("name").is_none();
-    if matches!(parent.kind(), "modifiers" | "receiver_parameter") && grand.kind() != "enum_constant" && !on_plain_type {
+    let on_plain_type = parent.kind_s() == "modifiers" && grand.kind_s() == "instanceof_expression" && grand.child_by_field_name("name").is_none();
+    if matches!(parent.kind_s(), "modifiers" | "receiver_parameter") && grand.kind_s() != "enum_constant" && !on_plain_type {
         return;
     }
-    if previous_sibling_skipping_comments(node).is_some_and(|p| matches!(p.kind(), "annotation" | "marker_annotation")) {
+    if previous_sibling_skipping_comments(node).is_some_and(|p| matches!(p.kind_s(), "annotation" | "marker_annotation")) {
         return;
     }
     let Some(&next) = cx.src.get(node.end_byte()) else { return };
@@ -666,7 +671,7 @@ fn java_whitespace(c: char) -> bool {
 
 /// `WhitespaceAfter` on single-line comments: after the slashes comes a blank, or nothing.
 pub fn on_comment(cx: &mut Ctx, node: Node) {
-    if node.kind() != "line_comment" || !cx.cfg.whitespace_after.as_ref().is_some_and(|w| w.tokens.contains(Token::SingleLineComment)) {
+    if node.kind_s() != "line_comment" || !cx.cfg.whitespace_after.as_ref().is_some_and(|w| w.tokens.contains(Token::SingleLineComment)) {
         return;
     }
     let text = cx.text(node);
@@ -690,8 +695,8 @@ fn no_whitespace_before(cx: &mut Ctx, node: Node, token: Token) {
         return;
     }
     // `for ( ; ; )`: the `;` of an empty initialiser or condition has nothing in front of it to pad.
-    if token == Token::Semi && cx.parent().is_some_and(|p| p.kind() == "for_statement") {
-        let empty_clause = cx.previous_sibling().is_some_and(|p| matches!(p.kind(), "(" | ";" | "local_variable_declaration"));
+    if token == Token::Semi && cx.parent().is_some_and(|p| p.kind_s() == "for_statement") {
+        let empty_clause = cx.previous_sibling().is_some_and(|p| matches!(p.kind_s(), "(" | ";" | "local_variable_declaration"));
         if empty_clause {
             return;
         }
@@ -708,25 +713,25 @@ fn no_whitespace_before(cx: &mut Ctx, node: Node, token: Token) {
 /// The token `NoWhitespaceAfter` sees in a node, if it is one of its kinds.
 fn no_whitespace_after_token(cx: &Ctx, node: Node) -> Option<Token> {
     let parent = cx.parent()?;
-    let kind = node.kind();
+    let kind = node.kind_s();
     Some(match kind {
-        "@" if matches!(parent.kind(), "annotation" | "marker_annotation") => Token::At,
+        "@" if matches!(parent.kind_s(), "annotation" | "marker_annotation") => Token::At,
         // The braces of an annotation's array value are ANNOTATION_ARRAY_INIT, a different token.
-        "{" if parent.kind() == "array_initializer" => Token::ArrayInit,
+        "{" if parent.kind_s() == "array_initializer" => Token::ArrayInit,
         // Only a prefix `++` is INC; after its operand it is POST_INC.
-        "++" | "--" if parent.kind() == "update_expression" && cx.previous_sibling().is_none() => {
+        "++" | "--" if parent.kind_s() == "update_expression" && cx.previous_sibling().is_none() => {
             if kind == "++" {
                 Token::Inc
             } else {
                 Token::Dec
             }
         }
-        "-" if parent.kind() == "unary_expression" => Token::UnaryMinus,
-        "+" if parent.kind() == "unary_expression" => Token::UnaryPlus,
-        "~" if parent.kind() == "unary_expression" => Token::Bnot,
-        "!" if parent.kind() == "unary_expression" => Token::Lnot,
-        "[" if parent.kind() == "array_access" => Token::IndexOp,
-        "[" if matches!(parent.kind(), "dimensions" | "dimensions_expr") => Token::ArrayDeclarator,
+        "-" if parent.kind_s() == "unary_expression" => Token::UnaryMinus,
+        "+" if parent.kind_s() == "unary_expression" => Token::UnaryPlus,
+        "~" if parent.kind_s() == "unary_expression" => Token::Bnot,
+        "!" if parent.kind_s() == "unary_expression" => Token::Lnot,
+        "[" if parent.kind_s() == "array_access" => Token::IndexOp,
+        "[" if matches!(parent.kind_s(), "dimensions" | "dimensions_expr") => Token::ArrayDeclarator,
         _ => match punctuation_token(cx, node)? {
             token @ (Token::Dot | Token::MethodRef | Token::LiteralIf | Token::LiteralFor | Token::LiteralWhile | Token::DoWhile | Token::LiteralCatch
             | Token::LiteralSynchronized) => token,
@@ -746,10 +751,10 @@ fn no_whitespace_after(cx: &mut Ctx, node: Node) {
     }
     // Checkstyle skips a token whose previous sibling is the (possibly empty) annotation list: the
     // outermost `.` of a package name (which has one), and brackets that follow an annotation.
-    if token == Token::Dot && cx.parent().is_some_and(|p| p.kind() == "scoped_identifier") && cx.ancestor(1).is_some_and(|g| g.kind() == "package_declaration") {
+    if token == Token::Dot && cx.parent().is_some_and(|p| p.kind_s() == "scoped_identifier") && cx.ancestor(1).is_some_and(|g| g.kind_s() == "package_declaration") {
         return;
     }
-    if token == Token::ArrayDeclarator && previous_sibling_skipping_comments(node).is_some_and(|p| matches!(p.kind(), "annotation" | "marker_annotation")) {
+    if token == Token::ArrayDeclarator && previous_sibling_skipping_comments(node).is_some_and(|p| matches!(p.kind_s(), "annotation" | "marker_annotation")) {
         return;
     }
     if token == Token::ArrayDeclarator {
@@ -782,10 +787,10 @@ fn no_whitespace_after(cx: &mut Ctx, node: Node) {
 /// if that is a name (`arr`, `this.arr`, `a.b.arr`).
 fn indexed_name<'a>(bracket: Node<'a>) -> Option<Node<'a>> {
     let mut array = bracket.parent()?.child_by_field_name("array")?;
-    while array.kind() == "parenthesized_expression" {
+    while array.kind_s() == "parenthesized_expression" {
         array = array.named_child(0)?;
     }
-    match array.kind() {
+    match array.kind_s() {
         "identifier" => Some(array),
         "field_access" => array.child_by_field_name("field"),
         _ => None,
@@ -794,7 +799,7 @@ fn indexed_name<'a>(bracket: Node<'a>) -> Option<Node<'a>> {
 
 /// The method name, for the brackets written after a method's parameters (`int n() []`).
 fn declarator_name<'a>(cx: &Ctx<'a>, bracket: Node<'a>, prev: Node<'a>) -> Option<Node<'a>> {
-    let method = bracket.parent()?.parent().filter(|m| m.kind() == "method_declaration" && prev.kind() == ")")?;
+    let method = bracket.parent()?.parent().filter(|m| m.kind_s() == "method_declaration" && prev.kind_s() == ")")?;
     method.child_by_field_id(cx.syn.f.name)
 }
 
@@ -807,15 +812,15 @@ fn leading_type_annotation<'a>(cx: &Ctx<'a>, bracket: Node<'a>) -> Option<Node<'
     if bracket.prev_sibling().is_some() {
         return None;
     }
-    let plain = |t: Node| matches!(t.kind(), "type_identifier" | "integral_type" | "floating_point_type" | "boolean_type");
-    let is_annotation = |n: Node| matches!(n.kind(), "annotation" | "marker_annotation");
+    let plain = |t: Node| matches!(t.kind_s(), "type_identifier" | "integral_type" | "floating_point_type" | "boolean_type");
+    let is_annotation = |n: Node| matches!(n.kind_s(), "annotation" | "marker_annotation");
     // `java.lang.@A String [n]`: the annotation list is the one inside the qualified name.
     fn inside_name(t: Node) -> Option<Node> {
         let mut cur = t.walk();
-        let found = (t.kind() == "scoped_type_identifier").then(|| t.children(&mut cur).find(|n| matches!(n.kind(), "annotation" | "marker_annotation"))).flatten();
+        let found = (t.kind_s() == "scoped_type_identifier").then(|| t.children(&mut cur).find(|n| matches!(n.kind_s(), "annotation" | "marker_annotation"))).flatten();
         found
     }
-    match holder.kind() {
+    match holder.kind_s() {
         "array_type" => {
             let element = holder.child_by_field_name("element")?;
             if let Some(annotation) = inside_name(element) {
@@ -825,9 +830,9 @@ fn leading_type_annotation<'a>(cx: &Ctx<'a>, bracket: Node<'a>) -> Option<Node<'
                 return None;
             }
             let outer = cx.ancestor(2)?;
-            match outer.kind() {
+            match outer.kind_s() {
                 // A bound (`? extends @A T[]`, `T extends @A U[]`) is measured from its previous sibling as usual.
-                "annotated_type" if !cx.ancestor(3).is_some_and(|b| matches!(b.kind(), "wildcard" | "type_bound")) => outer.child(0).filter(|n| is_annotation(*n)),
+                "annotated_type" if !cx.ancestor(3).is_some_and(|b| matches!(b.kind_s(), "wildcard" | "type_bound")) => outer.child(0).filter(|n| is_annotation(*n)),
                 "method_declaration" => {
                     let mut cur = outer.walk();
                     let first = outer.children(&mut cur).find(|n| is_annotation(*n));
@@ -863,7 +868,7 @@ fn no_whitespace_after_cast(cx: &mut Ctx, close: Node, cast: Node) {
         return;
     }
     let allow_line_breaks = opts.allow_line_breaks;
-    let Some(open) = cast.child(0).filter(|n| n.kind() == "(") else { return };
+    let Some(open) = cast.child(0).filter(|n| n.kind_s() == "(") else { return };
     report_whitespace_after(cx, open, close, close, allow_line_breaks);
 }
 
@@ -914,7 +919,7 @@ fn report_whitespace_after(cx: &mut Ctx, at: Node, element: Node, label: Node, a
 pub fn is_empty_statement(cx: &Ctx, parent: Node, semi: Node) -> bool {
     let f = &cx.syn.f;
     let is = |field: u16| parent.child_by_field_id(field).is_some_and(|c| c.id() == semi.id());
-    match parent.kind() {
+    match parent.kind_s() {
         "block" | "constructor_body" | "switch_block_statement_group" | "labeled_statement" => true,
         "if_statement" => is(f.consequence) || is(f.alternative),
         "while_statement" | "for_statement" | "enhanced_for_statement" | "do_statement" => is(f.body),

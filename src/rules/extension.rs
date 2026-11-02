@@ -1,6 +1,7 @@
 //! `DesignForExtension`: a method of a class that others can subclass should say how to override it.
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use crate::rules::util::has_modifier;
 use tree_sitter::Node;
 
@@ -13,10 +14,10 @@ pub fn on_method(cx: &mut Ctx, method: Node) {
     // A method without a body that is not native is not Java; an empty body is the way to say
     // "nothing to extend here".
     let native = has_modifier(cx, method, b"native");
-    let Some(class) = class_of(method) else { return };
+    let Some(class) = class_of(cx, method) else { return };
     if !native {
         match method.child_by_field_id(cx.syn.f.body) {
-            Some(body) if body.children(&mut body.walk()).all(|c| matches!(c.kind(), "{" | "}" | "line_comment" | "block_comment")) => return,
+            Some(body) if body.children(&mut body.walk()).all(|c| matches!(c.kind_s(), "{" | "}" | "line_comment" | "block_comment")) => return,
             Some(_) => {}
             None => return,
         }
@@ -45,7 +46,7 @@ fn is_type_decl(kind: &str) -> bool {
 /// Visibility rank of a type: public 1, protected 2, package 3, private 4.
 fn rank(cx: &Ctx, decl: Node) -> u8 {
     // A member of an interface is public whatever it says.
-    if decl.parent().is_some_and(|p| matches!(p.kind(), "interface_body" | "annotation_type_body")) {
+    if cx.parent_of(decl).is_some_and(|p| matches!(p.kind_s(), "interface_body" | "annotation_type_body")) {
         return 1;
     }
     if has_modifier(cx, decl, b"public") {
@@ -68,13 +69,13 @@ fn can_be_overridden(cx: &Ctx, method: Node) -> bool {
     }
     let mut scope: Option<u8> = None;
     let mut first_type = true;
-    let mut p = method.parent();
+    let mut p = cx.parent_of(method);
     while let Some(n) = p {
-        if n.kind() == "object_creation_expression" {
+        if n.kind_s() == "object_creation_expression" {
             return false;
         }
-        if is_type_decl(n.kind()) {
-            if first_type && matches!(n.kind(), "interface_declaration" | "annotation_type_declaration" | "record_declaration") {
+        if is_type_decl(n.kind_s()) {
+            if first_type && matches!(n.kind_s(), "interface_declaration" | "annotation_type_declaration" | "record_declaration") {
                 return false;
             }
             first_type = false;
@@ -83,35 +84,35 @@ fn can_be_overridden(cx: &Ctx, method: Node) -> bool {
                 scope = Some(r);
             }
         }
-        p = n.parent();
+        p = cx.parent_of(n);
     }
     scope.is_some_and(|s| s <= 2)
 }
 
 /// The nearest class or enum around the method; records and interfaces are walked through.
-fn class_of(method: Node) -> Option<Node> {
-    let mut p = method.parent();
+fn class_of<'a>(cx: &Ctx<'a>, method: Node<'a>) -> Option<Node<'a>> {
+    let mut p = cx.parent_of(method);
     while let Some(n) = p {
-        if matches!(n.kind(), "class_declaration" | "enum_declaration") {
+        if matches!(n.kind_s(), "class_declaration" | "enum_declaration") {
             return Some(n);
         }
-        p = n.parent();
+        p = cx.parent_of(n);
     }
     None
 }
 
 fn can_be_subclassed(cx: &Ctx, class: Node) -> bool {
-    if class.kind() == "enum_declaration" || has_modifier(cx, class, b"final") {
+    if class.kind_s() == "enum_declaration" || has_modifier(cx, class, b"final") {
         return false;
     }
     let Some(body) = class.child_by_field_id(cx.syn.f.body) else { return true };
-    let ctors: Vec<Node> = body.children(&mut body.walk()).filter(|c| c.kind() == "constructor_declaration").collect();
+    let ctors: Vec<Node> = body.children(&mut body.walk()).filter(|c| c.kind_s() == "constructor_declaration").collect();
     ctors.is_empty() || ctors.iter().any(|c| !has_modifier(cx, *c, b"private"))
 }
 
 fn has_ignored_annotation(cx: &Ctx, ignored: &[String], method: Node) -> bool {
-    let Some(mods) = method.children(&mut method.walk()).find(|c| c.kind() == "modifiers") else { return false };
-    mods.children(&mut mods.walk()).filter(|m| matches!(m.kind(), "marker_annotation" | "annotation")).any(|a| {
+    let Some(mods) = method.children(&mut method.walk()).find(|c| c.kind_s() == "modifiers") else { return false };
+    mods.children(&mut mods.walk()).filter(|m| matches!(m.kind_s(), "marker_annotation" | "annotation")).any(|a| {
         let Some(name) = a.child_by_field_id(cx.syn.f.name) else { return false };
         let text: String = String::from_utf8_lossy(cx.text(name)).split_whitespace().collect();
         let simple = text.rsplit('.').next().unwrap_or(&text);
@@ -124,18 +125,18 @@ fn has_ignored_annotation(cx: &Ctx, ignored: &[String], method: Node) -> bool {
 fn javadoc_satisfies(cx: &Ctx, phrase: &crate::config::Format, method: Node) -> bool {
     // Checkstyle hangs the comment on the method's first token, and looks only under its modifiers
     // and return type. With no modifiers that token is the `<` of type parameters, which is neither.
-    let has_modifiers = method.children(&mut method.walk()).any(|c| c.kind() == "modifiers");
-    if !has_modifiers && method.children(&mut method.walk()).any(|c| c.kind() == "type_parameters") {
+    let has_modifiers = method.children(&mut method.walk()).any(|c| c.kind_s() == "modifiers");
+    if !has_modifiers && method.children(&mut method.walk()).any(|c| c.kind_s() == "type_parameters") {
         return false;
     }
     let mut comments: Vec<Node> = Vec::new();
     let mut prev = method.prev_sibling();
-    while let Some(p) = prev.filter(|p| matches!(p.kind(), "line_comment" | "block_comment")) {
+    while let Some(p) = prev.filter(|p| matches!(p.kind_s(), "line_comment" | "block_comment")) {
         comments.push(p);
         prev = p.prev_sibling();
     }
     comments.sort_by_key(|c| c.start_byte());
-    let Some(doc) = comments.into_iter().find(|c| c.kind() == "block_comment" && cx.text(*c).starts_with(b"/**") && cx.text(*c).len() > 4) else { return false };
+    let Some(doc) = comments.into_iter().find(|c| c.kind_s() == "block_comment" && cx.text(*c).starts_with(b"/**") && cx.text(*c).len() > 4) else { return false };
     let text = cx.text(doc);
     phrase.matches(&text[2..text.len() - 2])
 }

@@ -4,6 +4,7 @@
 //! table in `syntax`, so adding a rule never adds another traversal.
 
 use crate::config::Config;
+use crate::syntax::KindExt;
 use crate::rules::{self, State};
 use crate::syntax::Syntax;
 use std::path::Path;
@@ -44,11 +45,15 @@ pub struct Ctx<'a> {
     previous: Vec<Option<Node<'a>>>,
     /// Byte offsets at which each line starts, built the first time a finding needs a column.
     line_starts: std::cell::OnceCell<Vec<usize>>,
+    /// The kind name of the node being visited (set by `rules::visit`).
+    pub kind_name: &'static str,
+    /// `Node::id` of the node being visited (`usize::MAX` outside the walk).
+    pub node_id: usize,
 }
 
 impl<'a> Ctx<'a> {
     pub fn new(syn: &'a Syntax, cfg: &'a Config, src: &'a [u8], out: &'a mut Vec<Diagnostic>) -> Self {
-        Ctx { syn, cfg, src, out, path: None, parents: Vec::new(), previous: vec![None], line_starts: std::cell::OnceCell::new() }
+        Ctx { syn, cfg, src, out, path: None, parents: Vec::new(), previous: vec![None], line_starts: std::cell::OnceCell::new(), kind_name: "", node_id: usize::MAX }
     }
 
     /// The parent of the node being visited. Only meaningful for that node, not for others.
@@ -60,6 +65,24 @@ impl<'a> Ctx<'a> {
     /// grandparent.
     pub fn ancestor(&self, levels: usize) -> Option<Node<'a>> {
         self.parents.len().checked_sub(levels + 1).map(|i| self.parents[i])
+    }
+
+    /// `node.parent()` without the search from the root that tree-sitter makes: the walk already
+    /// holds the ancestors of the node being visited, and rules mostly climb from that node.
+    pub fn parent_of(&self, node: Node<'a>) -> Option<Node<'a>> {
+        let id = node.id();
+        let found = if id == self.node_id {
+            self.parents.last().copied()
+        } else {
+            match self.parents.iter().rposition(|p| p.id() == id) {
+                Some(i) => i.checked_sub(1).map(|j| self.parents[j]),
+                None => node.parent(),
+            }
+        };
+        // In debug builds, which includes `cargo test` over every probe file, check it against tree-sitter.
+        #[cfg(debug_assertions)]
+        assert_eq!(found.map(|p| p.id()), node.parent().map(|p| p.id()), "parent_of disagrees with tree-sitter at {node:?}");
+        found
     }
 
     /// The previous sibling of the node being visited, skipping comments.
@@ -167,17 +190,17 @@ impl<'a> Ctx<'a> {
 /// and a `DOT` sits at its own `.`, the last one of the name.
 fn anchor(node: Node) -> Node {
     if !matches!(
-        node.kind(),
+        node.kind_s(),
         "method_declaration" | "field_declaration" | "constant_declaration" | "local_variable_declaration" | "formal_parameter" | "catch_formal_parameter" | "annotation_type_element_declaration" | "resource"
     ) {
         return node;
     }
-    if node.child(0).is_some_and(|c| matches!(c.kind(), "modifiers" | "type_parameters")) {
+    if node.child(0).is_some_and(|c| matches!(c.kind_s(), "modifiers" | "type_parameters")) {
         return node;
     }
     let Some(mut ty) = node.child_by_field_name("type") else { return node };
     loop {
-        match ty.kind() {
+        match ty.kind_s() {
             "array_type" => match ty.child_by_field_name("element") {
                 Some(e) => ty = e,
                 None => return node,
@@ -189,11 +212,11 @@ fn anchor(node: Node) -> Node {
             _ => break,
         }
     }
-    if ty.kind() != "scoped_type_identifier" {
+    if ty.kind_s() != "scoped_type_identifier" {
         return node;
     }
     let mut cur = ty.walk();
-    let dot = ty.children(&mut cur).filter(|c| c.kind() == ".").last();
+    let dot = ty.children(&mut cur).filter(|c| c.kind_s() == ".").last();
     dot.unwrap_or(node)
 }
 
@@ -269,6 +292,13 @@ pub fn lint(syn: &Syntax, cfg: &Config, tree: &Tree, src: &[u8], out: &mut Vec<D
 
 /// `lint`, for a file with a path: `PackageDeclaration` and `OuterTypeFilename` read it.
 pub fn lint_file(syn: &Syntax, cfg: &Config, tree: &Tree, src: &[u8], path: Option<&Path>, out: &mut Vec<Diagnostic>) {
+    lint_file_cached(syn, cfg, &crate::csast::CsCache::new(tree, src), path, out);
+}
+
+/// `lint_file` with the file's emulated-AST cache supplied, so the caller can go on sharing it with the
+/// suppression filters (`suppress::by_file_cached`) that run afterwards.
+pub fn lint_file_cached(syn: &Syntax, cfg: &Config, cache: &crate::csast::CsCache, path: Option<&Path>, out: &mut Vec<Diagnostic>) {
+    let (tree, src) = (cache.tree().expect("lint_file_cached needs the parse tree"), cache.src());
     let from = out.len();
     let mut cx = Ctx::new(syn, cfg, src, out);
     cx.path = path;
@@ -294,11 +324,12 @@ pub fn lint_file(syn: &Syntax, cfg: &Config, tree: &Tree, src: &[u8], path: Opti
             cx.leave();
         }
     }
+    cx.node_id = usize::MAX;
     rules::finish(&mut cx, &mut st);
-    rules::indentation::check(&mut cx, tree);
-    rules::csast_checks::run(cfg, tree, src, cx.out);
-    rules::xpathfilter::match_xpath(&mut cx);
+    rules::indentation::check(&mut cx, cache);
+    rules::csast_checks::run(cfg, cache, cx.out);
+    rules::xpathfilter::match_xpath(&mut cx, cache);
     lint_text(cfg, "java", src, cx.out);
-    rules::cs::run(cfg, tree, src, cx.out);
+    rules::cs::run(cfg, cache, cx.out);
     crate::messages::apply(cfg, cx.out, from);
 }

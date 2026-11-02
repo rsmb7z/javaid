@@ -81,9 +81,11 @@ pub struct KindInfo {
     pub statement: bool,
     /// An unnamed token whose padding some rule checks: punctuation, and the keywords that take a parenthesis or a block.
     pub pad_token: bool,
+    /// The node kind's name (empty for an id the grammar does not name).
+    pub name: &'static str,
 }
 
-const NONE: KindInfo = KindInfo { act: Act::None, is_block: false, is_if: false, documented: false, statement: false, pad_token: false };
+const NONE: KindInfo = KindInfo { act: Act::None, is_block: false, is_if: false, documented: false, statement: false, pad_token: false, name: "" };
 
 /// Grammar field ids, resolved once.
 pub struct Fields {
@@ -117,6 +119,9 @@ impl Syntax {
         let mut info = vec![NONE; language.node_kind_count() + 1];
         // Scan ids rather than looking names up: one name can map to several ids (aliases).
         for id in 0..language.node_kind_count() as u16 {
+            if let Some(name) = language.node_kind_for_id(id) {
+                info[id as usize].name = Box::leak(name.to_string().into_boxed_str());
+            }
             if !language.node_kind_is_named(id) {
                 let kind = language.node_kind_for_id(id);
                 info[id as usize].pad_token = matches!(
@@ -287,4 +292,35 @@ pub fn walk_only(tree: &Tree) -> usize {
         }
     }
     n
+}
+
+
+/// `Node::kind` without its cost. The binding turns the grammar's C string into a `&str` on every
+/// call (a `strlen` and a UTF-8 validation), and rules ask a node's kind several times per node;
+/// this reads the same names from a table built once per grammar, indexed by the node's kind id.
+pub trait KindExt {
+    fn kind_s(&self) -> &'static str;
+}
+
+impl KindExt for Node<'_> {
+    #[inline]
+    fn kind_s(&self) -> &'static str {
+        static ORCHARD: std::sync::OnceLock<Language> = std::sync::OnceLock::new();
+        static TABLES: [std::sync::OnceLock<Box<[&'static str]>>; 2] = [std::sync::OnceLock::new(), std::sync::OnceLock::new()];
+        let orchard = ORCHARD.get_or_init(|| tree_sitter_java_orchard::LANGUAGE.into());
+        let lang = self.language();
+        let slot = usize::from(*lang == *orchard);
+        // A few hundred names, kept for the life of the process.
+        let table = TABLES[slot].get_or_init(|| {
+            (0..lang.node_kind_count() as u16)
+                .map(|id| -> &'static str { lang.node_kind_for_id(id).map_or("", |name| Box::leak(name.to_string().into_boxed_str())) })
+                .collect()
+        });
+        match table.get(self.kind_id() as usize) {
+            Some(name) if !name.is_empty() => name,
+            // The error node's id is outside the table.
+            _ if self.is_error() => "ERROR",
+            _ => Box::leak(self.kind().to_string().into_boxed_str()),
+        }
+    }
 }

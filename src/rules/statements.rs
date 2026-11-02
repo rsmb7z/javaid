@@ -6,6 +6,7 @@
 //! `OneProbe*` fixtures); none of it is obvious from the module's description.
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 #[derive(Default)]
@@ -24,9 +25,9 @@ pub fn on_semicolon(cx: &Ctx, st: &mut State, semi: Node) {
         return;
     }
     let Some(parent) = cx.parent() else { return };
-    let ends_a_statement = match parent.kind() {
+    let ends_a_statement = match parent.kind_s() {
         "for_statement" | "resource_specification" | "block" | "switch_block_statement_group" | "do_statement" => false,
-        "local_variable_declaration" => cx.ancestor(1).is_none_or(|g| g.kind() != "for_statement"),
+        "local_variable_declaration" => cx.ancestor(1).is_none_or(|g| g.kind_s() != "for_statement"),
         _ => true,
     };
     if ends_a_statement {
@@ -41,11 +42,11 @@ pub fn on_statement(cx: &mut Ctx, st: &mut State, node: Node) {
     if cx.cfg.one_statement_per_line.is_none() {
         return;
     }
-    let kind = node.kind();
+    let kind = node.kind_s();
     let row = node.start_position().row;
     let checked = match kind {
         "package_declaration" => false,
-        "local_variable_declaration" => cx.parent().is_none_or(|p| p.kind() != "for_statement"),
+        "local_variable_declaration" => cx.parent().is_none_or(|p| p.kind_s() != "for_statement"),
         // A method ends with `;` only when it has no body (abstract, interface, native).
         "method_declaration" => node.child_by_field_id(cx.syn.f.body).is_none(),
         _ => true,
@@ -65,7 +66,7 @@ pub fn on_statement(cx: &mut Ctx, st: &mut State, node: Node) {
 /// operator, `new` and the parenthesis of a cast do not count, so `++i` is at `i`, `new T()` at
 /// `T` and `(T) e` at `T`; a chain of calls, fields, indexes or operators is at its leftmost part.
 fn reported_at(statement: Node) -> Node {
-    let mut e = match statement.kind() {
+    let mut e = match statement.kind_s() {
         "expression_statement" | "throw_statement" => match statement.named_child(0) {
             Some(e) => e,
             None => return statement,
@@ -73,10 +74,10 @@ fn reported_at(statement: Node) -> Node {
         _ => return statement,
     };
     loop {
-        let next = match e.kind() {
+        let next = match e.kind_s() {
             "unary_expression" | "update_expression" => e.named_child(0),
             "cast_expression" => e.child_by_field_name("type"),
-            "object_creation_expression" if e.child(0).is_some_and(|c| c.kind() != "new") => e.named_child(0),
+            "object_creation_expression" if e.child(0).is_some_and(|c| c.kind_s() != "new") => e.named_child(0),
             "object_creation_expression" | "array_creation_expression" => e.child_by_field_name("type"),
             "method_invocation" => e.child_by_field_name("object"),
             "field_access" => e.child_by_field_name("object"),
@@ -101,14 +102,14 @@ fn is_type_declaration(kind: &str) -> bool {
 /// it sits in opens (`class A { class B {} }`). A constructor or an initialiser ends nothing.
 fn shares_a_line_with_a_member(cx: &Ctx, node: Node, row: usize) -> bool {
     let Some(parent) = cx.parent() else { return false };
-    if !matches!(parent.kind(), "class_body" | "interface_body" | "enum_body" | "enum_body_declarations" | "annotation_type_body") {
+    if !matches!(parent.kind_s(), "class_body" | "interface_body" | "enum_body" | "enum_body_declarations" | "annotation_type_body") {
         return false;
     }
-    if is_type_declaration(node.kind()) && parent.start_position().row == row {
+    if is_type_declaration(node.kind_s()) && parent.start_position().row == row {
         return true;
     }
     cx.previous_sibling().is_some_and(|b| {
-        b.end_position().row == row && (is_type_declaration(b.kind()) || (b.kind() == "method_declaration" && b.child_by_field_id(cx.syn.f.body).is_some()))
+        b.end_position().row == row && (is_type_declaration(b.kind_s()) || (b.kind_s() == "method_declaration" && b.child_by_field_id(cx.syn.f.body).is_some()))
     })
 }
 
@@ -121,10 +122,10 @@ pub fn on_resource(cx: &mut Ctx, resource: Node) {
         return;
     }
     let mut before = resource.prev_sibling();
-    while let Some(b) = before.filter(|b| b.is_extra() || b.kind() == ";") {
+    while let Some(b) = before.filter(|b| b.is_extra() || b.kind_s() == ";") {
         before = b.prev_sibling();
     }
-    if before.is_some_and(|b| b.kind() == "resource" && b.end_position().row == resource.start_position().row) {
+    if before.is_some_and(|b| b.kind_s() == "resource" && b.end_position().row == resource.start_position().row) {
         cx.diag("OneStatementPerLine", resource, "Only one statement per line allowed.".into());
     }
 }

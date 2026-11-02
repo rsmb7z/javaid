@@ -49,6 +49,7 @@ pub mod xpathfilter;
 mod tests;
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use crate::syntax::Act;
 use tree_sitter::Node;
 
@@ -70,8 +71,10 @@ pub struct State<'a> {
 
 /// Called for every node in document order. Returns whether to descend into its children.
 pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
+    let kind = cx.syn.kind(node);
+    cx.node_id = node.id();
+    cx.kind_name = if kind.name.is_empty() { node.kind_s() } else { kind.name };
     if node.start_byte() < st.inert_end {
-        let kind = cx.syn.kind(node);
         match kind.act {
             Act::Paren => {
                 whitespace::on_paren(cx, node);
@@ -91,7 +94,7 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
     imports::leave_scopes(&mut st.imports, node);
     declorder::on_node(cx, &mut st.declorder, node);
     gs::on_node(cx, node);
-    match node.kind() {
+    match cx.kind_name {
         "enum_constant" => javadoc::on_variable(cx, node),
         "annotation_type_element_declaration" => {
             javadoc::on_method(cx, node);
@@ -99,7 +102,6 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
         }
         _ => {}
     }
-    let kind = cx.syn.kind(node);
     if kind.pad_token {
         whitespace::on_token(cx, node);
         wrap::on_token(cx, node);
@@ -145,7 +147,7 @@ pub fn visit<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>, node: Node) -> bool {
             design::on_type_decl(cx, &mut st.design, node);
             importcheck::on_class_decl(cx, &mut st.importcheck, node);
             design::on_class(cx, node);
-            if node.kind() == "interface_declaration" {
+            if node.kind_s() == "interface_declaration" {
                 design::on_interface(cx, node);
             }
         }

@@ -5,6 +5,7 @@
 //! read gets one parse-error finding per such module, and nothing else (see `javadoc_tags`).
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use crate::rules::javadoc_tags::{self, Javadoc};
 use crate::rules::{javadoc_tree, javadoc_tree_checks};
 use tree_sitter::Node;
@@ -80,8 +81,8 @@ pub fn on_javadoc(cx: &mut Ctx, comment: Node, decl: Node) {
     }
     if let Some(opts) = &cfg.atclause_order {
         // Without modifiers, a generic method's Javadoc hangs on its TYPE_PARAMETERS, not on the METHOD_DEF.
-        let on_type_params = matches!(decl.kind(), "method_declaration" | "constructor_declaration") && decl.named_child(0).is_some_and(|c| c.kind() == "type_parameters");
-        if !on_type_params && token_of(decl.kind()).is_some_and(|t| opts.target.iter().any(|x| x == t)) {
+        let on_type_params = matches!(decl.kind_s(), "method_declaration" | "constructor_declaration") && decl.named_child(0).is_some_and(|c| c.kind_s() == "type_parameters");
+        if !on_type_params && token_of(decl.kind_s()).is_some_and(|t| opts.target.iter().any(|x| x == t)) {
             let mut max_seen = 0usize;
             for tag in &doc.tags {
                 if let Some(i) = opts.tag_order.iter().position(|o| *o == format!("@{}", tag.name)) {

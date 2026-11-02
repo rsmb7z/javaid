@@ -6,6 +6,7 @@
 //! enclosing types up to the first one marked `static` (a record always counts as static).
 
 use crate::config::HiddenField;
+use crate::syntax::KindExt;
 use crate::engine::Ctx;
 use crate::rules::util::has_modifier;
 use tree_sitter::Node;
@@ -36,13 +37,13 @@ pub fn on_param(cx: &mut Ctx, param: Node) {
         return;
     }
     // The components of a record are fields, not parameters.
-    if param.parent().and_then(|l| l.parent()).is_some_and(|o| o.kind() == "record_declaration") {
+    if cx.parent_of(param).and_then(|l| cx.parent_of(l)).is_some_and(|o| o.kind_s() == "record_declaration") {
         return;
     }
-    let name = match param.kind() {
+    let name = match param.kind_s() {
         "formal_parameter" | "catch_formal_parameter" => param.child_by_field_id(cx.syn.f.name),
         // The name sits in a declarator, as in the final-parameter rule.
-        "spread_parameter" => param.children(&mut param.walk()).filter(|c| c.kind() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)),
+        "spread_parameter" => param.children(&mut param.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)),
         _ => None,
     };
     if let Some(name) = name {
@@ -75,7 +76,7 @@ pub fn on_pattern(cx: &mut Ctx, node: Node) {
         return;
     }
     let last = node.named_child_count().checked_sub(1).and_then(|i| node.named_child(i as u32));
-    if let Some(name) = last.filter(|c| c.kind() == "identifier") {
+    if let Some(name) = last.filter(|c| c.kind_s() == "identifier") {
         check(cx, node, name, Kind::Pattern);
     }
 }
@@ -87,7 +88,7 @@ pub fn on_lambda(cx: &mut Ctx, node: Node) {
         return;
     }
     let Some(params) = node.child_by_field_id(cx.syn.f.parameters) else { return };
-    match params.kind() {
+    match params.kind_s() {
         "identifier" => {
             if hides(cx, node, cx.text(params)) {
                 report(cx, params);
@@ -95,7 +96,7 @@ pub fn on_lambda(cx: &mut Ctx, node: Node) {
         }
         "inferred_parameters" => {
             let mut cur = params.walk();
-            for p in params.named_children(&mut cur).filter(|p| p.kind() == "identifier") {
+            for p in params.named_children(&mut cur).filter(|p| p.kind_s() == "identifier") {
                 check(cx, params, p, Kind::Param);
             }
         }
@@ -111,7 +112,7 @@ fn report(cx: &mut Ctx, name: Node) {
 fn check(cx: &mut Ctx, decl: Node, name: Node, kind: Kind) {
     let cfg = cx.cfg;
     let Some(opts) = &cfg.hidden_field else { return };
-    if in_interface(decl) {
+    if in_interface(cx, decl) {
         return;
     }
     let text = cx.text(name);
@@ -128,15 +129,15 @@ fn check(cx: &mut Ctx, decl: Node, name: Node, kind: Kind) {
 }
 
 /// The nearest enclosing type body is an interface or annotation (an anonymous class is not).
-fn in_interface(decl: Node) -> bool {
-    let mut p = decl.parent();
+fn in_interface<'a>(cx: &Ctx<'a>, decl: Node<'a>) -> bool {
+    let mut p = cx.parent_of(decl);
     while let Some(n) = p {
-        match n.kind() {
+        match n.kind_s() {
             "class_declaration" | "enum_declaration" | "enum_constant" | "record_declaration" | "object_creation_expression" => return false,
             "interface_declaration" | "annotation_type_declaration" => return true,
             _ => {}
         }
-        p = n.parent();
+        p = cx.parent_of(n);
     }
     false
 }
@@ -150,7 +151,7 @@ fn fields_of(cx: &Ctx, frame: Node, name: &[u8]) -> (bool, bool) {
     let (mut instance, mut stat) = (false, false);
     let mut scan = |members: Node| {
         let mut cur = members.walk();
-        for field in members.children(&mut cur).filter(|c| c.kind() == "field_declaration") {
+        for field in members.children(&mut cur).filter(|c| c.kind_s() == "field_declaration") {
             let mut dc = field.walk();
             let declares = field.children_by_field_id(cx.syn.f.declarator, &mut dc).any(|d| d.child_by_field_id(cx.syn.f.name).is_some_and(|n| cx.text(n) == name));
             if declares {
@@ -163,27 +164,27 @@ fn fields_of(cx: &Ctx, frame: Node, name: &[u8]) -> (bool, bool) {
         }
     };
     if let Some(body) = frame.child_by_field_id(cx.syn.f.body) {
-        match body.kind() {
+        match body.kind_s() {
             "enum_body" => {
                 let mut cur = body.walk();
-                for part in body.children(&mut cur).filter(|c| c.kind() == "enum_body_declarations") {
+                for part in body.children(&mut cur).filter(|c| c.kind_s() == "enum_body_declarations") {
                     scan(part);
                 }
             }
             _ => scan(body),
         }
     }
-    if frame.kind() == "enum_constant" {
-        if let Some(body) = frame.children(&mut frame.walk()).find(|c| c.kind() == "class_body") {
+    if frame.kind_s() == "enum_constant" {
+        if let Some(body) = frame.children(&mut frame.walk()).find(|c| c.kind_s() == "class_body") {
             scan(body);
         }
     }
     // The components of a record are its instance fields.
-    if frame.kind() == "record_declaration" {
+    if frame.kind_s() == "record_declaration" {
         if let Some(list) = frame.child_by_field_id(cx.syn.f.parameters) {
             let mut cur = list.walk();
-            for p in list.children(&mut cur).filter(|c| matches!(c.kind(), "formal_parameter" | "spread_parameter")) {
-                let declared = p.child_by_field_id(cx.syn.f.name).or_else(|| p.children(&mut p.walk()).filter(|c| c.kind() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)));
+            for p in list.children(&mut cur).filter(|c| matches!(c.kind_s(), "formal_parameter" | "spread_parameter")) {
+                let declared = p.child_by_field_id(cx.syn.f.name).or_else(|| p.children(&mut p.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)));
                 if declared.is_some_and(|n| cx.text(n) == name) {
                     instance = true;
                 }
@@ -194,18 +195,18 @@ fn fields_of(cx: &Ctx, frame: Node, name: &[u8]) -> (bool, bool) {
 }
 
 fn is_static_frame(cx: &Ctx, frame: Node) -> bool {
-    frame.kind() == "record_declaration" || (frame.kind() != "enum_constant" && has_modifier(cx, frame, b"static"))
+    frame.kind_s() == "record_declaration" || (frame.kind_s() != "enum_constant" && has_modifier(cx, frame, b"static"))
 }
 
 /// Whether `name`, declared at `at`, has the name of a field it can hide.
 fn hides(cx: &Ctx, at: Node, name: &[u8]) -> bool {
     let mut frames = Vec::new();
-    let mut p = at.parent();
+    let mut p = cx.parent_of(at);
     while let Some(n) = p {
-        if is_frame(n.kind()) {
+        if is_frame(n.kind_s()) {
             frames.push(n);
         }
-        p = n.parent();
+        p = cx.parent_of(n);
     }
     let mut instance_visible = true;
     let mut static_seen = false;
@@ -227,47 +228,47 @@ fn hides(cx: &Ctx, at: Node, name: &[u8]) -> bool {
 /// anonymous class) or a variable declaration decides by its own `static`; anything else, a
 /// constructor included, is passed through.
 fn in_static(cx: &Ctx, at: Node) -> bool {
-    let mut p = at.parent();
+    let mut p = cx.parent_of(at);
     while let Some(n) = p {
-        match n.kind() {
+        match n.kind_s() {
             "static_initializer" => return true,
-            "method_declaration" if !in_anonymous_class(n) => return has_modifier(cx, n, b"static"),
+            "method_declaration" if !in_anonymous_class(cx, n) => return has_modifier(cx, n, b"static"),
             "field_declaration" | "local_variable_declaration" => return has_modifier(cx, n, b"static"),
             _ => {}
         }
-        p = n.parent();
+        p = cx.parent_of(n);
     }
     false
 }
 
-fn in_anonymous_class(method: Node) -> bool {
-    let mut p = method.parent();
+fn in_anonymous_class<'a>(cx: &Ctx<'a>, method: Node<'a>) -> bool {
+    let mut p = cx.parent_of(method);
     while let Some(n) = p {
-        match n.kind() {
+        match n.kind_s() {
             "object_creation_expression" => return true,
             "class_declaration" | "enum_declaration" | "record_declaration" | "interface_declaration" | "enum_constant" | "annotation_type_declaration" => return false,
             _ => {}
         }
-        p = n.parent();
+        p = cx.parent_of(n);
     }
     false
 }
 
 fn ignored_param(cx: &Ctx, opts: &HiddenField, param: Node, name: &[u8]) -> bool {
-    let list = param.parent();
-    let owner = list.and_then(|l| l.parent());
+    let list = cx.parent_of(param);
+    let owner = list.and_then(|l| cx.parent_of(l));
     let Some(owner) = owner else { return false };
-    if opts.ignore_constructor_parameter && owner.kind() == "constructor_declaration" && param.kind() != "catch_formal_parameter" {
+    if opts.ignore_constructor_parameter && owner.kind_s() == "constructor_declaration" && param.kind_s() != "catch_formal_parameter" {
         return true;
     }
-    if owner.kind() != "method_declaration" {
+    if owner.kind_s() != "method_declaration" {
         return false;
     }
     if opts.ignore_abstract_methods && has_modifier(cx, owner, b"abstract") {
         return true;
     }
     if opts.ignore_setter {
-        let count = list.map_or(0, |l| l.named_children(&mut l.walk()).filter(|c| matches!(c.kind(), "formal_parameter" | "spread_parameter" | "receiver_parameter")).count());
+        let count = list.map_or(0, |l| l.named_children(&mut l.walk()).filter(|c| matches!(c.kind_s(), "formal_parameter" | "spread_parameter" | "receiver_parameter")).count());
         return count == 1 && is_setter(cx, opts, owner, name);
     }
     false
@@ -286,7 +287,7 @@ fn is_setter(cx: &Ctx, opts: &HiddenField, method: Node, name: &[u8]) -> bool {
         return false;
     }
     let Some(ty) = method.child_by_field_id(cx.syn.f.type_) else { return false };
-    if ty.kind() == "void_type" {
+    if ty.kind_s() == "void_type" {
         return true;
     }
     if !opts.setter_can_return_its_class {
@@ -295,12 +296,12 @@ fn is_setter(cx: &Ctx, opts: &HiddenField, method: Node, name: &[u8]) -> bool {
     // Checkstyle compares the first token of the return type with the names of the enclosing
     // classes and enums.
     let first = leading_identifier(ty);
-    let mut p = method.parent();
+    let mut p = cx.parent_of(method);
     while let Some(n) = p {
-        if matches!(n.kind(), "class_declaration" | "enum_declaration") && n.child_by_field_id(cx.syn.f.name).is_some_and(|nm| Some(cx.text(nm)) == first.map(|f| cx.text(f))) {
+        if matches!(n.kind_s(), "class_declaration" | "enum_declaration") && n.child_by_field_id(cx.syn.f.name).is_some_and(|nm| Some(cx.text(nm)) == first.map(|f| cx.text(f))) {
             return true;
         }
-        p = n.parent();
+        p = cx.parent_of(n);
     }
     false
 }
@@ -308,7 +309,7 @@ fn is_setter(cx: &Ctx, opts: &HiddenField, method: Node, name: &[u8]) -> bool {
 /// The simple type name a return type starts with: not for `a.B` or `B[]`, whose first token is a
 /// dot or a bracket; `Foo<X>` starts with `Foo`.
 fn leading_identifier(ty: Node) -> Option<Node> {
-    match ty.kind() {
+    match ty.kind_s() {
         "type_identifier" => Some(ty),
         "generic_type" => ty.named_child(0).and_then(leading_identifier),
         _ => None,

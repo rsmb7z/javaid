@@ -5,6 +5,7 @@
 //! naming and hidden-field rules.
 
 use crate::config::AbbreviationAsWordInName;
+use crate::syntax::KindExt;
 use crate::engine::Ctx;
 use crate::rules::util::has_modifier;
 use tree_sitter::Node;
@@ -55,7 +56,7 @@ fn report(cx: &mut Ctx, opts: &AbbreviationAsWordInName, name: Node) {
 }
 
 pub fn on_type_decl(cx: &mut Ctx, node: Node) {
-    let token = match node.kind() {
+    let token = match node.kind_s() {
         "class_declaration" => "CLASS_DEF",
         "interface_declaration" => "INTERFACE_DEF",
         "enum_declaration" => "ENUM_DEF",
@@ -73,7 +74,7 @@ pub fn on_type_decl(cx: &mut Ctx, node: Node) {
     let Some(body) = node.child_by_field_id(cx.syn.f.body) else { return };
     let mut cur = body.walk();
     for member in body.named_children(&mut cur) {
-        match member.kind() {
+        match member.kind_s() {
             "annotation_type_element_declaration" if opts.tokens.iter().any(|t| t == "ANNOTATION_FIELD_DEF") => {
                 if let Some(name) = member.child_by_field_id(cx.syn.f.name) {
                     report(cx, opts, name);
@@ -91,10 +92,10 @@ pub fn on_type_decl(cx: &mut Ctx, node: Node) {
 
 fn has_override(cx: &Ctx, method: Node) -> bool {
     let mut cur = method.walk();
-    let Some(mods) = method.children(&mut cur).find(|c| c.kind() == "modifiers") else { return false };
+    let Some(mods) = method.children(&mut cur).find(|c| c.kind_s() == "modifiers") else { return false };
     let mut inner = mods.walk();
     let found = mods.children(&mut inner).any(|c| {
-        matches!(c.kind(), "marker_annotation" | "annotation") && c.child_by_field_id(cx.syn.f.name).is_some_and(|n| cx.text(n) == b"Override")
+        matches!(c.kind_s(), "marker_annotation" | "annotation") && c.child_by_field_id(cx.syn.f.name).is_some_and(|n| cx.text(n) == b"Override")
     });
     found
 }
@@ -121,7 +122,7 @@ fn ignored_by_modifiers(cx: &Ctx, decl: Node, opts: &AbbreviationAsWordInName) -
 
 pub fn on_field(cx: &mut Ctx, node: Node) {
     let Some(opts) = wants(cx, "VARIABLE_DEF") else { return };
-    let in_interface = cx.parent().is_some_and(|p| matches!(p.kind(), "interface_body" | "annotation_type_body"));
+    let in_interface = cx.parent().is_some_and(|p| matches!(p.kind_s(), "interface_body" | "annotation_type_body"));
     let ignore = if in_interface { opts.ignore_static_final } else { ignored_by_modifiers(cx, node, opts) };
     if ignore {
         return;
@@ -158,11 +159,11 @@ pub fn on_enhanced_for(cx: &mut Ctx, node: Node) {
 }
 
 pub fn on_param(cx: &mut Ctx, node: Node) {
-    let record = node.parent().and_then(|l| l.parent()).is_some_and(|o| o.kind() == "record_declaration");
+    let record = node.parent().and_then(|l| l.parent()).is_some_and(|o| o.kind_s() == "record_declaration");
     let Some(opts) = wants(cx, if record { "RECORD_COMPONENT_DEF" } else { "PARAMETER_DEF" }) else { return };
-    let name = match node.kind() {
+    let name = match node.kind_s() {
         "formal_parameter" | "catch_formal_parameter" => node.child_by_field_id(cx.syn.f.name),
-        "spread_parameter" => node.children(&mut node.walk()).filter(|c| c.kind() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)),
+        "spread_parameter" => node.children(&mut node.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)),
         _ => None,
     };
     if let Some(name) = name {
@@ -173,11 +174,11 @@ pub fn on_param(cx: &mut Ctx, node: Node) {
 pub fn on_lambda(cx: &mut Ctx, node: Node) {
     let Some(opts) = wants(cx, "PARAMETER_DEF") else { return };
     let Some(params) = node.child_by_field_id(cx.syn.f.parameters) else { return };
-    match params.kind() {
+    match params.kind_s() {
         // A lone `x ->` parameter is a bare IDENT in Checkstyle's tree, not a PARAMETER_DEF.
         "inferred_parameters" => {
             let mut cur = params.walk();
-            for p in params.named_children(&mut cur).filter(|p| p.kind() == "identifier") {
+            for p in params.named_children(&mut cur).filter(|p| p.kind_s() == "identifier") {
                 report(cx, opts, p);
             }
         }
@@ -195,7 +196,7 @@ pub fn on_instanceof(cx: &mut Ctx, node: Node) {
 pub fn on_pattern(cx: &mut Ctx, node: Node) {
     let Some(opts) = wants(cx, "PATTERN_VARIABLE_DEF") else { return };
     let last = node.named_child_count().checked_sub(1).and_then(|i| node.named_child(i as u32));
-    if let Some(name) = last.filter(|c| c.kind() == "identifier") {
+    if let Some(name) = last.filter(|c| c.kind_s() == "identifier") {
         report(cx, opts, name);
     }
 }

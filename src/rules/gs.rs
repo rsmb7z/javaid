@@ -5,6 +5,7 @@
 //! first token, annotations included.
 
 use crate::config::Format;
+use crate::syntax::KindExt;
 use crate::engine::Ctx;
 use crate::rules::util::has_modifier;
 use tree_sitter::Node;
@@ -57,19 +58,20 @@ pub const NO_LINE_WRAP_ACCEPTED: &[&str] =
     &["IMPORT", "STATIC_IMPORT", "MODULE_IMPORT", "PACKAGE_DEF", "CLASS_DEF", "METHOD_DEF", "CTOR_DEF", "ENUM_DEF", "INTERFACE_DEF", "RECORD_DEF", "COMPACT_CTOR_DEF", "MODULE_DEF"];
 
 pub fn on_node(cx: &mut Ctx, node: Node) {
-    if cx.cfg.gs.one_top_level_class && node.kind() == "program" {
+    let kind = cx.kind_name;
+    if cx.cfg.gs.one_top_level_class && kind == "program" {
         one_top_level_class(cx, node);
     }
-    if cx.cfg.gs.no_finalizer && node.kind() == "method_declaration" {
+    if cx.cfg.gs.no_finalizer && kind == "method_declaration" {
         no_finalizer(cx, node);
     }
     if let Some(order) = cx.cfg.gs.constructors_grouping {
-        if matches!(node.kind(), "class_declaration" | "enum_declaration" | "record_declaration") {
+        if matches!(kind, "class_declaration" | "enum_declaration" | "record_declaration") {
             constructors_grouping(cx, node, order);
         }
     }
     if let Some(order) = cx.cfg.gs.overload_methods {
-        let body = match node.kind() {
+        let body = match kind {
             "class_declaration" | "interface_declaration" | "record_declaration" | "enum_declaration" => node.child_by_field_id(cx.syn.f.body),
             "object_creation_expression" => child_of_kind(node, "class_body"),
             _ => None,
@@ -78,31 +80,31 @@ pub fn on_node(cx: &mut Ctx, node: Node) {
             overload_order(cx, body, order);
         }
     }
-    if cx.cfg.gs.missing_override_on_record_accessor && node.kind() == "method_declaration" {
+    if cx.cfg.gs.missing_override_on_record_accessor && kind == "method_declaration" {
         record_accessor(cx, node);
     }
-    if cx.cfg.gs.no_whitespace_before_case_default_colon && node.kind() == ":" {
+    if cx.cfg.gs.no_whitespace_before_case_default_colon && kind == ":" {
         case_default_colon(cx, node);
     }
     if let Some(tokens) = &cx.cfg.gs.whitespace_before_empty_body {
-        whitespace_before_empty_body(cx, node, tokens);
+        whitespace_before_empty_body(cx, node, kind, tokens);
     }
     for i in 0..cx.cfg.gs.annotation_location.len() {
         let opts = &cx.cfg.gs.annotation_location[i];
-        annotation_location(cx, node, opts);
+        annotation_location(cx, node, kind, opts);
     }
     if let Some(opts) = &cx.cfg.gs.avoid_module_import {
-        if node.kind() == "program" {
+        if kind == "program" {
             avoid_module_import(cx, node, opts);
         }
     }
     if let Some(opts) = &cx.cfg.gs.module_directive_order {
-        if node.kind() == "module_declaration" {
+        if kind == "module_declaration" {
             module_directive_order(cx, node, opts);
         }
     }
     if let Some(opts) = &cx.cfg.gs.single_space_separator {
-        if matches!(node.kind(), "package_declaration" | "import_declaration") {
+        if matches!(kind, "package_declaration" | "import_declaration") {
             // The walk does not enter these: look at their tokens here.
             let mut stack = vec![node];
             while let Some(n) = stack.pop() {
@@ -115,24 +117,24 @@ pub fn on_node(cx: &mut Ctx, node: Node) {
             single_space_separator(cx, node, opts.validate_comments);
         }
     }
-    if cx.cfg.gs.array_bracket_no_whitespace && matches!(node.kind(), "[" | "]") {
+    if cx.cfg.gs.array_bracket_no_whitespace && matches!(kind, "[" | "]") {
         array_bracket_no_whitespace(cx, node);
     }
     if !cx.cfg.gs.illegal_token_text.is_empty() {
-        if matches!(node.kind(), "package_declaration" | "import_declaration") {
+        if matches!(kind, "package_declaration" | "import_declaration") {
             illegal_token_text_inside(cx, node);
         } else {
-            illegal_token_text(cx, node);
+            illegal_token_text(cx, node, kind);
         }
     }
     if let Some(opts) = &cx.cfg.gs.no_line_wrap {
-        no_line_wrap(cx, node, opts);
+        no_line_wrap(cx, node, kind, opts);
     }
-    if cx.cfg.gs.outer_type_filename && node.kind() == "program" {
+    if cx.cfg.gs.outer_type_filename && kind == "program" {
         outer_type_filename(cx, node);
     }
     if let Some(match_directory) = cx.cfg.gs.package_declaration {
-        match node.kind() {
+        match kind {
             "program" => missing_package(cx, node),
             "package_declaration" if match_directory => package_directory(cx, node),
             _ => {}
@@ -147,7 +149,7 @@ pub fn full_ident(cx: &Ctx, name: Node) -> String {
     let mut stack = vec![name];
     while let Some(n) = stack.pop() {
         if n.child_count() == 0 {
-            if !n.is_extra() && n.kind() != "." {
+            if !n.is_extra() && n.kind_s() != "." {
                 parts.push(String::from_utf8_lossy(cx.text(n)).into_owned());
             }
             continue;
@@ -165,7 +167,7 @@ fn missing_package(cx: &mut Ctx, program: Node) {
     let mut cur = program.walk();
     let kids: Vec<Node> = program.children(&mut cur).filter(|c| !c.is_extra()).collect();
     let Some(first) = kids.first() else { return };
-    if kids.iter().any(|c| matches!(c.kind(), "package_declaration" | "module_declaration")) {
+    if kids.iter().any(|c| matches!(c.kind_s(), "package_declaration" | "module_declaration")) {
         return;
     }
     cx.diag("PackageDeclaration", *first, "Missing package declaration.".into());
@@ -176,8 +178,8 @@ fn package_directory(cx: &mut Ctx, decl: Node) {
     let Some(path) = cx.path else { return };
     let mut cur = decl.walk();
     let kids: Vec<Node> = decl.children(&mut cur).collect();
-    let Some(name) = kids.iter().rev().find(|c| matches!(c.kind(), "scoped_identifier" | "identifier")) else { return };
-    let Some(keyword) = kids.iter().find(|c| c.kind() == "package") else { return };
+    let Some(name) = kids.iter().rev().find(|c| matches!(c.kind_s(), "scoped_identifier" | "identifier")) else { return };
+    let Some(keyword) = kids.iter().find(|c| c.kind_s() == "package") else { return };
     let package = full_ident(cx, *name).replace('.', "/");
     let absolute = std::path::absolute(path).unwrap_or_else(|_| path.to_path_buf());
     let dir = absolute.parent().map(|d| d.to_string_lossy().into_owned()).unwrap_or_default();
@@ -191,7 +193,7 @@ fn package_directory(cx: &mut Ctx, decl: Node) {
 fn parameter_count(cx: &Ctx, decl: Node) -> usize {
     let Some(params) = decl.child_by_field_id(cx.syn.f.parameters) else { return 0 };
     let mut cur = params.walk();
-    let n = params.children(&mut cur).filter(|c| matches!(c.kind(), "formal_parameter" | "spread_parameter" | "receiver_parameter")).count();
+    let n = params.children(&mut cur).filter(|c| matches!(c.kind_s(), "formal_parameter" | "spread_parameter" | "receiver_parameter")).count();
     n
 }
 
@@ -217,7 +219,7 @@ fn one_top_level_class(cx: &mut Ctx, program: Node) {
     let mut public_found = false;
     let mut first: Option<Node> = None;
     let mut cur = program.walk();
-    let types: Vec<Node> = program.children(&mut cur).filter(|c| is_type_declaration(c.kind())).collect();
+    let types: Vec<Node> = program.children(&mut cur).filter(|c| is_type_declaration(c.kind_s())).collect();
     for ty in types {
         let public = has_modifier(cx, ty, b"public");
         if public {
@@ -246,7 +248,7 @@ fn one_top_level_class(cx: &mut Ctx, program: Node) {
 fn outer_type_filename(cx: &mut Ctx, program: Node) {
     let Some(path) = cx.path else { return };
     let mut cur = program.walk();
-    let types: Vec<Node> = program.children(&mut cur).filter(|c| is_type_declaration(c.kind())).collect();
+    let types: Vec<Node> = program.children(&mut cur).filter(|c| is_type_declaration(c.kind_s())).collect();
     let Some(first) = types.first() else { return };
     let file = path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
     // Java's `\.[^.]*$`: the last dot and what follows it.
@@ -260,7 +262,7 @@ fn outer_type_filename(cx: &mut Ctx, program: Node) {
 /// The first child of `node` of this kind.
 fn child_of_kind<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
     let mut cur = node.walk();
-    let found = node.children(&mut cur).find(|c| c.kind() == kind);
+    let found = node.children(&mut cur).find(|c| c.kind_s() == kind);
     found
 }
 
@@ -268,7 +270,7 @@ fn child_of_kind<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
 fn after_annotated_modifiers<'a>(decl: Node<'a>) -> Option<Node<'a>> {
     let mods = child_of_kind(decl, "modifiers")?;
     let mut cur = mods.walk();
-    let annotated = mods.children(&mut cur).any(|m| matches!(m.kind(), "annotation" | "marker_annotation"));
+    let annotated = mods.children(&mut cur).any(|m| matches!(m.kind_s(), "annotation" | "marker_annotation"));
     if !annotated {
         return None;
     }
@@ -281,15 +283,14 @@ fn after_annotated_modifiers<'a>(decl: Node<'a>) -> Option<Node<'a>> {
 
 /// `NoLineWrap`: a package, import or declaration header written on one line, from its first token
 /// (past the annotations, unless `skipAnnotations` is off) to the `;` or `{` that ends it.
-fn no_line_wrap(cx: &mut Ctx, node: Node, opts: &NoLineWrap) {
-    let kind = node.kind();
+fn no_line_wrap(cx: &mut Ctx, node: Node, kind: &str, opts: &NoLineWrap) {
     let token = match kind {
         "package_declaration" => "PACKAGE_DEF",
         "import_declaration" => {
             let mut cur = node.walk();
             let mut modifier = "IMPORT";
             for c in node.children(&mut cur) {
-                match c.kind() {
+                match c.kind_s() {
                     "static" => modifier = "STATIC_IMPORT",
                     "module" => modifier = "MODULE_IMPORT",
                     _ => {}
@@ -321,10 +322,10 @@ fn no_line_wrap(cx: &mut Ctx, node: Node, opts: &NoLineWrap) {
             let keyword = child_of_kind(node, if token == "PACKAGE_DEF" { "package" } else { "import" });
             let Some(keyword) = keyword else { return };
             let mut cur = node.walk();
-            let annotated = node.children(&mut cur).any(|c| matches!(c.kind(), "annotation" | "marker_annotation"));
+            let annotated = node.children(&mut cur).any(|c| matches!(c.kind_s(), "annotation" | "marker_annotation"));
             let first = if token == "PACKAGE_DEF" && annotated && opts.skip_annotations {
                 // The name's outermost token: Checkstyle's `DOT` sits at its last dot.
-                let name = node.children(&mut cur).filter(|c| matches!(c.kind(), "scoped_identifier" | "identifier")).last();
+                let name = node.children(&mut cur).filter(|c| matches!(c.kind_s(), "scoped_identifier" | "identifier")).last();
                 match name {
                     Some(n) => child_of_kind(n, ".").map_or(row(n), row),
                     None => row(keyword),
@@ -339,8 +340,8 @@ fn no_line_wrap(cx: &mut Ctx, node: Node, opts: &NoLineWrap) {
             // first token after them.
             let mut cur = node.walk();
             let kids: Vec<Node> = node.children(&mut cur).filter(|c| !c.is_extra()).collect();
-            let annotated = kids.iter().any(|c| matches!(c.kind(), "annotation" | "marker_annotation"));
-            let first = match kids.iter().find(|c| !matches!(c.kind(), "annotation" | "marker_annotation")).filter(|_| annotated && opts.skip_annotations) {
+            let annotated = kids.iter().any(|c| matches!(c.kind_s(), "annotation" | "marker_annotation"));
+            let first = match kids.iter().find(|c| !matches!(c.kind_s(), "annotation" | "marker_annotation")).filter(|_| annotated && opts.skip_annotations) {
                 Some(n) => row(*n),
                 None => row(node),
             };
@@ -371,10 +372,10 @@ fn members<'a>(body: Node<'a>) -> Vec<Node<'a>> {
     let mut out = Vec::new();
     let mut cur = body.walk();
     for c in body.children(&mut cur) {
-        if c.is_extra() || matches!(c.kind(), "{" | "}") {
+        if c.is_extra() || matches!(c.kind_s(), "{" | "}") {
             continue;
         }
-        if c.kind() == "enum_body_declarations" {
+        if c.kind_s() == "enum_body_declarations" {
             let mut inner = c.walk();
             out.extend(c.children(&mut inner).filter(|m| !m.is_extra()));
         } else {
@@ -385,7 +386,7 @@ fn members<'a>(body: Node<'a>) -> Vec<Node<'a>> {
 }
 
 fn is_constructor(n: Node) -> bool {
-    matches!(n.kind(), "constructor_declaration" | "compact_constructor_declaration")
+    matches!(n.kind_s(), "constructor_declaration" | "compact_constructor_declaration")
 }
 
 /// `ConstructorsDeclarationGrouping`: once the first constructor is met, every member up to the
@@ -409,7 +410,7 @@ fn constructors_grouping(cx: &mut Ctx, ty: Node, order_by_count: bool) {
         let mut previous = 0usize;
         let mut ordered = true;
         for ctor in children.iter().filter(|c| is_constructor(**c)) {
-            let count = if ctor.kind() == "constructor_declaration" { parameter_count(cx, *ctor) } else { 0 };
+            let count = if ctor.kind_s() == "constructor_declaration" { parameter_count(cx, *ctor) } else { 0 };
             ordered = ordered && count >= previous;
             previous = count;
             if !ordered {
@@ -429,7 +430,7 @@ fn overload_order(cx: &mut Ctx, body: Node, order_by_count: bool) {
     let mut seen: HashMap<Vec<u8>, (usize, u32, usize, bool)> = HashMap::new();
     let mut index = 0usize;
     for (i, child) in children.iter().enumerate() {
-        if child.kind() != "method_declaration" {
+        if child.kind_s() != "method_declaration" {
             continue;
         }
         index += 1;
@@ -439,7 +440,7 @@ fn overload_order(cx: &mut Ctx, body: Node, order_by_count: bool) {
         let line = child.start_position().row as u32 + 1;
         let mut ordered = true;
         if let Some(&(previous_index, previous_line, previous_count, previous_ordered)) = seen.get(&name) {
-            let previous_is_method = i > 0 && children[i - 1].kind() == "method_declaration";
+            let previous_is_method = i > 0 && children[i - 1].kind_s() == "method_declaration";
             if !previous_is_method || index - previous_index > 1 {
                 cx.diag("OverloadMethodsDeclarationOrder", *child, format!("All overloaded methods should be placed next to each other. Previous overloaded method located at line '{}'.", crate::engine::grouped(previous_line)));
             }
@@ -459,7 +460,7 @@ fn overload_order(cx: &mut Ctx, body: Node, order_by_count: bool) {
 fn annotation_names(cx: &Ctx, decl: Node) -> Vec<String> {
     let Some(mods) = child_of_kind(decl, "modifiers") else { return Vec::new() };
     let mut cur = mods.walk();
-    let kids: Vec<Node> = mods.children(&mut cur).filter(|m| matches!(m.kind(), "annotation" | "marker_annotation")).collect();
+    let kids: Vec<Node> = mods.children(&mut cur).filter(|m| matches!(m.kind_s(), "annotation" | "marker_annotation")).collect();
     kids.into_iter().filter_map(|a| a.child_by_field_id(cx.syn.f.name)).map(|n| full_ident(cx, n)).collect()
 }
 
@@ -467,14 +468,14 @@ fn annotation_names(cx: &Ctx, decl: Node) -> Vec<String> {
 /// record it is declared in, needs `@Override`.
 fn record_accessor(cx: &mut Ctx, method: Node) {
     let (Some(body), Some(record)) = (cx.ancestor(0), cx.ancestor(1)) else { return };
-    if body.kind() != "class_body" || record.kind() != "record_declaration" || parameter_count(cx, method) != 0 {
+    if body.kind_s() != "class_body" || record.kind_s() != "record_declaration" || parameter_count(cx, method) != 0 {
         return;
     }
     let Some(name) = method.child_by_field_id(cx.syn.f.name) else { return };
     let Some(components) = record.child_by_field_id(cx.syn.f.parameters) else { return };
     let mut cur = components.walk();
     let is_component = components.children(&mut cur).any(|c| {
-        let declared = match c.kind() {
+        let declared = match c.kind_s() {
             "formal_parameter" => c.child_by_field_id(cx.syn.f.name),
             "spread_parameter" => child_of_kind(c, "variable_declarator").and_then(|d| d.child_by_field_id(cx.syn.f.name)),
             _ => None,
@@ -492,7 +493,7 @@ fn record_accessor(cx: &mut Ctx, method: Node) {
 /// between them counts as the thing the colon must touch, and it must begin on the colon's line; a
 /// line comment never can. A label that runs over several lines is judged by the line it starts on.
 fn case_default_colon(cx: &mut Ctx, colon: Node) {
-    if cx.parent().is_none_or(|p| p.kind() != "switch_block_statement_group") {
+    if cx.parent().is_none_or(|p| p.kind_s() != "switch_block_statement_group") {
         return;
     }
     let row = colon.start_position().row;
@@ -502,14 +503,14 @@ fn case_default_colon(cx: &mut Ctx, colon: Node) {
     while let Some(p) = prev.filter(|p| p.is_extra()) {
         prev = p.prev_sibling();
     }
-    let Some(label) = prev.filter(|l| l.kind() == "switch_label") else { return };
+    let Some(label) = prev.filter(|l| l.kind_s() == "switch_label") else { return };
     let mut cur = label.walk();
     let kids: Vec<Node> = label.children(&mut cur).filter(|c| !c.is_extra()).collect();
-    let is_default = kids.len() == 1 && kids[0].kind() == "default";
+    let is_default = kids.len() == 1 && kids[0].kind_s() == "default";
     let flagged = if is_default && kids[0].start_position().row != row {
         true
     } else if let Some(c) = comment {
-        c.kind() == "line_comment" || c.start_position().row != row || c.end_byte() != colon.start_byte()
+        c.kind_s() == "line_comment" || c.start_position().row != row || c.end_byte() != colon.start_byte()
     } else if is_default {
         label.end_byte() != colon.start_byte()
     } else {
@@ -529,20 +530,20 @@ pub const WHITESPACE_BEFORE_EMPTY_BODY_TOKENS: &[&str] = &[
 /// Is the body, an opening brace and a closing one with nothing but comments between, empty?
 fn is_empty_body(body: Node) -> bool {
     let mut cur = body.walk();
-    let n = body.children(&mut cur).filter(|c| !c.is_extra() && !matches!(c.kind(), "{" | "}")).count();
-    n == 0 && body.child(0).is_some_and(|c| c.kind() == "{")
+    let n = body.children(&mut cur).filter(|c| !c.is_extra() && !matches!(c.kind_s(), "{" | "}")).count();
+    n == 0 && body.child(0).is_some_and(|c| c.kind_s() == "{")
 }
 
 /// `WhitespaceBeforeEmptyBody`: the `{` of an empty body has a blank, a line break or a comment
 /// before it. The body must be empty, and the `{` is judged against the token before it: only a
 /// token touching it is a finding.
-fn whitespace_before_empty_body(cx: &mut Ctx, node: Node, tokens: &[&'static str]) {
+fn whitespace_before_empty_body(cx: &mut Ctx, node: Node, kind: &str, tokens: &[&'static str]) {
     let on = |t: &str| tokens.contains(&t);
     fn block(n: Option<Node<'_>>) -> Option<Node<'_>> {
-        n.filter(|b| b.kind() == "block")
+        n.filter(|b| b.kind_s() == "block")
     }
     let mut bodies: Vec<Node> = Vec::new();
-    match node.kind() {
+    match kind {
         "method_declaration" if on("METHOD_DEF") => bodies.extend(block(node.child_by_field_id(cx.syn.f.body))),
         "constructor_declaration" if on("CTOR_DEF") => bodies.extend(node.child_by_field_id(cx.syn.f.body)),
         "compact_constructor_declaration" if on("COMPACT_CTOR_DEF") => bodies.extend(node.child_by_field_id(cx.syn.f.body)),
@@ -602,7 +603,7 @@ pub const ANNOTATION_LOCATION_ACCEPTED: &[&str] = &[
 ];
 
 fn is_annotation(n: Node) -> bool {
-    matches!(n.kind(), "annotation" | "marker_annotation")
+    matches!(n.kind_s(), "annotation" | "marker_annotation")
 }
 
 /// The 0-based column of a node in characters, as Checkstyle counts it.
@@ -626,11 +627,11 @@ fn is_parameterized(a: Node) -> bool {
     let Some(args) = a.child_by_field_name("arguments") else { return false };
     let mut cur = args.walk();
     let kids: Vec<Node> = args.children(&mut cur).collect();
-    kids.iter().any(|c| !c.is_extra() && !matches!(c.kind(), "(" | ")" | "," | "element_value_array_initializer") && !is_annotation(*c))
+    kids.iter().any(|c| !c.is_extra() && !matches!(c.kind_s(), "(" | ")" | "," | "element_value_array_initializer") && !is_annotation(*c))
 }
 
-fn annotation_location(cx: &mut Ctx, node: Node, opts: &AnnotationLocation) {
-    let token = match node.kind() {
+fn annotation_location(cx: &mut Ctx, node: Node, kind: &str, opts: &AnnotationLocation) {
+    let token = match kind {
         "package_declaration" => "PACKAGE_DEF",
         "module_declaration" => "MODULE_DEF",
         "class_declaration" => "CLASS_DEF",
@@ -668,7 +669,7 @@ fn annotation_location(cx: &mut Ctx, node: Node, opts: &AnnotationLocation) {
         let last = i + 1 == leading.len();
         let after = if token == "PACKAGE_DEF" && last {
             // Checkstyle's next sibling is the name, at its last dot.
-            kids.iter().rev().find(|c| matches!(c.kind(), "scoped_identifier" | "identifier")).map(|n| child_of_kind(*n, ".").map_or(row(*n), row))
+            kids.iter().rev().find(|c| matches!(c.kind_s(), "scoped_identifier" | "identifier")).map(|n| child_of_kind(*n, ".").map_or(row(*n), row))
         } else if let Some(next) = kids.get(i + 1) {
             Some(row(*next))
         } else {
@@ -703,10 +704,10 @@ pub struct AvoidModuleImport {
 /// used up the `maxAllowedModuleImports` it may have. Every module import counts, excluded or not.
 fn avoid_module_import(cx: &mut Ctx, program: Node, opts: &AvoidModuleImport) {
     let mut cur = program.walk();
-    let imports: Vec<Node> = program.children(&mut cur).filter(|c| c.kind() == "import_declaration" && child_of_kind(*c, "module").is_some()).collect();
+    let imports: Vec<Node> = program.children(&mut cur).filter(|c| c.kind_s() == "import_declaration" && child_of_kind(*c, "module").is_some()).collect();
     for (i, import) in imports.iter().enumerate() {
         let mut inner = import.walk();
-        let name = import.children(&mut inner).find(|c| matches!(c.kind(), "scoped_identifier" | "identifier")).map(|n| full_ident(cx, n)).unwrap_or_default();
+        let name = import.children(&mut inner).find(|c| matches!(c.kind_s(), "scoped_identifier" | "identifier")).map(|n| full_ident(cx, n)).unwrap_or_default();
         if i + 1 > opts.max_allowed && !opts.excludes.contains(&name) {
             let message = if opts.max_allowed > 0 {
                 format!("Only '{}' module import is allowed per file.", opts.max_allowed)
@@ -729,7 +730,7 @@ pub struct ModuleDirectiveOrder {
 pub const MODULE_DIRECTIVES: &[&str] = &["requires", "exports", "opens", "uses", "provides"];
 
 fn directive_kind(n: Node) -> Option<&'static str> {
-    Some(match n.kind() {
+    Some(match n.kind_s() {
         "requires_module_directive" => "requires",
         "exports_module_directive" => "exports",
         "opens_module_directive" => "opens",
@@ -806,6 +807,10 @@ pub struct SingleSpaceSeparator {
 /// `SingleSpaceSeparator`, for the token starting at byte `at`: the blank before it, when there is
 /// one, is a single space, or ends the indentation, or follows a block comment's `*/`.
 fn check_single_space(cx: &mut Ctx, at: Node, byte: usize, validate_comments: bool) {
+    // The usual token follows a character that is no blank: nothing to report, nothing to build.
+    if byte > 0 && cx.src.get(byte - 1).is_some_and(|&b| b < 0x80 && !java_whitespace(b as char)) {
+        return;
+    }
     let before = line_before(cx.src, byte);
     let n = before.len();
     // The column of the character before the token must be at least 2.
@@ -836,7 +841,7 @@ fn check_single_space(cx: &mut Ctx, at: Node, byte: usize, validate_comments: bo
 }
 
 fn single_space_separator(cx: &mut Ctx, node: Node, validate_comments: bool) {
-    match node.kind() {
+    match node.kind_s() {
         "line_comment" if validate_comments => check_single_space(cx, node, node.start_byte(), true),
         "block_comment" if validate_comments => {
             check_single_space(cx, node, node.start_byte(), true);
@@ -847,13 +852,13 @@ fn single_space_separator(cx: &mut Ctx, node: Node, validate_comments: bool) {
         "line_comment" | "block_comment" => {}
         _ if node.child_count() > 0 => {
             // The closing delimiter of a text block is a token of its own; a string is one token.
-            if node.kind() == "string_literal" && cx.text(node).starts_with(b"\"\"\"") {
+            if node.kind_s() == "string_literal" && cx.text(node).starts_with(b"\"\"\"") {
                 let end = node.end_byte() - 3;
                 check_single_space(cx, node, end, validate_comments);
             }
         }
         _ => {
-            if cx.parent().is_some_and(|p| matches!(p.kind(), "string_literal")) {
+            if cx.parent().is_some_and(|p| matches!(p.kind_s(), "string_literal")) {
                 // Pieces of a string: the opening quote starts the literal, the rest are not tokens.
                 if node.prev_sibling().is_some() {
                     return;
@@ -914,7 +919,7 @@ fn needs_space_after_bracket(cx: &Ctx, bracket: Node) -> Option<bool> {
         while let Some(p) = root.parent() {
             root = p;
         }
-        root.descendant_for_byte_range(at, at + 1).and_then(|n| n.parent()).is_some_and(|p| matches!(p.kind(), "type_arguments" | "type_parameters"))
+        root.descendant_for_byte_range(at, at + 1).and_then(|n| n.parent()).is_some_and(|p| matches!(p.kind_s(), "type_arguments" | "type_parameters"))
     } else {
         false
     };
@@ -922,7 +927,7 @@ fn needs_space_after_bracket(cx: &Ctx, bracket: Node) -> Option<bool> {
 }
 
 fn array_bracket_no_whitespace(cx: &mut Ctx, node: Node) {
-    let bracket = node.kind();
+    let bracket = node.kind_s();
     let start = node.start_byte();
     let ws_before = char_before(cx.src, start).is_some_and(java_whitespace);
     let ws_after = char_at(cx.src, node.end_byte()).is_some_and(java_whitespace);
@@ -1008,8 +1013,7 @@ pub fn message_format(pattern: &str, argument: &str) -> Result<String, String> {
     Ok(out)
 }
 
-fn illegal_token_text(cx: &mut Ctx, node: Node) {
-    let kind = node.kind();
+fn illegal_token_text(cx: &mut Ctx, node: Node, kind: &str) {
     // (token, text, position of the token)
     let (token, text, row, col): (&str, std::borrow::Cow<[u8]>, usize, usize) = match kind {
         "identifier" | "type_identifier" => ("IDENT", cx.text(node).into(), node.start_position().row, node.start_position().column),
@@ -1062,7 +1066,7 @@ fn illegal_token_text(cx: &mut Ctx, node: Node) {
 fn illegal_token_text_inside(cx: &mut Ctx, decl: Node) {
     let mut stack = vec![decl];
     while let Some(n) = stack.pop() {
-        illegal_token_text(cx, n);
+        illegal_token_text(cx, n, n.kind_s());
         let mut cur = n.walk();
         let kids: Vec<Node> = n.children(&mut cur).collect();
         stack.extend(kids.into_iter().rev());

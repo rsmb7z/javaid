@@ -8,6 +8,7 @@
 //! introduce, so those are passed over.
 
 use super::tokens::Token;
+use crate::syntax::KindExt;
 use super::pad;
 use crate::config::{CurlyOption, RightCurlyOption};
 use super::whitespace::{is_comment, is_empty_statement, operator_token, punctuation_token};
@@ -19,13 +20,13 @@ pub fn on_token(cx: &mut Ctx, node: Node) {
     if !cx.cfg.separator_wrap.is_empty() {
         separator_wrap(cx, node);
     }
-    if !cx.cfg.left_curly.is_empty() && node.kind() == "{" {
+    if !cx.cfg.left_curly.is_empty() && node.kind_s() == "{" {
         left_curly(cx, node);
     }
-    if cx.cfg.empty_block.is_some() && node.kind() == "{" {
+    if cx.cfg.empty_block.is_some() && node.kind_s() == "{" {
         empty_block(cx, node);
     }
-    if cx.cfg.right_curly.is_some() && node.kind() == "{" {
+    if cx.cfg.right_curly.is_some() && node.kind_s() == "{" {
         right_curly(cx, node);
     }
     if cx.cfg.operator_wrap.is_empty() {
@@ -83,8 +84,8 @@ fn brace_owners<'a>(cx: &Ctx<'a>, brace: Node<'a>) -> Vec<Owner<'a>> {
         Some(l) if cx.text(l).starts_with(b"default") => Token::LiteralDefault,
         _ => Token::LiteralCase,
     };
-    match parent.kind() {
-        "block" => match grand.kind() {
+    match parent.kind_s() {
+        "block" => match grand.kind_s() {
             "method_declaration" => vec![owner(Token::MethodDef, Opens::Block)],
             "compact_constructor_declaration" => vec![owner(Token::CompactCtorDef, Opens::Block)],
             "static_initializer" => vec![owner(Token::StaticInit, Opens::Block)],
@@ -116,7 +117,7 @@ fn brace_owners<'a>(cx: &Ctx<'a>, brace: Node<'a>) -> Vec<Owner<'a>> {
             _ => Vec::new(),
         },
         "constructor_body" => vec![owner(Token::CtorDef, Opens::Block)],
-        "class_body" => match grand.kind() {
+        "class_body" => match grand.kind_s() {
             "class_declaration" => vec![owner(Token::ClassDef, Opens::Members)],
             "record_declaration" => vec![owner(Token::RecordDef, Opens::Members)],
             "enum_constant" => vec![owner(Token::EnumConstantDef, Opens::Members)],
@@ -127,8 +128,8 @@ fn brace_owners<'a>(cx: &Ctx<'a>, brace: Node<'a>) -> Vec<Owner<'a>> {
         "annotation_type_body" => vec![owner(Token::AnnotationDef, Opens::Members)],
         "enum_body" => {
             // `ignoreEnums` excuses an enum only while no annotation comes first.
-            let annotated = grand.children(&mut grand.walk()).find(|c| c.kind() == "modifiers").is_some_and(|m| {
-                m.children(&mut m.walk()).any(|a| matches!(a.kind(), "annotation" | "marker_annotation"))
+            let annotated = grand.children(&mut grand.walk()).find(|c| c.kind_s() == "modifiers").is_some_and(|m| {
+                m.children(&mut m.walk()).any(|a| matches!(a.kind_s(), "annotation" | "marker_annotation"))
             });
             vec![Owner { plain_enum: !annotated, ..owner(Token::EnumDef, Opens::Members) }]
         }
@@ -145,7 +146,7 @@ fn preceding_label(block: Node) -> Option<Node> {
     let mut n = block;
     loop {
         n = n.prev_sibling()?;
-        match n.kind() {
+        match n.kind_s() {
             "switch_label" => return Some(n),
             ":" | "->" => {}
             _ if is_comment(n) => {}
@@ -167,8 +168,8 @@ fn previous_non_comment(mut n: Node) -> Option<Node> {
 /// the first run of annotations among its modifiers.
 fn declaration_start_row(decl: Node) -> usize {
     let own = decl.start_position().row;
-    let Some(modifiers) = decl.children(&mut decl.walk()).find(|c| c.kind() == "modifiers") else { return own };
-    let is_annotation = |n: Node| matches!(n.kind(), "annotation" | "marker_annotation");
+    let Some(modifiers) = decl.children(&mut decl.walk()).find(|c| c.kind_s() == "modifiers") else { return own };
+    let is_annotation = |n: Node| matches!(n.kind_s(), "annotation" | "marker_annotation");
     let Some(first) = modifiers.children(&mut modifiers.walk()).find(|c| is_annotation(*c)) else { return own };
     let mut last = first;
     while let Some(next) = next_sibling_skipping_comments(last).filter(|n| is_annotation(*n)) {
@@ -185,7 +186,7 @@ fn construct_start_row(owner: &Owner, brace: Node) -> usize {
         Token::MethodDef | Token::CtorDef | Token::CompactCtorDef | Token::ClassDef | Token::RecordDef | Token::InterfaceDef | Token::AnnotationDef | Token::EnumDef => {
             declaration_start_row(owner.decl)
         }
-        Token::Lambda => owner.decl.children(&mut owner.decl.walk()).find(|c| c.kind() == "->").map_or(brace.start_position().row, |a| a.start_position().row),
+        Token::Lambda => owner.decl.children(&mut owner.decl.walk()).find(|c| c.kind_s() == "->").map_or(brace.start_position().row, |a| a.start_position().row),
         Token::Objblock => brace.start_position().row,
         _ => owner.decl.start_position().row,
     }
@@ -204,11 +205,11 @@ fn next_sibling_skipping_comments(mut n: Node) -> Option<Node> {
 /// root operator, a call at its `(`.
 fn tree_row(node: Node) -> usize {
     let at = |n: Option<Node>| n.map(|n| n.start_position().row);
-    let row = match node.kind() {
+    let row = match node.kind_s() {
         "expression_statement" => node.named_child(0).map(tree_row),
         "assignment_expression" | "binary_expression" => at(node.child_by_field_name("operator")),
         "method_invocation" => at(node.child_by_field_name("arguments")),
-        "update_expression" => at(node.children(&mut node.walk()).find(|c| matches!(c.kind(), "++" | "--"))),
+        "update_expression" => at(node.children(&mut node.walk()).find(|c| matches!(c.kind_s(), "++" | "--"))),
         _ => None,
     };
     row.unwrap_or_else(|| node.start_position().row)
@@ -221,10 +222,10 @@ fn line_break_after(brace: Node, owner: &Owner, ignore_enums: bool) -> bool {
     }
     let Some(next) = next_sibling_skipping_comments(brace) else { return true };
     // The first thing in an anonymous class body may be an initialiser block, which counts as a break.
-    if owner.anonymous && next.kind() == "block" {
+    if owner.anonymous && next.kind_s() == "block" {
         return true;
     }
-    next.kind() == "}" || tree_row(next) != brace.start_position().row
+    next.kind_s() == "}" || tree_row(next) != brace.start_position().row
 }
 
 /// `LeftCurly`.
@@ -326,13 +327,13 @@ fn separator_wrap(cx: &mut Ctx, node: Node) {
 /// on its own is an empty statement, which is a token of its own.
 fn separator_token(cx: &Ctx, node: Node) -> Option<Token> {
     let parent = cx.parent()?;
-    match node.kind() {
-        "[" if matches!(parent.kind(), "dimensions" | "dimensions_expr") => Some(Token::ArrayDeclarator),
+    match node.kind_s() {
+        "[" if matches!(parent.kind_s(), "dimensions" | "dimensions_expr") => Some(Token::ArrayDeclarator),
         "]" => Some(Token::Rbrack),
         // A method call's `(` and a cast's `(` are tokens of their own, not LPAREN.
         "(" => {
-            let call = parent.kind() == "argument_list" && cx.ancestor(1).is_some_and(|g| g.kind() == "method_invocation");
-            (!call && parent.kind() != "cast_expression").then_some(Token::Lparen)
+            let call = parent.kind_s() == "argument_list" && cx.ancestor(1).is_some_and(|g| g.kind_s() == "method_invocation");
+            (!call && parent.kind_s() != "cast_expression").then_some(Token::Lparen)
         }
         ")" => Some(Token::Rparen),
         "," | ";" | "..." | "." | "::" => match punctuation_token(cx, node)? {
@@ -345,8 +346,8 @@ fn separator_token(cx: &Ctx, node: Node) -> Option<Token> {
 
 /// The Checkstyle token a node is, among those `OperatorWrap` takes.
 fn wrapped_token(cx: &Ctx, node: Node) -> Option<Token> {
-    let parent = cx.parent()?.kind();
-    match node.kind() {
+    let parent = cx.parent()?.kind_s();
+    match node.kind_s() {
         "instanceof" if parent == "instanceof_expression" => Some(Token::LiteralInstanceof),
         "::" => Some(Token::MethodRef),
         // A switch rule's arrow is a lambda arrow to Checkstyle.
@@ -407,8 +408,8 @@ fn next_token(node: Node) -> Option<Node> {
 fn right_operand_start(node: Node) -> Option<Node> {
     let mut token = next_token(node)?;
     loop {
-        let parent = token.parent().map(|p| p.kind());
-        let introduces_operand = match (token.kind(), parent) {
+        let parent = token.parent().map(|p| p.kind_s());
+        let introduces_operand = match (token.kind_s(), parent) {
             ("-" | "+" | "!" | "~", Some("unary_expression")) => true,
             // A `++` with nothing before it is a prefix one.
             ("++" | "--", Some("update_expression")) => token.prev_sibling().is_none(),
@@ -430,14 +431,14 @@ fn right_operand_start(node: Node) -> Option<Node> {
 fn empty_block(cx: &mut Ctx, brace: Node) {
     let Some(opts) = &cx.cfg.empty_block else { return };
     let Some(container) = cx.parent() else { return };
-    let token = if container.kind() == "block" && cx.ancestor(1).is_some_and(|g| g.kind() == "class_body") {
+    let token = if container.kind_s() == "block" && cx.ancestor(1).is_some_and(|g| g.kind_s() == "class_body") {
         Some(Token::InstanceInit)
     } else {
         brace_owners(cx, brace).into_iter().map(|o| o.token).find(|t| opts.tokens.contains(*t))
     };
     let Some(token) = token.filter(|t| opts.tokens.contains(*t)) else { return };
     let mut cur = container.walk();
-    let has_content = container.children(&mut cur).any(|c| !matches!(c.kind(), "{" | "}") && !is_comment(c));
+    let has_content = container.children(&mut cur).any(|c| !matches!(c.kind_s(), "{" | "}") && !is_comment(c));
     if has_content {
         return;
     }
@@ -464,20 +465,20 @@ fn right_curly(cx: &mut Ctx, lbrace: Node) {
     let Some(opts) = &cx.cfg.right_curly else { return };
     let (option, tokens) = (opts.option, opts.tokens);
     let Some(container) = cx.parent() else { return };
-    let token = if container.kind() == "block" && cx.ancestor(1).is_some_and(|g| g.kind() == "class_body") {
+    let token = if container.kind_s() == "block" && cx.ancestor(1).is_some_and(|g| g.kind_s() == "class_body") {
         Some(Token::InstanceInit)
     } else {
         brace_owners(cx, lbrace).into_iter().map(|o| o.token).find(|t| tokens.contains(*t))
     };
     let Some(token) = token.filter(|t| tokens.contains(*t)) else { return };
-    let Some(rcurly) = container.child(container.child_count().saturating_sub(1)).filter(|c| c.kind() == "}") else { return };
+    let Some(rcurly) = container.child(container.child_count().saturating_sub(1)).filter(|c| c.kind_s() == "}") else { return };
     if token == Token::LiteralSwitch && switch_in_expression(cx, container) {
         return;
     }
     // A rule or label of a switch expression is skipped as well.
     if matches!(token, Token::LiteralCase | Token::LiteralDefault) {
         let mut up = container.parent();
-        while let Some(n) = up.filter(|n| n.kind() != "switch_block") {
+        while let Some(n) = up.filter(|n| n.kind_s() != "switch_block") {
             up = n.parent();
         }
         if up.is_some_and(|b| switch_in_expression(cx, b)) {
@@ -487,7 +488,7 @@ fn right_curly(cx: &mut Ctx, lbrace: Node) {
     let src = cx.src;
     let (lrow, rrow) = (lbrace.start_position().row, rcurly.start_position().row);
     let next = next_token(rcurly);
-    let next_kind = next.map(|n| n.kind());
+    let next_kind = next.map(|n| n.kind_s());
     // Whether the brace ends a chain (`try`/`catch`, `if`/`else`, `do`/`while`): such a brace is judged by
     // what follows it, the last one of the chain by itself.
     let check_last = match token {
@@ -503,22 +504,22 @@ fn right_curly(cx: &mut Ctx, lbrace: Node) {
         let blank_before = src[line_start..rcurly.start_byte()].iter().all(|&b| pad::is_blank(b));
         // `new X() {{ ... }};` closing over two lines of braces counts as alone (Checkstyle's "double brace" case).
         let double_brace = token == Token::InstanceInit
-            && next.is_some_and(|n| n.kind() == "}")
-            && next.and_then(next_token).is_some_and(|semi| semi.kind() == ";" && next_token(semi).is_some_and(|after| after.start_position().row != rrow));
+            && next.is_some_and(|n| n.kind_s() == "}")
+            && next.and_then(next_token).is_some_and(|semi| semi.kind_s() == ";" && next_token(semi).is_some_and(|after| after.start_position().row != rrow));
         blank_before && (next.is_none_or(|n| n.start_position().row != rrow) || double_brace)
     };
     let single_line_block = {
         let mut after = next;
-        if after.is_some_and(|n| n.kind() == "else") {
+        if after.is_some_and(|n| n.kind_s() == "else") {
             after = after.and_then(|n| next_token(outermost_if(n)));
         }
-        if matches!(after.map(|n| n.kind()), Some("catch" | "finally")) {
+        if matches!(after.map(|n| n.kind_s()), Some("catch" | "finally")) {
             // The keyword sits in a clause; the statement is the clause's parent.
             after = after.and_then(|n| n.parent()).and_then(|c| c.parent()).and_then(next_token);
         } else if token == Token::LiteralDo {
             after = after.and_then(|n| n.parent()).and_then(next_token);
         }
-        lrow == rrow && (after.is_none_or(|n| n.start_position().row != rrow) || next.is_some_and(|n| n.kind() == ";"))
+        lrow == rrow && (after.is_none_or(|n| n.start_position().row != rrow) || next.is_some_and(|n| n.kind_s() == ";"))
     };
     let message = if option == RightCurlyOption::Same && !has_break_before && lrow != rrow {
         "should have line break before"
@@ -538,16 +539,16 @@ fn right_curly(cx: &mut Ctx, lbrace: Node) {
 /// plain statement is its `;` and for anything bigger is where it starts.
 fn last_member_row(container: Node) -> Option<usize> {
     let mut cur = container.walk();
-    let mut last = container.children(&mut cur).filter(|c| !matches!(c.kind(), "{" | "}") && !is_comment(*c)).last()?;
+    let mut last = container.children(&mut cur).filter(|c| !matches!(c.kind_s(), "{" | "}") && !is_comment(*c)).last()?;
     // An enum's members (and the `;` that opens them) are in a node of their own here, but are the
     // body's own children to Checkstyle.
-    if last.kind() == "enum_body_declarations" {
+    if last.kind_s() == "enum_body_declarations" {
         let mut inner = last.walk();
         last = last.children(&mut inner).filter(|c| !is_comment(*c)).last().unwrap_or(last);
     }
     // A field's `;` is part of the declaration to Checkstyle, a local variable's and an expression
     // statement's is a token of its own after it.
-    Some(match last.kind() {
+    Some(match last.kind_s() {
         "expression_statement" | "local_variable_declaration" => last.end_position().row,
         _ => last.start_position().row,
     })
@@ -555,7 +556,7 @@ fn last_member_row(container: Node) -> Option<usize> {
 
 fn outermost_if(else_keyword: Node) -> Node {
     let mut node = else_keyword.parent().unwrap_or(else_keyword);
-    while let Some(p) = node.parent().filter(|p| p.kind() == "if_statement") {
+    while let Some(p) = node.parent().filter(|p| p.kind_s() == "if_statement") {
         node = p;
     }
     node
@@ -566,17 +567,17 @@ fn outermost_if(else_keyword: Node) -> Node {
 /// count as one, an anonymous class does.)
 fn switch_in_expression(cx: &Ctx, switch_block: Node) -> bool {
     let Some(switch) = switch_block.parent() else { return false };
-    let is_statement = |n: Node| n.parent().is_some_and(|p| matches!(p.kind(), "block" | "constructor_body" | "switch_block_statement_group" | "if_statement" | "while_statement" | "do_statement" | "for_statement" | "enhanced_for_statement" | "labeled_statement"));
+    let is_statement = |n: Node| n.parent().is_some_and(|p| matches!(p.kind_s(), "block" | "constructor_body" | "switch_block_statement_group" | "if_statement" | "while_statement" | "do_statement" | "for_statement" | "enhanced_for_statement" | "labeled_statement"));
     if !is_statement(switch) {
         return true;
     }
     let mut level = 0;
     while let Some(a) = cx.ancestor(level) {
-        let in_expression = match a.kind() {
+        let in_expression = match a.kind_s() {
             "switch_expression" => !is_statement(a),
             // A lambda that is a variable's whole initialiser has no expression node above it.
-            "variable_declarator" => a.child_by_field_name("value").is_none_or(|v| v.kind() != "lambda_expression"),
-            "lambda_expression" => !a.parent().is_some_and(|p| p.kind() == "variable_declarator"),
+            "variable_declarator" => a.child_by_field_name("value").is_none_or(|v| v.kind_s() != "lambda_expression"),
+            "lambda_expression" => !a.parent().is_some_and(|p| p.kind_s() == "variable_declarator"),
             "argument_list" | "assignment_expression" | "return_statement" | "yield_statement" | "parenthesized_expression"
             | "binary_expression" | "ternary_expression" | "unary_expression" | "cast_expression" | "method_invocation" | "object_creation_expression"
             | "expression_statement" | "array_access" | "field_access" | "element_value_pair" | "array_initializer" => true,

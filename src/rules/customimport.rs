@@ -4,6 +4,7 @@
 //! Checkstyle's `finishTree`.
 
 use crate::config::CustomImportOrder;
+use crate::syntax::KindExt;
 use crate::engine::Ctx;
 use tree_sitter::Node;
 
@@ -31,7 +32,7 @@ fn full_ident(cx: &Ctx, name: Node) -> String {
     let mut stack = vec![name];
     while let Some(n) = stack.pop() {
         if n.child_count() == 0 {
-            if !matches!(n.kind(), "line_comment" | "block_comment") {
+            if !matches!(n.kind_s(), "line_comment" | "block_comment") {
                 out.push_str(&String::from_utf8_lossy(cx.text(n)));
             }
         } else {
@@ -50,7 +51,7 @@ fn first_domains(count: usize, path: &str) -> String {
 pub fn on_package(cx: &Ctx, st: &mut State, node: Node) {
     let Some(opts) = &cx.cfg.custom_import_order else { return };
     let mut cur = node.walk();
-    let name = node.children(&mut cur).find(|c| matches!(c.kind(), "scoped_identifier" | "identifier"));
+    let name = node.children(&mut cur).find(|c| matches!(c.kind_s(), "scoped_identifier" | "identifier"));
     st.same_package = name.map_or_else(String::new, |n| first_domains(opts.same_package_depth, &full_ident(cx, n)));
 }
 
@@ -62,7 +63,7 @@ pub fn on_import(cx: &Ctx, st: &mut State, node: Node) {
     let mut star = false;
     let mut end_line = node.end_position().row as u32 + 1;
     for c in node.children(&mut cur) {
-        match c.kind() {
+        match c.kind_s() {
             "static" => is_static = true,
             "scoped_identifier" | "identifier" => path = full_ident(cx, c),
             "asterisk" => star = true,

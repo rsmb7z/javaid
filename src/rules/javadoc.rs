@@ -7,17 +7,18 @@
 //! several comments before the declaration the last Javadoc is the one that counts.
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use crate::rules::javadoc_tags;
 use crate::rules::util::has_modifier;
 use tree_sitter::Node;
 
 fn is_comment(n: Node) -> bool {
-    matches!(n.kind(), "line_comment" | "block_comment")
+    matches!(n.kind_s(), "line_comment" | "block_comment")
 }
 
 /// `/** ... */` with something between the stars and the slash being optional but `/**/` not a Javadoc.
 pub fn is_javadoc(cx: &Ctx, comment: Node) -> bool {
-    comment.kind() == "block_comment" && {
+    comment.kind_s() == "block_comment" && {
         let t = cx.text(comment);
         t.starts_with(b"/**") && t.len() > 4
     }
@@ -38,7 +39,7 @@ pub fn attached<'a>(cx: &Ctx, decl: Node<'a>) -> Option<Node<'a>> {
 /// Access level of a member as `accessModifiers` sees it: its own modifier, public for the members
 /// of an interface or annotation, package otherwise. The enclosing types do not matter.
 fn access(cx: &Ctx, decl: Node) -> u8 {
-    if decl.parent().is_some_and(|p| matches!(p.kind(), "interface_body" | "annotation_type_body")) {
+    if cx.parent_of(decl).is_some_and(|p| matches!(p.kind_s(), "interface_body" | "annotation_type_body")) {
         return 0;
     }
     if has_modifier(cx, decl, b"public") {
@@ -52,17 +53,17 @@ fn access(cx: &Ctx, decl: Node) -> u8 {
     }
 }
 
-fn in_code_block(decl: Node) -> bool {
-    let mut p = decl.parent();
+fn in_code_block<'a>(cx: &Ctx<'a>, decl: Node<'a>) -> bool {
+    let mut p = cx.parent_of(decl);
     while let Some(n) = p {
-        match n.kind() {
+        match n.kind_s() {
             "method_declaration" | "constructor_declaration" | "compact_constructor_declaration" | "static_initializer" => return true,
             // an instance initializer is a bare block directly in a class body
-            "block" if n.parent().is_some_and(|b| b.kind() == "class_body") => return true,
+            "block" if cx.parent_of(n).is_some_and(|b| b.kind_s() == "class_body") => return true,
             "lambda_expression" => return true,
             _ => {}
         }
-        p = n.parent();
+        p = cx.parent_of(n);
     }
     false
 }
@@ -71,10 +72,10 @@ fn in_code_block(decl: Node) -> bool {
 pub fn on_variable(cx: &mut Ctx, decl: Node) {
     let cfg = cx.cfg;
     let Some(opts) = &cfg.javadoc_variable else { return };
-    if in_code_block(decl) {
+    if in_code_block(cx, decl) {
         return;
     }
-    let (level, names): (u8, Vec<Node>) = match decl.kind() {
+    let (level, names): (u8, Vec<Node>) = match decl.kind_s() {
         "field_declaration" | "constant_declaration" => {
             let mut cur = decl.walk();
             let names = decl.children_by_field_id(cx.syn.f.declarator, &mut cur).filter_map(|d| d.child_by_field_id(cx.syn.f.name)).collect();
@@ -82,7 +83,7 @@ pub fn on_variable(cx: &mut Ctx, decl: Node) {
         }
         "enum_constant" => {
             // A constant has the access of its enum.
-            let Some(en) = decl.parent().and_then(|b| b.parent()) else { return };
+            let Some(en) = cx.parent_of(decl).and_then(|b| cx.parent_of(b)) else { return };
             (access(cx, en), decl.child_by_field_id(cx.syn.f.name).into_iter().collect())
         }
         _ => return,
@@ -119,14 +120,14 @@ pub fn declared_scope(cx: &Ctx, decl: Node) -> u8 {
     if has_modifier(cx, decl, b"private") {
         return PRIVATE;
     }
-    if decl.parent().is_some_and(|p| matches!(p.kind(), "interface_body" | "annotation_type_body")) {
+    if cx.parent_of(decl).is_some_and(|p| matches!(p.kind_s(), "interface_body" | "annotation_type_body")) {
         return PUBLIC;
     }
     if has_modifier(cx, decl, b"public") {
         PUBLIC
     } else if has_modifier(cx, decl, b"protected") {
         PROTECTED
-    } else if decl.kind() == "constructor_declaration" && decl.parent().is_some_and(|b| b.kind() == "enum_body_declarations") {
+    } else if decl.kind_s() == "constructor_declaration" && cx.parent_of(decl).is_some_and(|b| b.kind_s() == "enum_body_declarations") {
         PRIVATE
     } else {
         PACKAGE
@@ -136,22 +137,22 @@ pub fn declared_scope(cx: &Ctx, decl: Node) -> u8 {
 /// The least visible of the types around a node; an anonymous class on the way makes it 5.
 pub fn surrounding_scope(cx: &Ctx, node: Node) -> Option<u8> {
     let mut scope: Option<u8> = None;
-    let mut p = node.parent();
+    let mut p = cx.parent_of(node);
     while let Some(n) = p {
-        if n.kind() == "object_creation_expression" {
+        if n.kind_s() == "object_creation_expression" {
             return Some(ANONYMOUS);
         }
-        if is_type_decl(n.kind()) {
+        if is_type_decl(n.kind_s()) {
             let r = declared_scope(cx, n);
             scope = Some(scope.map_or(r, |s| s.max(r)));
         }
-        p = n.parent();
+        p = cx.parent_of(n);
     }
     scope
 }
 
 fn count_children(node: Node) -> usize {
-    node.children(&mut node.walk()).filter(|c| !is_comment(*c) && c.kind() != "modifiers").count()
+    node.children(&mut node.walk()).filter(|c| !is_comment(*c) && c.kind_s() != "modifiers").count()
 }
 
 /// `MissingJavadocMethod`
@@ -169,7 +170,7 @@ pub fn on_method(cx: &mut Ctx, decl: Node) {
     let name_node = decl.child_by_field_id(cx.syn.f.name);
     let Some(name_node) = name_node else { return };
     let name = cx.text(name_node);
-    let is_element = decl.kind() == "annotation_type_element_declaration";
+    let is_element = decl.kind_s() == "annotation_type_element_declaration";
     if opts.allow_missing_property_javadoc && (is_setter(cx, decl) || is_getter(cx, decl)) {
         return;
     }
@@ -195,8 +196,8 @@ fn lines_in_body(decl: Node) -> i64 {
 }
 
 pub fn has_allowed_annotation(cx: &Ctx, decl: Node, allowed: &[String]) -> bool {
-    let Some(mods) = decl.children(&mut decl.walk()).find(|c| c.kind() == "modifiers") else { return false };
-    mods.children(&mut mods.walk()).filter(|m| matches!(m.kind(), "marker_annotation" | "annotation")).any(|a| {
+    let Some(mods) = decl.children(&mut decl.walk()).find(|c| c.kind_s() == "modifiers") else { return false };
+    mods.children(&mut mods.walk()).filter(|m| matches!(m.kind_s(), "marker_annotation" | "annotation")).any(|a| {
         let Some(name) = a.child_by_field_id(cx.syn.f.name) else { return false };
         let text: String = String::from_utf8_lossy(cx.text(name)).split_whitespace().collect();
         allowed.iter().any(|w| *w == text)
@@ -204,7 +205,7 @@ pub fn has_allowed_annotation(cx: &Ctx, decl: Node, allowed: &[String]) -> bool 
 }
 
 fn plain_method_shape(decl: Node) -> bool {
-    decl.kind() == "method_declaration" && !decl.children(&mut decl.walk()).any(|c| matches!(c.kind(), "type_parameters" | "throws")) && decl.child_by_field_name("body").is_some()
+    decl.kind_s() == "method_declaration" && !decl.children(&mut decl.walk()).any(|c| matches!(c.kind_s(), "type_parameters" | "throws")) && decl.child_by_field_name("body").is_some()
 }
 
 /// `getX`/`isX` with no parameters and a body that starts with `return`.
@@ -223,7 +224,7 @@ fn is_getter(cx: &Ctx, decl: Node) -> bool {
         return false;
     }
     let body = decl.child_by_field_name("body").unwrap();
-    body.named_children(&mut body.walk()).find(|c| !is_comment(*c)).is_some_and(|c| c.kind() == "return_statement")
+    body.named_children(&mut body.walk()).find(|c| !is_comment(*c)).is_some_and(|c| c.kind_s() == "return_statement")
 }
 
 /// `setX(v)` with a body of exactly one plain assignment.
@@ -244,8 +245,8 @@ fn is_setter(cx: &Ctx, decl: Node) -> bool {
     let statements: Vec<Node> = body.named_children(&mut body.walk()).filter(|c| !is_comment(*c)).collect();
     // One statement; an `x = y;` whose operator is a plain `=`.
     statements.len() == 1
-        && statements[0].kind() == "expression_statement"
-        && statements[0].named_child(0).is_some_and(|e| e.kind() == "assignment_expression" && e.child_by_field_name("operator").is_some_and(|o| cx.text(o) == b"="))
+        && statements[0].kind_s() == "expression_statement"
+        && statements[0].named_child(0).is_some_and(|e| e.kind_s() == "assignment_expression" && e.child_by_field_name("operator").is_some_and(|o| cx.text(o) == b"="))
 }
 
 #[allow(dead_code)]
@@ -287,7 +288,7 @@ fn following_declaration<'a>(cx: &Ctx, comment: Node<'a>) -> Option<Node<'a>> {
             next = n.next_sibling();
             continue;
         }
-        valid = takes_javadoc(n.kind()).then_some(n);
+        valid = takes_javadoc(n.kind_s()).then_some(n);
         break;
     }
     valid
@@ -296,7 +297,7 @@ fn following_declaration<'a>(cx: &Ctx, comment: Node<'a>) -> Option<Node<'a>> {
 /// Every comment: `InvalidJavadocPosition`.
 pub fn on_comment(cx: &mut Ctx, comment: Node) {
     let cfg = cx.cfg;
-    if cfg.multiline_comment_asterisk && comment.kind() == "block_comment" && !(is_javadoc(cx, comment) && following_declaration(cx, comment).is_some()) {
+    if cfg.multiline_comment_asterisk && comment.kind_s() == "block_comment" && !(is_javadoc(cx, comment) && following_declaration(cx, comment).is_some()) {
         crate::rules::javadoc_style::multiline_asterisk(cx, comment);
     }
     if !is_javadoc(cx, comment) {
@@ -317,22 +318,22 @@ pub fn on_comment(cx: &mut Ctx, comment: Node) {
 }
 
 fn type_parameter_names(cx: &Ctx, decl: Node) -> Vec<String> {
-    let Some(list) = decl.children(&mut decl.walk()).find(|c| c.kind() == "type_parameters") else { return Vec::new() };
+    let Some(list) = decl.children(&mut decl.walk()).find(|c| c.kind_s() == "type_parameters") else { return Vec::new() };
     list.named_children(&mut list.walk())
-        .filter(|c| c.kind() == "type_parameter")
-        .filter_map(|p| p.named_children(&mut p.walk()).find(|c| c.kind() == "type_identifier"))
+        .filter(|c| c.kind_s() == "type_parameter")
+        .filter_map(|p| p.named_children(&mut p.walk()).find(|c| c.kind_s() == "type_identifier"))
         .map(|n| format!("<{}>", String::from_utf8_lossy(cx.text(n))))
         .collect()
 }
 
 fn record_component_names(cx: &Ctx, decl: Node) -> Vec<String> {
-    if decl.kind() != "record_declaration" {
+    if decl.kind_s() != "record_declaration" {
         return Vec::new();
     }
     let Some(list) = decl.child_by_field_id(cx.syn.f.parameters) else { return Vec::new() };
     list.named_children(&mut list.walk())
         .filter_map(|p| {
-            p.child_by_field_id(cx.syn.f.name).or_else(|| p.children(&mut p.walk()).filter(|c| c.kind() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)))
+            p.child_by_field_id(cx.syn.f.name).or_else(|| p.children(&mut p.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)))
         })
         .map(|n| String::from_utf8_lossy(cx.text(n)).into_owned())
         .collect()
@@ -373,7 +374,7 @@ pub fn on_type(cx: &mut Ctx, decl: Node) {
         cx.diag_at("JavadocType", e.line, 0, format!("Javadoc comment at column {} has parse error. Details: {}", e.col, e.details));
         return;
     }
-    let outermost = decl.parent().is_some_and(|p| p.kind() == "program");
+    let outermost = cx.parent_of(decl).is_some_and(|p| p.kind_s() == "program");
     let mut found_author = false;
     let mut found_version = false;
     let mut components = record_component_names(cx, decl);
@@ -448,9 +449,9 @@ fn signature<'a>(cx: &Ctx, decl: Node<'a>) -> Documented<'a> {
     let mut params = Vec::new();
     if let Some(list) = decl.child_by_field_id(cx.syn.f.parameters) {
         for p in list.named_children(&mut list.walk()) {
-            let name = match p.kind() {
+            let name = match p.kind_s() {
                 "formal_parameter" => p.child_by_field_id(cx.syn.f.name),
-                "spread_parameter" => p.children(&mut p.walk()).filter(|c| c.kind() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)),
+                "spread_parameter" => p.children(&mut p.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)),
                 _ => None,
             };
             if let Some(n) = name {
@@ -459,9 +460,9 @@ fn signature<'a>(cx: &Ctx, decl: Node<'a>) -> Documented<'a> {
         }
     }
     let mut type_params = Vec::new();
-    if let Some(list) = decl.children(&mut decl.walk()).find(|c| c.kind() == "type_parameters") {
-        for p in list.named_children(&mut list.walk()).filter(|c| c.kind() == "type_parameter") {
-            if let Some(n) = p.named_children(&mut p.walk()).find(|c| c.kind() == "type_identifier") {
+    if let Some(list) = decl.children(&mut decl.walk()).find(|c| c.kind_s() == "type_parameters") {
+        for p in list.named_children(&mut list.walk()).filter(|c| c.kind_s() == "type_parameter") {
+            if let Some(n) = p.named_children(&mut p.walk()).find(|c| c.kind_s() == "type_identifier") {
                 type_params.push((n, format!("<{}>", String::from_utf8_lossy(cx.text(n)))));
             }
         }
@@ -472,11 +473,11 @@ fn signature<'a>(cx: &Ctx, decl: Node<'a>) -> Documented<'a> {
 /// The first identifier of a (possibly qualified) type name and its simple name.
 fn type_name_parts<'a>(cx: &Ctx, ty: Node<'a>) -> Option<(Node<'a>, String)> {
     let mut first = ty;
-    while let Some(c) = first.named_child(0).filter(|_| matches!(first.kind(), "scoped_type_identifier" | "generic_type" | "scoped_identifier")) {
+    while let Some(c) = first.named_child(0).filter(|_| matches!(first.kind_s(), "scoped_type_identifier" | "generic_type" | "scoped_identifier")) {
         first = c;
     }
     // The name as written, which is what the message shows (`java.io.IOException`).
-    let written = match ty.kind() {
+    let written = match ty.kind_s() {
         "generic_type" => ty.named_child(0).map(|n| cx.text(n)),
         _ => Some(cx.text(ty)),
     }?;
@@ -488,11 +489,11 @@ fn type_name_parts<'a>(cx: &Ctx, ty: Node<'a>) -> Option<(Node<'a>, String)> {
 fn thrown<'a>(cx: &Ctx, body: Node<'a>, out: &mut Vec<(Node<'a>, String)>) {
     let mut stack = vec![body];
     while let Some(n) = stack.pop() {
-        match n.kind() {
+        match n.kind_s() {
             "lambda_expression" | "class_declaration" | "interface_declaration" | "enum_declaration" | "record_declaration" => continue,
-            "object_creation_expression" if n.children(&mut n.walk()).any(|c| c.kind() == "class_body") => continue,
+            "object_creation_expression" if n.children(&mut n.walk()).any(|c| c.kind_s() == "class_body") => continue,
             "throw_statement" => {
-                if let Some(e) = n.named_child(0).filter(|e| e.kind() == "object_creation_expression") {
+                if let Some(e) = n.named_child(0).filter(|e| e.kind_s() == "object_creation_expression") {
                     if let Some(ty) = e.child_by_field_id(cx.syn.f.type_) {
                         if let Some(part) = type_name_parts(cx, ty) {
                             out.push(part);
@@ -502,7 +503,7 @@ fn thrown<'a>(cx: &Ctx, body: Node<'a>, out: &mut Vec<(Node<'a>, String)>) {
                 continue;
             }
             "try_statement" | "try_with_resources_statement" => {
-                let has_catch = n.children(&mut n.walk()).any(|c| c.kind() == "catch_clause");
+                let has_catch = n.children(&mut n.walk()).any(|c| c.kind_s() == "catch_clause");
                 let body_node = n.child_by_field_name("body");
                 let kids: Vec<Node> = n.children(&mut n.walk()).collect();
                 for c in kids.into_iter().rev() {
@@ -526,15 +527,15 @@ fn thrown<'a>(cx: &Ctx, body: Node<'a>, out: &mut Vec<(Node<'a>, String)>) {
 /// through, and a member of an anonymous class, or of a record with nothing around it, is not
 /// checked at all: `None`.
 fn surrounding_access(cx: &Ctx, node: Node) -> Option<u8> {
-    let mut p = node.parent();
+    let mut p = cx.parent_of(node);
     while let Some(n) = p {
-        if n.kind() == "object_creation_expression" {
+        if n.kind_s() == "object_creation_expression" {
             return None;
         }
-        if is_type_decl(n.kind()) && n.kind() != "record_declaration" {
+        if is_type_decl(n.kind_s()) && n.kind_s() != "record_declaration" {
             return Some(declared_scope(cx, n));
         }
-        p = n.parent();
+        p = cx.parent_of(n);
     }
     None
 }
@@ -556,8 +557,8 @@ pub fn on_javadoc_method(cx: &mut Ctx, decl: Node) {
         cx.diag_at("JavadocMethod", e.line, 0, format!("Javadoc comment at column {} has parse error. Details: {}", e.col, e.details));
         return;
     }
-    let is_element = decl.kind() == "annotation_type_element_declaration";
-    let is_ctor = matches!(decl.kind(), "constructor_declaration" | "compact_constructor_declaration");
+    let is_element = decl.kind_s() == "annotation_type_element_declaration";
+    let is_ctor = matches!(decl.kind_s(), "constructor_declaration" | "compact_constructor_declaration");
     let at = |cx: &Ctx, t: &javadoc_tags::Tag| (t.line, column_of(cx, t.line, t.col));
     let decl_line = decl.start_position().row as u32 + 1;
 
@@ -574,16 +575,16 @@ pub fn on_javadoc_method(cx: &mut Ctx, decl: Node) {
     }
 
     let report_expected = !inherit && !has_allowed_annotation(cx, decl, &opts.allowed_annotations);
-    let non_void = is_element || (decl.kind() == "method_declaration" && !decl_is_void(cx, decl));
+    let non_void = is_element || (decl.kind_s() == "method_declaration" && !decl_is_void(cx, decl));
     // A `@return` with a description that has no return value to describe is unused.
     let leftovers: Vec<&javadoc_tags::Tag> = if non_void { Vec::new() } else { doc.tags.iter().filter(|t| t.name == "return" && t.has_description).collect() };
 
     if !is_element {
         let sig = signature(cx, decl);
-        let record_components = if decl.kind() == "compact_constructor_declaration" { enclosing_record_components(cx, decl) } else { Vec::new() };
+        let record_components = if decl.kind_s() == "compact_constructor_declaration" { enclosing_record_components(cx, decl) } else { Vec::new() };
         // @param tags against parameters, then type parameters.
         let mut documented: Vec<String> = Vec::new();
-        let known: Vec<&str> = if decl.kind() == "compact_constructor_declaration" {
+        let known: Vec<&str> = if decl.kind_s() == "compact_constructor_declaration" {
             record_components.iter().map(String::as_str).collect()
         } else {
             sig.params.iter().map(|(_, n)| n.as_str()).chain(sig.type_params.iter().map(|(_, n)| n.as_str())).collect()
@@ -603,7 +604,7 @@ pub fn on_javadoc_method(cx: &mut Ctx, decl: Node) {
             }
         }
         if report_expected && !opts.allow_missing_param_tags {
-            if decl.kind() == "compact_constructor_declaration" {
+            if decl.kind_s() == "compact_constructor_declaration" {
                 for name in record_components.iter().filter(|n| !documented.contains(n)) {
                     cx.diag("JavadocMethod", decl, format!("Expected @param tag for '{name}'."));
                 }
@@ -619,7 +620,7 @@ pub fn on_javadoc_method(cx: &mut Ctx, decl: Node) {
         // Throws.
         if opts.validate_throws && report_expected {
             let mut wanted: Vec<(Node, String)> = Vec::new();
-            if let Some(t) = decl.children(&mut decl.walk()).find(|c| c.kind() == "throws") {
+            if let Some(t) = decl.children(&mut decl.walk()).find(|c| c.kind_s() == "throws") {
                 for ty in t.named_children(&mut t.walk()) {
                     if let Some(part) = type_name_parts(cx, ty) {
                         wanted.push(part);
@@ -679,16 +680,16 @@ pub fn on_javadoc_method(cx: &mut Ctx, decl: Node) {
 }
 
 fn decl_is_void(cx: &Ctx, decl: Node) -> bool {
-    decl.child_by_field_id(cx.syn.f.type_).is_some_and(|t| t.kind() == "void_type")
+    decl.child_by_field_id(cx.syn.f.type_).is_some_and(|t| t.kind_s() == "void_type")
 }
 
 fn enclosing_record_components(cx: &Ctx, decl: Node) -> Vec<String> {
-    let mut p = decl.parent();
+    let mut p = cx.parent_of(decl);
     while let Some(n) = p {
-        if n.kind() == "record_declaration" {
+        if n.kind_s() == "record_declaration" {
             return record_component_names(cx, n);
         }
-        p = n.parent();
+        p = cx.parent_of(n);
     }
     Vec::new()
 }

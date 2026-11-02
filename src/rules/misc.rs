@@ -1,6 +1,7 @@
 //! `ArrayTypeStyle`, `UpperEll` and `EmptyStatement`: small checks on a single token.
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 /// `ArrayTypeStyle` at its default, Java style: report C-style brackets, the ones after a name
@@ -18,7 +19,7 @@ pub fn on_dimensions(cx: &mut Ctx, dims: Node) {
     // Brackets in a type live in an `array_type`, and `new int[]` has its own parent.
     let Some(parent) = cx.parent() else { return };
     if !matches!(
-        parent.kind(),
+        parent.kind_s(),
         "variable_declarator" | "formal_parameter" | "method_declaration" | "annotation_type_element_declaration" | "enhanced_for_statement" | "resource"
     ) {
         return;
@@ -34,7 +35,7 @@ pub fn on_dimensions(cx: &mut Ctx, dims: Node) {
         if part.is_extra() {
             continue; // a comment
         }
-        if part.kind() == "[" {
+        if part.kind_s() == "[" {
             let at = part.start_position();
             if at.row == row && at.column > name_col {
                 cx.diag("ArrayTypeStyle", part, "Array brackets at illegal position.".into());
@@ -61,10 +62,10 @@ pub fn on_empty_statement(cx: &mut Ctx, semi: Node) {
         return;
     }
     let Some(parent) = cx.parent() else { return };
-    let empty = match parent.kind() {
+    let empty = match parent.kind_s() {
         "program" | "class_body" | "interface_body" | "annotation_type_body" | "constructor_body" => true,
         "enum_body_declarations" => parent.child(0).is_some_and(|first| first.id() != semi.id()),
-        "package_declaration" | "import_declaration" => semi.prev_sibling().is_some_and(|p| p.kind() == ";"),
+        "package_declaration" | "import_declaration" => semi.prev_sibling().is_some_and(|p| p.kind_s() == ";"),
         _ => crate::rules::whitespace::is_empty_statement(cx, parent, semi),
     };
     if empty {

@@ -15,7 +15,6 @@ use crate::config::{Config, Format};
 use crate::csast::{CsAst, Tok, N, NIL};
 use crate::engine::{Ctx, Diagnostic};
 use crate::rules::commentfilter::CHECKER_LEVEL;
-use crate::suppress::{module_of, source_name};
 use crate::xpath::{XPath, XTree};
 use std::collections::HashSet;
 use std::path::Path;
@@ -135,18 +134,14 @@ fn can_be_logged(module: &str, ty: Tok) -> bool {
     !(TOKEN_LOGGERS.contains(&module) && STRUCTURAL.contains(&ty))
 }
 
-fn build(src: &[u8], comments: bool) -> Option<CsAst> {
-    crate::csast::try_build_source(src, crate::syntax::Grammar::default(), comments).ok()
-}
-
 /// `MatchXpath`: one finding per selected node.
-pub fn match_xpath(cx: &mut Ctx) {
+pub fn match_xpath(cx: &mut Ctx, cache: &crate::csast::CsCache) {
     let cfg = cx.cfg;
     if cfg.match_xpaths.is_empty() {
         return;
     }
-    let Some(ast) = build(cx.src, true) else { return };
-    let tree = XTree::new(&ast);
+    let Some(ast) = cache.get(true) else { return };
+    let tree = XTree::new(ast);
     for m in &cfg.match_xpaths {
         match m.query.select(&tree) {
             Ok(hits) => {
@@ -167,6 +162,23 @@ pub fn match_xpath(cx: &mut Ctx) {
 /// tab-expanded column `col`.
 fn char_index(lines: &[&[u8]], line: u32, col: u32, tab_width: usize) -> i32 {
     let Some(text) = lines.get((line as usize).wrapping_sub(1)) else { return col as i32 - 1 };
+    if text.is_ascii() {
+        // One pass: the printed column of the prefix of `i` characters is its tab-expanded width + 1.
+        let (mut width, mut best, mut exact) = (0usize, 0i32, None);
+        for i in 0..=text.len() {
+            let printed = width as u32 + 1;
+            if printed <= col {
+                best = i as i32;
+            }
+            if printed == col {
+                exact = Some(i as i32);
+            }
+            if let Some(&b) = text.get(i) {
+                width = if b == b'\t' { (width / tab_width + 1) * tab_width } else { width + 1 };
+            }
+        }
+        return exact.unwrap_or(best);
+    }
     let mut chars = 0i32;
     let mut best = 0i32;
     for (i, ch) in String::from_utf8_lossy(text).char_indices() {
@@ -338,7 +350,8 @@ fn alias_of(source: &str, aliases: &[(String, String)]) -> String {
 }
 
 /// Apply the XPath filters and the `@SuppressWarnings` filter to a Java file's findings.
-pub fn apply(cfg: &Config, path: &Path, src: &[u8], findings: &mut Vec<Diagnostic>) {
+pub fn apply(cfg: &Config, path: &Path, cache: &crate::csast::CsCache, findings: &mut Vec<Diagnostic>, rules: &mut crate::suppress::RuleCache) {
+    let src = cache.src();
     let sw = cfg.suppress_warnings_filter && cfg.suppress_warnings_holder.is_some();
     if (cfg.xpath_filters.is_empty() && !sw) || findings.is_empty() || path.extension().and_then(|e| e.to_str()) != Some("java") {
         return;
@@ -346,14 +359,16 @@ pub fn apply(cfg: &Config, path: &Path, src: &[u8], findings: &mut Vec<Diagnosti
     let lines: Vec<&[u8]> = src.split(|&b| b == b'\n').collect();
 
     if sw {
-        if let Some(ast) = build(src, false) {
-            let entries = sw_entries(&ast);
+        // Only an annotation named `SuppressWarnings` makes an entry, and its token is in the source.
+        let named = memchr::memmem::find(src, b"SuppressWarnings").is_some();
+        if let Some(ast) = if named { cache.get(false) } else { None } {
+            let entries = sw_entries(ast);
             if !entries.is_empty() {
                 let aliases = cfg.suppress_warnings_holder.as_deref().unwrap_or(&[]);
                 findings.retain(|d| {
-                    let (module, id) = module_of(cfg, d.rule);
-                    let source = source_name(module.clone());
-                    let alias = alias_of(&source, aliases);
+                    let info = rules.get(d.rule);
+                    let (module, id, source) = (&info.module, info.id, &info.source);
+                    let alias = alias_of(source, aliases);
                     // The file-level modules log a line, not a column (javaid prints a 1 for some).
                     let no_column = d.col == 0 || (CHECKER_LEVEL.contains(&module.as_str()) && module != "FileTabCharacter");
                     let column = if no_column { 0 } else { d.col as i32 };
@@ -375,19 +390,20 @@ pub fn apply(cfg: &Config, path: &Path, src: &[u8], findings: &mut Vec<Diagnosti
     if cfg.xpath_filters.is_empty() || findings.is_empty() {
         return;
     }
-    let Some(ast) = build(src, cfg.needs_comment_nodes) else { return };
-    let tree = XTree::new(&ast);
+    let Some(ast) = cache.get(cfg.needs_comment_nodes) else { return };
+    let tree = XTree::new(ast);
     // Positions selected by each filter's query, computed when a finding first reaches it.
     type Selected = std::collections::HashMap<(i32, i32), Vec<Tok>>;
     let mut selected: Vec<Option<Selected>> = vec![None; cfg.xpath_filters.len()];
+    let file = crate::suppress::absolute(path);
     findings.retain(|d| {
-        let (module, id) = module_of(cfg, d.rule);
-        if CHECKER_LEVEL.contains(&module.as_str()) || tokenless(&module, &d.message) || d.col == 0 {
+        let info = rules.get(d.rule);
+        let (module, id) = (&info.module, info.id);
+        if CHECKER_LEVEL.contains(&module.as_str()) || tokenless(module, &d.message) || d.col == 0 {
             return true;
         }
-        let file = crate::suppress::absolute(path);
-        let source_module = module.clone();
-        let source = source_name(module.clone());
+        let source_module = module;
+        let source = &info.source;
         let pos = (d.line as i32, char_index(&lines, d.line, d.col, cfg.walker_tab()));
         for (i, f) in cfg.xpath_filters.iter().enumerate() {
             if f.files.as_ref().is_some_and(|p| !p.matches(file.as_bytes()))
@@ -415,7 +431,7 @@ pub fn apply(cfg: &Config, path: &Path, src: &[u8], findings: &mut Vec<Diagnosti
                     Selected::new()
                 }
             });
-            if set.get(&pos).is_some_and(|types| types.iter().any(|&ty| can_be_logged(&source_module, ty))) {
+            if set.get(&pos).is_some_and(|types| types.iter().any(|&ty| can_be_logged(source_module, ty))) {
                 return false;
             }
         }

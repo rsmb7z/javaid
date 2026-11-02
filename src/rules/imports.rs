@@ -5,6 +5,7 @@
 //! regression tests in `rules/tests.rs`.
 
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use crate::javadoc;
 use crate::syntax::Act;
 use rustc_hash::FxHashMap;
@@ -129,7 +130,7 @@ pub fn on_star_import(cx: &mut Ctx, import: Node) {
     let (mut star, mut name, mut is_static) = (None, None, false);
     let mut cur = import.walk();
     for c in import.children(&mut cur) {
-        match c.kind() {
+        match c.kind_s() {
             "asterisk" => star = Some(c),
             "static" => is_static = true,
             "identifier" | "scoped_identifier" => name = Some(c),
@@ -152,7 +153,7 @@ pub fn on_star_import(cx: &mut Ctx, import: Node) {
 
 /// `a.b.C` written however it was spelled: spaces and comments between the parts are dropped.
 fn qualified_name(cx: &Ctx, n: Node, out: &mut String) {
-    if n.kind() == "scoped_identifier" {
+    if n.kind_s() == "scoped_identifier" {
         if let Some(scope) = n.child_by_field_id(cx.syn.f.scope) {
             qualified_name(cx, scope, out);
             out.push('.');
@@ -172,14 +173,14 @@ pub fn on_import<'a>(cx: &Ctx<'a>, st: &mut State<'a>, node: Node) {
     let mut cur = node.walk();
     let mut name_node = None;
     for c in node.named_children(&mut cur) {
-        match c.kind() {
+        match c.kind_s() {
             "asterisk" => return, // star imports are never reported
             "identifier" | "scoped_identifier" => name_node = Some(c),
             _ => {}
         }
     }
     let Some(full) = name_node else { return };
-    let simple = match full.kind() {
+    let simple = match full.kind_s() {
         "scoped_identifier" => match full.child_by_field_id(cx.syn.f.name) {
             Some(n) => cx.text(n),
             None => return,
@@ -200,7 +201,7 @@ pub fn on_package<'a>(cx: &Ctx<'a>, st: &mut State<'a>, package: Node) {
     }
     let mut cur = package.walk();
     for child in package.named_children(&mut cur) {
-        if !matches!(child.kind(), "marker_annotation" | "annotation") {
+        if !matches!(child.kind_s(), "marker_annotation" | "annotation") {
             continue; // the package name itself is not a use
         }
         let mut walk = child.walk();
@@ -267,7 +268,7 @@ pub fn on_documented<'a>(cx: &Ctx<'a>, st: &mut State<'a>, node: Node) {
     if !opts.process_javadoc {
         return;
     }
-    let is_package = node.kind() == "package_declaration";
+    let is_package = node.kind_s() == "package_declaration";
     // Imports precede every declaration except the package statement, so with no import seen
     // there is nothing to mark.
     if st.wanted.is_empty() && !is_package {
@@ -307,7 +308,7 @@ pub fn finish<'a>(cx: &mut Ctx<'a>, st: &mut State<'a>) {
 fn is_member_name(cx: &Ctx, node: Node) -> bool {
     let Some(parent) = cx.parent() else { return false };
     let is = |field: u16| parent.child_by_field_id(field).is_some_and(|c| c.id() == node.id());
-    match parent.kind() {
+    match parent.kind_s() {
         "field_access" => is(cx.syn.f.field),
         "method_invocation" => is(cx.syn.f.name) && parent.child_by_field_id(cx.syn.f.object).is_some(),
         "method_declaration" => is(cx.syn.f.name),

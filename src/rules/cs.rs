@@ -12,9 +12,8 @@
 //! same parse.
 
 use crate::config::Config;
-use crate::csast::{build_checked, CsAst, Tok, N};
+use crate::csast::{CsAst, CsCache, Tok, N};
 use crate::engine::Diagnostic;
-use tree_sitter::Tree;
 
 /// What a ported check logs through: the file's lines (to expand tabs) and the output.
 pub struct Log<'a> {
@@ -142,13 +141,13 @@ pub fn ty_is(ast: &CsAst, n: N, t: Tok) -> bool {
 }
 
 /// Runs the ported modules the configuration enables.
-pub fn run(cfg: &Config, tree: &Tree, src: &[u8], out: &mut Vec<Diagnostic>) {
+pub fn run(cfg: &Config, cache: &CsCache, out: &mut Vec<Diagnostic>) {
     // The builder reads the fork grammar's node names (`@interface`, ...); the upstream grammar's
     // trees would make it panic.
-    let orchard: tree_sitter::Language = tree_sitter_java_orchard::LANGUAGE.into();
-    if *tree.language() != orchard {
+    if !cache.tree().is_some_and(crate::csast::shared::is_orchard) {
         return;
     }
+    let src = cache.src();
     let plain = cfg.text_block_google;
     let comments = cfg.google_right_curly || cfg.empty_line_separator.is_some();
     if !plain && !comments {
@@ -156,19 +155,17 @@ pub fn run(cfg: &Config, tree: &Tree, src: &[u8], out: &mut Vec<Diagnostic>) {
     }
     let mut log = Log { cfg, lines: src.split(|&b| b == b'\n').collect(), out, seen: Default::default() };
     if plain {
-        if let Ok(ast) = build_checked(tree, src, false) {
-            if cfg.text_block_google {
-                super::textblock::check(&ast, &mut log);
-            }
+        if let Some(ast) = cache.get(false) {
+            super::textblock::check(ast, &mut log);
         }
     }
     if comments {
-        if let Ok(ast) = build_checked(tree, src, true) {
+        if let Some(ast) = cache.get(true) {
             if cfg.google_right_curly {
-                super::googlerightcurly::check(&ast, &mut log);
+                super::googlerightcurly::check(ast, &mut log);
             }
             if let Some(opts) = &cfg.empty_line_separator {
-                super::emptyline::check(&ast, opts, &mut log);
+                super::emptyline::check(ast, opts, &mut log);
             }
         }
     }

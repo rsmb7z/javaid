@@ -22,6 +22,7 @@ mod stmt;
 mod types;
 
 use tree_sitter::{Node, Tree};
+use crate::syntax::KindExt;
 
 use super::ast::{CsAst, N, NIL};
 use super::tok::Tok;
@@ -31,6 +32,29 @@ pub fn build(tree: &Tree, src: &[u8]) -> CsAst {
     let mut b = B::new(src);
     b.compilation_unit(tree.root_node());
     b.a
+}
+
+/// The tree-sitter nodes of the expressions the builder re-associates (see `expr.rs`): found by a
+/// walk over the whole parse, which [`build_checked_with`] can be handed to skip when it builds
+/// a second tree from the same parse.
+pub fn misparsed_cast_roots(tree: &Tree) -> std::collections::HashSet<usize> {
+    expr::misparsed_cast_roots(tree.root_node())
+}
+
+/// As [`build_checked`], with the result of [`misparsed_cast_roots`] for this tree.
+pub fn build_checked_with(tree: &Tree, src: &[u8], comments: bool, roots: &std::collections::HashSet<usize>) -> Result<CsAst, String> {
+    if let Some(e) = crate::syntax::first_syntax_error(tree) {
+        let p = e.start_position();
+        return Err(format!("syntax error at {}:{}", p.row + 1, p.column + 1));
+    }
+    let mut b = B::new(src);
+    b.reassoc_roots = roots.clone();
+    b.roots_given = true;
+    b.compilation_unit(tree.root_node());
+    if comments {
+        b.append_hidden_comment_nodes(tree.root_node());
+    }
+    Ok(b.a)
 }
 
 /// As [`build`] / [`build_with_comments`], but declines a tree that has syntax errors instead of
@@ -61,27 +85,25 @@ pub fn build_source(src: &[u8], grammar: crate::syntax::Grammar) -> CsAst {
 /// As [`build_source`], reporting a construct the builder cannot handle as an error. (Only with
 /// `panic = "unwind"`; the release profile aborts instead.)
 pub fn try_build_source(src: &[u8], grammar: crate::syntax::Grammar, comments: bool) -> Result<CsAst, String> {
-    let src = src.to_vec();
-    let handle = std::thread::Builder::new()
-        .stack_size(1 << 30)
-        .spawn(move || {
-            let syn = crate::syntax::Syntax::new(grammar);
-            let mut parser = syn.new_parser();
-            // The ANTLR lexer ends a `//` comment at a lone `\r` as well; tree-sitter only at `\n`.
-            // Same length, so every offset stays valid for the builder, which reads the original.
-            let mut parse_src = src.clone();
-            for i in 0..parse_src.len() {
-                if parse_src[i] == b'\r' && parse_src.get(i + 1) != Some(&b'\n') {
-                    parse_src[i] = b'\n';
-                }
-            }
-            let tree = parser.parse(&parse_src, None).expect("tree-sitter produced no tree");
-            build_checked(&tree, &src, comments)
-        })
-        .map_err(|e| e.to_string())?;
-    handle
-        .join()
+    super::shared::with_big_stack(|| parse_and_build(src, grammar, comments))
         .map_err(|p| p.downcast_ref::<String>().cloned().or_else(|| p.downcast_ref::<&str>().map(|s| s.to_string())).unwrap_or_else(|| "panic".into()))?
+}
+
+/// Parses `src` with the given grammar and builds the AST, on the current thread (which needs the
+/// stack for the builder's recursion; see `shared::with_big_stack`).
+pub(crate) fn parse_and_build(src: &[u8], grammar: crate::syntax::Grammar, comments: bool) -> Result<CsAst, String> {
+    let syn = crate::syntax::Syntax::new(grammar);
+    let mut parser = syn.new_parser();
+    // The ANTLR lexer ends a `//` comment at a lone `\r` as well; tree-sitter only at `\n`.
+    // Same length, so every offset stays valid for the builder, which reads the original.
+    let mut parse_src = src.to_vec();
+    for i in 0..parse_src.len() {
+        if parse_src[i] == b'\r' && parse_src.get(i + 1) != Some(&b'\n') {
+            parse_src[i] = b'\n';
+        }
+    }
+    let tree = parser.parse(&parse_src, None).expect("tree-sitter produced no tree");
+    build_checked(&tree, src, comments)
 }
 
 pub(crate) struct B<'s> {
@@ -91,16 +113,20 @@ pub(crate) struct B<'s> {
     ascii: bool,
     /// Tree-sitter nodes of expressions that tree-sitter parsed as `(Name) +x` casts; see `expr.rs`.
     pub reassoc_roots: std::collections::HashSet<usize>,
+    /// `reassoc_roots` was handed in rather than to be found.
+    pub roots_given: bool,
 }
 
 /// Non-comment children of a tree-sitter node, in order.
 pub(crate) fn kids<'t>(n: Node<'t>) -> Vec<Node<'t>> {
     let mut c = n.walk();
-    n.children(&mut c).filter(|k| !is_comment(*k)).collect()
+    let mut out = Vec::with_capacity(n.child_count() as usize);
+    out.extend(n.children(&mut c).filter(|k| !is_comment(*k)));
+    out
 }
 
 pub(crate) fn is_comment(n: Node) -> bool {
-    matches!(n.kind(), "line_comment" | "block_comment")
+    matches!(n.kind_s(), "line_comment" | "block_comment")
 }
 
 impl<'s> B<'s> {
@@ -115,7 +141,7 @@ impl<'s> B<'s> {
             }
             i += 1;
         }
-        B { src, a: CsAst::new(), line_starts, ascii: src.is_ascii(), reassoc_roots: Default::default() }
+        B { src, a: CsAst::new(), line_starts, ascii: src.is_ascii(), reassoc_roots: Default::default(), roots_given: false }
     }
 
     /// 0-based line and column (counted in code points, as ANTLR does) of a byte offset.
@@ -140,9 +166,13 @@ impl<'s> B<'s> {
     }
 
     pub fn tok_range(&mut self, ty: Tok, start: usize, end: usize) -> N {
-        let text = String::from_utf8_lossy(&self.src[start..end]).into_owned();
+        let bytes = &self.src[start..end];
+        let text = match std::str::from_utf8(bytes) {
+            Ok(s) => s.to_owned(),
+            Err(_) => String::from_utf8_lossy(bytes).into_owned(),
+        };
         let (l, c) = self.pos(start);
-        let n = self.a.token(ty, &text, l, c);
+        let n = self.a.token_text(ty, std::borrow::Cow::Owned(text), l, c);
         self.a.set_span(n, start, end);
         n
     }
@@ -169,7 +199,15 @@ impl<'s> B<'s> {
 
     /// `create(Token)` for an anonymous token (punctuation or keyword): the type follows the text.
     pub fn punct(&mut self, n: Node) -> N {
-        let ty = tok_for_kind(n.kind()).unwrap_or_else(|| panic!("no token type for {:?} at byte {}", n.kind(), n.start_byte()));
+        let kind = n.kind_s();
+        let ty = tok_for_kind(kind).unwrap_or_else(|| panic!("no token type for {:?} at byte {}", kind, n.start_byte()));
+        // Punctuation and keywords are their own kind name: no copy of the text needed.
+        if self.src[n.start_byte()..n.end_byte()] == *kind.as_bytes() {
+            let (l, c) = self.pos(n.start_byte());
+            let t = self.a.token_text(ty, std::borrow::Cow::Borrowed(kind), l, c);
+            self.a.set_span(t, n.start_byte(), n.end_byte());
+            return t;
+        }
         self.tok(ty, n)
     }
 
@@ -196,16 +234,18 @@ impl<'s> B<'s> {
     }
 
     fn compilation_unit(&mut self, root: Node) {
-        self.find_misparsed_casts(root);
+        if !self.roots_given {
+            self.reassoc_roots = expr::misparsed_cast_roots(root);
+        }
         let kids = kids(root);
         if kids.is_empty() {
             return;
         }
-        let compact = kids.iter().any(|k| matches!(k.kind(), "method_declaration" | "local_variable_declaration" | "field_declaration"));
+        let compact = kids.iter().any(|k| matches!(k.kind_s(), "method_declaration" | "local_variable_declaration" | "field_declaration"));
         let cu = self.imag(if compact { Tok::COMPACT_COMPILATION_UNIT } else { Tok::COMPILATION_UNIT });
         let mut semis: Option<N> = None;
         for k in kids {
-            let part = match k.kind() {
+            let part = match k.kind_s() {
                 ";" => {
                     // Adjacent `;` form one typeDeclaration; the nodes end up as siblings either way.
                     let s = self.punct(k);
@@ -221,7 +261,7 @@ impl<'s> B<'s> {
     }
 
     fn top_level(&mut self, k: Node) -> N {
-        match k.kind() {
+        match k.kind_s() {
             "package_declaration" => self.package_declaration(k),
             "import_declaration" => self.import_declaration(k),
             "module_declaration" => self.module_declaration(k),

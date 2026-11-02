@@ -10,6 +10,7 @@
 //! Expressions.
 
 use tree_sitter::Node;
+use crate::syntax::KindExt;
 
 use super::types::is_annotation;
 use super::{B, kids};
@@ -32,7 +33,39 @@ enum Item<'t> {
 
 /// A cast whose operand tree-sitter extended over a binary operator.
 fn is_wide_cast(n: Node) -> bool {
-    n.kind() == "cast_expression" && field(n, "value").is_some_and(|v| v.kind() == "binary_expression")
+    n.kind_s() == "cast_expression" && field(n, "value").is_some_and(|v| v.kind_s() == "binary_expression")
+}
+
+/// The tree-sitter nodes at the top of the binary/cast chains that contain a misparsed cast.
+pub(crate) fn misparsed_cast_roots(root: Node) -> std::collections::HashSet<usize> {
+    let mut roots = std::collections::HashSet::new();
+    let mut cursor = root.walk();
+    'outer: loop {
+        let n = cursor.node();
+        if n.kind_s() == "cast_expression" && is_misparsed_cast(n) {
+            let mut top = n;
+            while let Some(p) = top.parent() {
+                if matches!(p.kind_s(), "binary_expression" | "cast_expression") {
+                    top = p;
+                } else {
+                    break;
+                }
+            }
+            roots.insert(top.id());
+        }
+        if cursor.goto_first_child() {
+            continue;
+        }
+        loop {
+            if cursor.goto_next_sibling() {
+                break;
+            }
+            if !cursor.goto_parent() {
+                break 'outer;
+            }
+        }
+    }
+    roots
 }
 
 fn is_misparsed_cast(n: Node) -> bool {
@@ -41,16 +74,16 @@ fn is_misparsed_cast(n: Node) -> bool {
 
 /// `(Name) +x` or `(Name) -x` read as a cast.
 fn is_sign_cast(n: Node) -> bool {
-    if n.kind() != "cast_expression" {
+    if n.kind_s() != "cast_expression" {
         return false;
     }
     let k = kids(n);
-    if k.len() != 4 || !matches!(k[1].kind(), "type_identifier" | "scoped_type_identifier") {
+    if k.len() != 4 || !matches!(k[1].kind_s(), "type_identifier" | "scoped_type_identifier") {
         return false;
     }
     match field(n, "value") {
-        Some(v) if v.kind() == "unary_expression" => {
-            matches!(field(v, "operator").map(|o| o.kind()), Some("+" | "-"))
+        Some(v) if v.kind_s() == "unary_expression" => {
+            matches!(field(v, "operator").map(|o| o.kind_s()), Some("+" | "-"))
         }
         _ => false,
     }
@@ -101,7 +134,7 @@ impl<'s> B<'s> {
     fn elist(&mut self, args: Node) -> N {
         let el = self.imag(Tok::ELIST);
         for x in kids(args) {
-            match x.kind() {
+            match x.kind_s() {
                 "(" | ")" => {}
                 "," => {
                     let c = self.punct(x);
@@ -129,11 +162,11 @@ impl<'s> B<'s> {
         if !self.reassoc_roots.is_empty() && self.reassoc_roots.contains(&n.id()) {
             return self.reassociate(n);
         }
-        match n.kind() {
+        match n.kind_s() {
             "identifier" => self.ident(n),
             "this" | "super" => self.punct(n),
             "true" | "false" | "null_literal" => {
-                let t = if n.kind() == "null_literal" { Tok::LITERAL_NULL } else if n.kind() == "true" { Tok::LITERAL_TRUE } else { Tok::LITERAL_FALSE };
+                let t = if n.kind_s() == "null_literal" { Tok::LITERAL_NULL } else if n.kind_s() == "true" { Tok::LITERAL_TRUE } else { Tok::LITERAL_FALSE };
                 self.tok(t, n)
             }
             "decimal_integer_literal" | "hex_integer_literal" | "octal_integer_literal" | "binary_integer_literal" => {
@@ -170,7 +203,7 @@ impl<'s> B<'s> {
             }
             "unary_expression" => {
                 let op = field(n, "operator").unwrap();
-                let ty = match op.kind() {
+                let ty = match op.kind_s() {
                     "+" => Tok::UNARY_PLUS,
                     "-" => Tok::UNARY_MINUS,
                     "!" => Tok::LNOT,
@@ -183,13 +216,13 @@ impl<'s> B<'s> {
             }
             "update_expression" => {
                 let k = kids(n);
-                if k[0].kind() == "++" || k[0].kind() == "--" {
+                if k[0].kind_s() == "++" || k[0].kind_s() == "--" {
                     let root = self.punct(k[0]);
                     let e = self.expr(k[1]);
                     self.add(root, e);
                     root
                 } else {
-                    let ty = if k[1].kind() == "++" { Tok::POST_INC } else { Tok::POST_DEC };
+                    let ty = if k[1].kind_s() == "++" { Tok::POST_INC } else { Tok::POST_DEC };
                     let root = self.tok(ty, k[1]);
                     let e = self.expr(k[0]);
                     self.add(root, e);
@@ -238,8 +271,8 @@ impl<'s> B<'s> {
         let k = kids(n);
         let cast = self.tok(Tok::TYPECAST, k[0]);
         let mut i = 1;
-        while k[i].kind() != ")" {
-            let part = if k[i].kind() == "&" { self.tok(Tok::TYPE_EXTENSION_AND, k[i]) } else { self.type_type(k[i]) };
+        while k[i].kind_s() != ")" {
+            let part = if k[i].kind_s() == "&" { self.tok(Tok::TYPE_EXTENSION_AND, k[i]) } else { self.type_type(k[i]) };
             self.add(cast, part);
             i += 1;
         }
@@ -261,39 +294,8 @@ impl<'s> B<'s> {
     // The tokens are the same either way, so for such an expression the binary operators are
     // flattened (casts become prefix operators) and the precedence applied again.
 
-    /// Finds the expressions that need `reassociate`: the outermost chain of binary expressions and
-    /// casts above each misparsed cast.
-    pub fn find_misparsed_casts(&mut self, root: Node) {
-        let mut cursor = root.walk();
-        'outer: loop {
-            let n = cursor.node();
-            if is_misparsed_cast(n) {
-                let mut top = n;
-                while let Some(p) = top.parent() {
-                    if matches!(p.kind(), "binary_expression" | "cast_expression") {
-                        top = p;
-                    } else {
-                        break;
-                    }
-                }
-                self.reassoc_roots.insert(top.id());
-            }
-            if cursor.goto_first_child() {
-                continue;
-            }
-            loop {
-                if cursor.goto_next_sibling() {
-                    break;
-                }
-                if !cursor.goto_parent() {
-                    break 'outer;
-                }
-            }
-        }
-    }
-
     fn flatten_binary<'t>(&self, n: Node<'t>, out: &mut Vec<Item<'t>>) {
-        if n.kind() == "binary_expression" {
+        if n.kind_s() == "binary_expression" {
             self.flatten_binary(field(n, "left").unwrap(), out);
             out.push(Item::Op(field(n, "operator").unwrap()));
             self.flatten_binary(field(n, "right").unwrap(), out);
@@ -302,7 +304,7 @@ impl<'s> B<'s> {
             out.push(Item::Paren(n));
             out.push(Item::Op(field(unary, "operator").unwrap()));
             self.flatten_binary(field(unary, "operand").unwrap(), out);
-        } else if n.kind() == "cast_expression" {
+        } else if n.kind_s() == "cast_expression" {
             out.push(Item::Cast(n));
             self.flatten_binary(field(n, "value").unwrap(), out);
         } else {
@@ -333,7 +335,7 @@ impl<'s> B<'s> {
         let mut lhs = self.unary(items, pos);
         while *pos < items.len() {
             let Item::Op(op) = items[*pos] else { unreachable!("operators alternate with operands") };
-            let prec = binary_precedence(op.kind());
+            let prec = binary_precedence(op.kind_s());
             if prec < min_prec {
                 break;
             }
@@ -379,14 +381,14 @@ impl<'s> B<'s> {
         let k = kids(n);
         let obj = field(n, "object").unwrap();
         let fld = field(n, "field").unwrap();
-        let dots: Vec<Node> = k.iter().copied().filter(|x| x.kind() == ".").collect();
-        let has_super = k.iter().any(|x| x.kind() == "super" && x.id() != obj.id());
+        let dots: Vec<Node> = k.iter().copied().filter(|x| x.kind_s() == ".").collect();
+        let has_super = k.iter().any(|x| x.kind_s() == "super" && x.id() != obj.id());
         if has_super {
             // X.super.f
             let bop = self.punct(dots[0]);
             let o = self.expr(obj);
             self.add(bop, o);
-            let sup = k.iter().find(|x| x.kind() == "super" && x.id() != obj.id()).unwrap();
+            let sup = k.iter().find(|x| x.kind_s() == "super" && x.id() != obj.id()).unwrap();
             let s = self.punct(*sup);
             self.add(bop, s);
             let dot2 = self.punct(dots[1]);
@@ -399,7 +401,7 @@ impl<'s> B<'s> {
         let o = self.expr(obj);
         self.add(dot, o);
         // `A.super::m` reaches here with the `super` read as an identifier.
-        let f = if fld.kind() == "this" {
+        let f = if fld.kind_s() == "this" {
             self.punct(fld)
         } else if self.text(fld) == "super" {
             self.tok(Tok::LITERAL_SUPER, fld)
@@ -418,8 +420,8 @@ impl<'s> B<'s> {
         let rparen = *kids(args).last().unwrap();
         if let Some(obj) = field(n, "object") {
             let k = kids(n);
-            let dots: Vec<Node> = k.iter().copied().filter(|x| x.kind() == ".").collect();
-            let sup = k.iter().find(|x| x.kind() == "super" && x.id() != obj.id()).copied();
+            let dots: Vec<Node> = k.iter().copied().filter(|x| x.kind_s() == ".").collect();
+            let sup = k.iter().find(|x| x.kind_s() == "super" && x.id() != obj.id()).copied();
             let targs = field(n, "type_arguments");
             let callee = if let Some(sup) = sup {
                 // X.super.m(...)
@@ -467,7 +469,7 @@ impl<'s> B<'s> {
         let io = self.punct(k[1]);
         let l = self.expr(k[0]);
         self.add(io, l);
-        let mods = k.iter().find(|x| x.kind() == "modifiers").copied();
+        let mods = k.iter().find(|x| x.kind_s() == "modifiers").copied();
         if let Some(pat) = field(n, "pattern") {
             let p = self.pattern(pat);
             self.add(io, p);
@@ -492,17 +494,17 @@ impl<'s> B<'s> {
 
     fn lambda(&mut self, n: Node) -> N {
         let k = kids(n);
-        let arrow = k.iter().find(|x| x.kind() == "->").unwrap();
+        let arrow = k.iter().find(|x| x.kind_s() == "->").unwrap();
         let lam = self.punct(*arrow);
         let params = field(n, "parameters").unwrap();
-        let p = match params.kind() {
+        let p = match params.kind_s() {
             "formal_parameters" => self.formal_parameters(params),
             "inferred_parameters" => {
                 let pk = kids(params);
                 let l = self.punct(pk[0]);
                 let ps = self.imag(Tok::PARAMETERS);
                 for x in &pk[1..pk.len() - 1] {
-                    let part = if x.kind() == "," {
+                    let part = if x.kind_s() == "," {
                         self.punct(*x)
                     } else {
                         let id = self.ident(*x);
@@ -523,14 +525,14 @@ impl<'s> B<'s> {
         };
         self.add(lam, p);
         let body = field(n, "body").unwrap();
-        let b = if body.kind() == "block" { self.block(body) } else { self.expression(body) };
+        let b = if body.kind_s() == "block" { self.block(body) } else { self.expression(body) };
         self.add(lam, b);
         lam
     }
 
     fn object_creation(&mut self, n: Node) -> N {
         let k = kids(n);
-        let new_pos = k.iter().position(|x| x.kind() == "new").unwrap();
+        let new_pos = k.iter().position(|x| x.kind_s() == "new").unwrap();
         let new = self.punct(k[new_pos]);
         let annos: Vec<Node> = k.iter().copied().filter(|x| is_annotation(*x)).collect();
         if let Some(t) = field(n, "type_arguments") {
@@ -544,7 +546,7 @@ impl<'s> B<'s> {
         self.add(new, name);
         let a = self.arguments(field(n, "arguments").unwrap());
         self.add(new, a);
-        if let Some(body) = k.iter().find(|x| x.kind() == "class_body") {
+        if let Some(body) = k.iter().find(|x| x.kind_s() == "class_body") {
             let ob = self.obj_block(*body);
             self.add(new, ob);
         }
@@ -567,7 +569,7 @@ impl<'s> B<'s> {
         let annos: Vec<Node> = k[1..tpos].iter().copied().filter(|x| is_annotation(*x)).collect();
         let an = self.annotations(&annos, false);
         self.add(new, an);
-        let name = if matches!(ty.kind(), "integral_type" | "floating_point_type" | "boolean_type") {
+        let name = if matches!(ty.kind_s(), "integral_type" | "floating_point_type" | "boolean_type") {
             let text = self.text(ty);
             let t = super::tok_for_kind(&text).unwrap();
             self.tok(t, ty)
@@ -576,11 +578,11 @@ impl<'s> B<'s> {
         };
         self.add(new, name);
         for x in &k[tpos + 1..] {
-            match x.kind() {
+            match x.kind_s() {
                 "dimensions_expr" => {
                     let dk = kids(*x);
                     let dannos: Vec<Node> = dk.iter().copied().filter(|a| is_annotation(*a)).collect();
-                    let lb = dk.iter().find(|a| a.kind() == "[").unwrap();
+                    let lb = dk.iter().find(|a| a.kind_s() == "[").unwrap();
                     let decl = self.tok(Tok::ARRAY_DECLARATOR, *lb);
                     let e = self.expression(dk[dk.len() - 2]);
                     self.add(decl, e);
@@ -612,12 +614,12 @@ impl<'s> B<'s> {
         let ty = k[0];
         let mut base_node = ty;
         let mut dim_nodes: Vec<Node> = Vec::new();
-        while base_node.kind() == "array_type" {
+        while base_node.kind_s() == "array_type" {
             let ak = kids(base_node);
             dim_nodes.insert(0, ak[1]);
             base_node = ak[0];
         }
-        let primitive = matches!(base_node.kind(), "integral_type" | "floating_point_type" | "boolean_type" | "void_type");
+        let primitive = matches!(base_node.kind_s(), "integral_type" | "floating_point_type" | "boolean_type" | "void_type");
         let base = if primitive {
             let text = self.text(base_node);
             let t = super::tok_for_kind(&text).unwrap();
@@ -645,13 +647,13 @@ impl<'s> B<'s> {
 
     fn method_reference(&mut self, n: Node) -> N {
         let k = kids(n);
-        let cc = k.iter().position(|x| x.kind() == "::").unwrap();
+        let cc = k.iter().position(|x| x.kind_s() == "::").unwrap();
         let mr = self.tok(Tok::METHOD_REF, k[cc]);
         let first = k[0];
-        let f = if is_type_kind(first.kind()) { self.type_content(first) } else { self.expr(first) };
+        let f = if is_type_kind(first.kind_s()) { self.type_content(first) } else { self.expr(first) };
         self.add(mr, f);
         for x in &k[cc + 1..] {
-            let part = match x.kind() {
+            let part = match x.kind_s() {
                 "type_arguments" => self.type_arguments(*x),
                 "new" => self.punct(*x),
                 _ => self.ident(*x),

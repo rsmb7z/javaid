@@ -8,7 +8,10 @@
 
 use crate::config::{Config, Format};
 use crate::engine::Diagnostic;
+use std::cell::RefCell;
+use std::collections::HashMap;
 use std::path::Path;
+use std::rc::Rc;
 
 /// One `<suppress .../>` element. Every attribute present must match for a finding to go.
 #[derive(Clone, Debug, Default)]
@@ -117,21 +120,31 @@ pub fn fill(template: &str, text: &str, re: &Format) -> String {
 /// The part of a finding the text filters look at.
 struct Event<'a> {
     line: u32,
-    source: String,
+    source: &'a str,
     id: Option<&'static str>,
     message: &'a str,
 }
 
-struct Rule {
+/// What a filter's instruction line says to do, and for which lines.
+struct Span {
     first: u32,
     last: u32,
     on: bool,
-    source: Option<Format>,
-    message: Option<Format>,
-    id: Option<Format>,
 }
 
-impl Rule {
+/// The finding-matching half of the instructions that share it, and where those instructions are.
+/// Most filters give every instruction the same check, message and id (no `$n` in the templates),
+/// so one `Cond` stands for all of them and a finding is tested against it once, not once per line
+/// of the file.
+struct Cond {
+    source: Option<Rc<Format>>,
+    message: Option<Rc<Format>>,
+    id: Option<Rc<Format>>,
+    /// In the order the lines come.
+    spans: Vec<Span>,
+}
+
+impl Cond {
     fn matches(&self, e: &Event) -> bool {
         self.source.as_ref().is_none_or(|f| f.matches(e.source.as_bytes()))
             && self.id.as_ref().is_none_or(|f| e.id.is_some_and(|id| f.matches(id.as_bytes())))
@@ -139,67 +152,113 @@ impl Rule {
     }
 }
 
-fn text_rules(filter: &TextFilter, lines: &[String]) -> Vec<Rule> {
-    let mut rules = Vec::new();
+thread_local! {
+    /// Patterns filled in from the file's text, compiled once per thread: the same few come up
+    /// on line after line of file after file.
+    static FORMATS: RefCell<HashMap<String, Option<Rc<Format>>>> = RefCell::new(HashMap::new());
+}
+
+/// `Format::new(pattern).ok()`, remembered.
+fn compiled(pattern: &str) -> Option<Rc<Format>> {
+    FORMATS.with(|f| {
+        let mut f = f.borrow_mut();
+        if let Some(found) = f.get(pattern) {
+            return found.clone();
+        }
+        if f.len() >= 4096 {
+            f.clear();
+        }
+        let made = Format::new(pattern).ok().map(Rc::new);
+        f.insert(pattern.to_string(), made.clone());
+        made
+    })
+}
+
+fn is_template(s: &str) -> bool {
+    s.contains('$')
+}
+
+type Key = (String, Option<String>, Option<String>);
+
+fn text_rules(filter: &TextFilter, lines: &[&str]) -> Vec<Cond> {
+    let (check, message, id) = match filter {
+        TextFilter::Nearby { check, message, id, .. } | TextFilter::Plain { check, message, id, .. } => (check, message, id),
+    };
+    let mut conds: Vec<Cond> = Vec::new();
+    let mut index: HashMap<Key, usize> = HashMap::new();
+    // No `$n` in the check, message or id: they read the same on every line.
+    let fixed = !is_template(check) && !message.as_deref().is_some_and(is_template) && !id.as_deref().is_some_and(is_template);
+    let mut spot = |key: Key, span: Span| {
+        let at = *index.entry(key).or_insert_with_key(|k| {
+            conds.push(Cond { source: compiled(&k.0), message: k.1.as_deref().and_then(compiled), id: k.2.as_deref().and_then(compiled), spans: Vec::new() });
+            conds.len() - 1
+        });
+        conds[at].spans.push(span);
+    };
+    let fixed_key = || (check.clone(), message.clone(), id.clone());
     for (i, line) in lines.iter().enumerate() {
         let line_no = i as u32 + 1;
         match filter {
             TextFilter::Nearby { pattern, check, message, id, range } => {
+                if !pattern.matches(line.as_bytes()) {
+                    continue;
+                }
                 let Some(groups) = pattern.captures(line) else { continue };
                 let text = groups[0].clone().unwrap_or_default();
                 let Ok(range) = fill(range, &text, pattern).trim().parse::<i64>() else { continue };
                 let (first, last) = ((line_no as i64).min(line_no as i64 + range), (line_no as i64).max(line_no as i64 + range));
-                rules.push(Rule {
-                    first: first.max(0) as u32,
-                    last: last.max(0) as u32,
-                    on: false,
-                    source: Format::new(&fill(check, &text, pattern)).ok(),
-                    message: message.as_ref().and_then(|m| Format::new(&fill(m, &text, pattern)).ok()),
-                    id: id.as_ref().and_then(|m| Format::new(&fill(m, &text, pattern)).ok()),
-                });
+                let key = if fixed {
+                    fixed_key()
+                } else {
+                    (fill(check, &text, pattern), message.as_ref().map(|m| fill(m, &text, pattern)), id.as_ref().map(|m| fill(m, &text, pattern)))
+                };
+                spot(key, Span { first: first.max(0) as u32, last: last.max(0) as u32, on: false });
             }
             TextFilter::Plain { off, on, check, message, id } => {
+                // `.captures` only where a template needs the groups.
                 let mut found: Option<(bool, &Format, String)> = None;
-                if let Some(g) = on.captures(line) {
-                    found = Some((true, on, g[0].clone().unwrap_or_default()));
+                if on.matches(line.as_bytes()) {
+                    found = Some((true, on, if fixed { String::new() } else { on.captures(line).and_then(|g| g[0].clone()).unwrap_or_default() }));
                 }
-                if let Some(g) = off.captures(line) {
-                    found = Some((false, off, g[0].clone().unwrap_or_default()));
+                if off.matches(line.as_bytes()) {
+                    found = Some((false, off, if fixed { String::new() } else { off.captures(line).and_then(|g| g[0].clone()).unwrap_or_default() }));
                 }
                 let Some((is_on, format, text)) = found else { continue };
-                rules.push(Rule {
-                    first: line_no,
-                    last: u32::MAX,
-                    on: is_on,
-                    source: Format::new(&fill(check, &text, format)).ok(),
-                    message: message.as_ref().and_then(|m| Format::new(&fill(m, &text, format)).ok()),
-                    id: id.as_ref().and_then(|m| Format::new(&fill(m, &text, format)).ok()),
-                });
+                let key = if fixed {
+                    fixed_key()
+                } else {
+                    (fill(check, &text, format), message.as_ref().map(|m| fill(m, &text, format)), id.as_ref().map(|m| fill(m, &text, format)))
+                };
+                spot(key, Span { first: line_no, last: u32::MAX, on: is_on });
             }
         }
     }
-    rules
+    conds
 }
 
 /// Remove the findings that the text-reading filters suppress.
-fn by_text(cfg: &Config, src: &[u8], findings: &mut Vec<Diagnostic>) {
+fn by_text(cfg: &Config, src: &[u8], findings: &mut Vec<Diagnostic>, rules: &mut RuleCache) {
     if cfg.text_filters.is_empty() || findings.is_empty() {
         return;
     }
     let text = String::from_utf8_lossy(src);
     // FileText splits on \n, \r and \r\n.
-    let lines: Vec<String> = text.replace("\r\n", "\n").replace('\r', "\n").split('\n').map(str::to_string).collect();
-    let lines = if lines.last().is_some_and(String::is_empty) { &lines[..lines.len() - 1] } else { &lines[..] };
-    let per_filter: Vec<(bool, Vec<Rule>)> = cfg.text_filters.iter().map(|f| (matches!(f, TextFilter::Plain { .. }), text_rules(f, lines))).collect();
+    let normalized = if text.contains('\r') { text.replace("\r\n", "\n").replace('\r', "\n") } else { text.into_owned() };
+    let lines: Vec<&str> = normalized.split('\n').collect();
+    let lines = if lines.last().is_some_and(|l| l.is_empty()) { &lines[..lines.len() - 1] } else { &lines[..] };
+    let per_filter: Vec<(bool, Vec<Cond>)> = cfg.text_filters.iter().map(|f| (matches!(f, TextFilter::Plain { .. }), text_rules(f, lines))).collect();
     findings.retain(|d| {
-        let (module, id) = module_of(cfg, d.rule);
-        let event = Event { line: d.line, source: source_name(module), id, message: &d.message };
-        !per_filter.iter().any(|(plain, rules)| {
+        let info = rules.get(d.rule);
+        let event = Event { line: d.line, source: &info.source, id: info.id, message: &d.message };
+        !per_filter.iter().any(|(plain, conds)| {
+            let mut hits = conds.iter().filter(|c| c.matches(&event));
             if *plain {
                 // The nearest matching instruction before the finding decides; "on" lifts the suppression.
-                rules.iter().filter(|r| r.first <= event.line && r.matches(&event)).next_back().is_some_and(|r| !r.on)
+                hits.filter_map(|c| c.spans[..c.spans.partition_point(|r| r.first <= event.line)].last())
+                    .max_by_key(|r| r.first)
+                    .is_some_and(|r| !r.on)
             } else {
-                rules.iter().any(|r| r.first <= event.line && event.line <= r.last && r.matches(&event))
+                hits.any(|c| c.spans.iter().any(|r| r.first <= event.line && event.line <= r.last))
             }
         })
     });
@@ -207,8 +266,15 @@ fn by_text(cfg: &Config, src: &[u8], findings: &mut Vec<Diagnostic>) {
 
 /// Remove the findings of a file that the `SuppressionFilter` suppresses.
 pub fn by_file(cfg: &Config, path: &Path, src: &[u8], findings: &mut Vec<Diagnostic>) {
-    by_text(cfg, src, findings);
-    crate::rules::xpathfilter::apply(cfg, path, src, findings);
+    by_file_cached(cfg, path, &crate::csast::CsCache::detached(src), findings);
+}
+
+/// `by_file`, sharing the emulated ASTs already built for the file (or building them for the filters).
+pub fn by_file_cached(cfg: &Config, path: &Path, cache: &crate::csast::CsCache, findings: &mut Vec<Diagnostic>) {
+    let src = cache.src();
+    let mut rules = RuleCache::new(cfg);
+    by_text(cfg, src, findings, &mut rules);
+    crate::rules::xpathfilter::apply(cfg, path, cache, findings, &mut rules);
     if cfg.suppressions.is_empty() || findings.is_empty() {
         return;
     }
@@ -219,9 +285,8 @@ pub fn by_file(cfg: &Config, path: &Path, src: &[u8], findings: &mut Vec<Diagnos
         return;
     }
     findings.retain(|d| {
-        let (module, id) = module_of(cfg, d.rule);
-        let column = d.col;
-        let source = source_name(module);
+        let info = rules.get(d.rule);
+        let (id, column, source) = (info.id, d.col, &info.source);
         !relevant.iter().any(|s| {
             s.checks.as_ref().is_none_or(|c| c.matches(source.as_bytes()))
                 && s.message.as_ref().is_none_or(|m| m.matches(d.message.as_bytes()))
@@ -272,6 +337,38 @@ pub fn module_of(cfg: &Config, display: &str) -> (String, Option<&'static str>) 
         return ("MatchXpath".to_string(), (t.name != "MatchXpath").then_some(t.name));
     }
     (display.to_string(), None)
+}
+
+/// What the filters want to know about the module behind a printed rule name.
+pub struct RuleInfo {
+    pub module: String,
+    pub id: Option<&'static str>,
+    /// The source name `checks=` patterns match (see [`source_name`]).
+    pub source: String,
+}
+
+/// [`module_of`] and [`source_name`] for each rule name a file's findings carry, worked out once
+/// per name instead of once per finding and filter.
+pub struct RuleCache<'c> {
+    cfg: &'c Config,
+    known: HashMap<&'static str, Rc<RuleInfo>>,
+}
+
+impl<'c> RuleCache<'c> {
+    pub fn new(cfg: &'c Config) -> Self {
+        RuleCache { cfg, known: HashMap::new() }
+    }
+
+    pub fn get(&mut self, display: &'static str) -> Rc<RuleInfo> {
+        let cfg = self.cfg;
+        self.known
+            .entry(display)
+            .or_insert_with(|| {
+                let (module, id) = module_of(cfg, display);
+                Rc::new(RuleInfo { source: source_name(module.clone()), module, id })
+            })
+            .clone()
+    }
 }
 
 /// `com.puppycrawl.tools.checkstyle.checks.<package>.<Module>Check`, the name `checks=` matches.

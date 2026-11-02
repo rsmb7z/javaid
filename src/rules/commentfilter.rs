@@ -7,6 +7,7 @@
 //! space...) report to the Checker and are out of their reach.
 
 use crate::config::Format;
+use crate::syntax::KindExt;
 use crate::engine::Ctx;
 use crate::suppress::{fill, module_of, source_name, CommentFilter};
 use tree_sitter::Node;
@@ -36,7 +37,7 @@ pub fn on_comment(cx: &Ctx, st: &mut State, node: Node) {
     }
     let start = node.start_position();
     let text = String::from_utf8_lossy(cx.text(node)).into_owned();
-    let block = node.kind() == "block_comment";
+    let block = node.kind_s() == "block_comment";
     // The line of the source the comment starts on, from the comment's column to its end of line.
     let first_line = text.split('\n').next().unwrap_or("").trim_end_matches('\r').to_string();
     let mut lines = vec![(start.row as u32 + 1, start.column, first_line)];

@@ -21,7 +21,6 @@ use crate::csast::Tok;
 use crate::csast::Tok::*;
 use crate::engine::Ctx;
 use std::collections::{BTreeMap, HashMap, HashSet};
-use tree_sitter::Tree;
 
 const MSG_ERROR: u8 = 0;
 const MSG_ERROR_MULTI: u8 = 1;
@@ -302,19 +301,16 @@ struct Ind<'a> {
     npe: std::cell::Cell<bool>,
 }
 
-pub fn check(cx: &mut Ctx, _tree: &Tree) {
+pub fn check(cx: &mut Ctx, cache: &crate::csast::CsCache) {
     let cfg = cx.cfg;
     let Some(opts) = &cfg.indentation else { return };
-    let ast = match crate::csast::try_build_source(cx.src, crate::syntax::Grammar::Orchard, false) {
-        Ok(a) => a,
-        Err(_) => return,
-    };
+    let Some(ast) = cache.get(false) else { return };
     if ast.root == NIL {
         return;
     }
     let lines = split_lines(cx.src);
     let mut ind = Ind {
-        a: &ast,
+        a: ast,
         lines,
         tab: cx.cfg.tab_width as i32,
         o: opts,

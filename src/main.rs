@@ -180,11 +180,12 @@ fn check_file(parser: &mut tree_sitter::Parser, syn: &Syntax, mode: Mode, explai
         Mode::WalkOnly => result.nodes = syntax::walk_only(&tree),
         Mode::Lint(cfg) => {
             javaid::rules::cs::set_file(path);
-            engine::lint_file(syn, cfg, &tree, &src, Some(path), &mut result.diagnostics);
+            let cache = javaid::csast::CsCache::new(&tree, &src);
+            engine::lint_file_cached(syn, cfg, &cache, Some(path), &mut result.diagnostics);
             // Checkstyle reports in line order; the walk finds things in document order and the
             // line-based modules afterwards, so put them in order. Stable, so ties keep their order.
             result.diagnostics.sort_by_key(|d| (d.line, d.col));
-            suppress::by_file(cfg, path, &src, &mut result.diagnostics);
+            suppress::by_file_cached(cfg, path, &cache, &mut result.diagnostics);
         }
     }
     result
@@ -309,9 +310,13 @@ fn main() -> ExitCode {
         Mode::Lint(&cfg)
     };
 
-    if let Some(n) = cli.threads {
-        rayon::ThreadPoolBuilder::new().num_threads(n).build_global().expect("thread pool");
-    }
+    // The workers get the big stack the emulated-AST builder recurses on (only the pages it touches
+    // are ever committed), so it runs in place rather than on a thread of its own per build.
+    let pool = rayon::ThreadPoolBuilder::new()
+        .num_threads(cli.threads.unwrap_or(0))
+        .stack_size(javaid::csast::shared::BIG_STACK)
+        .start_handler(|_| javaid::csast::mark_big_stack_thread());
+    pool.build_global().expect("thread pool");
 
     let t0 = Instant::now();
     let (files, walk_order) = discover(&cli.paths, !cli.no_follow_symlinks, &cfg.extensions());
