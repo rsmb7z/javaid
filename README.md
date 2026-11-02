@@ -161,3 +161,14 @@ one file (Checkstyle 4.0 ms), at 733 MB. See [FINDINGS.md](FINDINGS.md) section 
   sees one line, while javaid has turned each `\r` into `\n` to parse the file and sees several.
 - No cache, no `--fix`, no output format other than plain text.
 - No licence has been chosen yet.
+
+## License
+
+javaid is licensed under the [GNU Lesser General Public License, version 2.1 or later](COPYING.LESSER)
+(`LGPL-2.1-or-later`), the same terms as Checkstyle. Contributions are accepted under the same terms.
+Running javaid, in CI or anywhere else, places no conditions on you or on the code it checks.
+
+Most of javaid is written from Checkstyle's observable behaviour: its findings and message text,
+recorded on probe files. Some modules and the emulation of Checkstyle's syntax tree are translated to
+Rust from Checkstyle 14.4.0's source; those files name their source and carry Checkstyle's copyright
+notice.

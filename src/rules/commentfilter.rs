@@ -19,8 +19,6 @@ pub const CHECKER_LEVEL: &[&str] = &[
 ];
 
 struct Comment {
-    line: u32,
-    col: usize,
     /// `(line number, column of the text, text)` per line.
     lines: Vec<(u32, usize, String)>,
     block: bool,
@@ -47,7 +45,7 @@ pub fn on_comment(cx: &Ctx, st: &mut State, node: Node) {
             lines.push((start.row as u32 + 1 + i as u32, 0, part.trim_end_matches('\r').to_string()));
         }
     }
-    st.comments.push(Comment { line: start.row as u32 + 1, col: start.column, lines, block });
+    st.comments.push(Comment { lines, block });
 }
 
 struct Tag {
