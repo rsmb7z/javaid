@@ -10,7 +10,7 @@
 //! `EmptyLineSeparator`, ported from `EmptyLineSeparatorCheck.java` onto the emulated
 //! `DetailAST` (with comment nodes, as the check asks for them).
 
-use super::cs::{is_blank, is_comment_type, is_package_info, preorder, Log};
+use super::cs::{is_blank, is_comment_type, preorder, Log};
 use crate::config::EmptyLineSeparator;
 use crate::csast::{CsAst, Tok, N};
 
@@ -211,7 +211,7 @@ impl Check<'_, '_, '_> {
     fn process_package(&mut self, n: N, next: Option<N>) {
         let ast = self.ast;
         if self.line_no(n) > 1 && !self.has_empty_line_before(n) {
-            if is_package_info() {
+            if self.log.is_package_info() {
                 let first = ast.first_child(n).expect("annotations");
                 if ast.first_child(first).is_none() && !self.is_preceded_by_javadoc(n) {
                     self.log_text(n, separated);

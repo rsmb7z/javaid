@@ -22,9 +22,16 @@ pub struct Log<'a> {
     out: &'a mut Vec<Diagnostic>,
     /// Checkstyle keeps its violations in a sorted set, so an identical one is reported once.
     seen: std::collections::HashSet<(&'static str, u32, u32, String)>,
+    /// The file is a `package-info.java`.
+    package_info: bool,
 }
 
 impl Log<'_> {
+    /// `CheckUtil.isPackageInfo(getFilePath())`.
+    pub fn is_package_info(&self) -> bool {
+        self.package_info
+    }
+
     /// `AbstractCheck.log(DetailAST, ...)`: the node's line and its column with tabs expanded.
     pub fn at(&mut self, rule: &'static str, ast: &CsAst, n: N, message: &str) {
         self.at_pos(rule, ast.line_no(n), ast.column_no(n), message);
@@ -118,20 +125,6 @@ pub fn is_comment_type(t: Tok) -> bool {
     matches!(t, Tok::SINGLE_LINE_COMMENT | Tok::BLOCK_COMMENT_BEGIN | Tok::BLOCK_COMMENT_END | Tok::COMMENT_CONTENT)
 }
 
-thread_local! {
-    static PACKAGE_INFO: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
-}
-
-/// Tells the ported checks which file is being linted (`getFilePath()`), on this thread.
-pub fn set_file(path: &std::path::Path) {
-    PACKAGE_INFO.with(|p| p.set(path.file_name().is_some_and(|n| n == "package-info.java")));
-}
-
-/// `CheckUtil.isPackageInfo(getFilePath())`.
-pub fn is_package_info() -> bool {
-    PACKAGE_INFO.with(|p| p.get())
-}
-
 pub fn same_line(ast: &CsAst, a: N, b: N) -> bool {
     ast.line_no(a) == ast.line_no(b)
 }
@@ -140,8 +133,8 @@ pub fn ty_is(ast: &CsAst, n: N, t: Tok) -> bool {
     ast.ty(n) == t
 }
 
-/// Runs the ported modules the configuration enables.
-pub fn run(cfg: &Config, cache: &CsCache, out: &mut Vec<Diagnostic>) {
+/// Runs the ported modules the configuration enables. `path` is the file's (`getFilePath()`).
+pub fn run(cfg: &Config, cache: &CsCache, path: Option<&std::path::Path>, out: &mut Vec<Diagnostic>) {
     // The builder reads the fork grammar's node names (`@interface`, ...); the upstream grammar's
     // trees would make it panic.
     if !cache.tree().is_some_and(crate::csast::shared::is_orchard) {
@@ -153,7 +146,8 @@ pub fn run(cfg: &Config, cache: &CsCache, out: &mut Vec<Diagnostic>) {
     if !plain && !comments {
         return;
     }
-    let mut log = Log { cfg, lines: src.split(|&b| b == b'\n').collect(), out, seen: Default::default() };
+    let package_info = path.and_then(|p| p.file_name()).is_some_and(|n| n == "package-info.java");
+    let mut log = Log { cfg, lines: src.split(|&b| b == b'\n').collect(), out, seen: Default::default(), package_info };
     if plain {
         if let Some(ast) = cache.get(false) {
             super::textblock::check(ast, &mut log);

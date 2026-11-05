@@ -179,7 +179,6 @@ fn check_file(parser: &mut tree_sitter::Parser, syn: &Syntax, mode: Mode, explai
         Mode::ParseOnly => {}
         Mode::WalkOnly => result.nodes = syntax::walk_only(&tree),
         Mode::Lint(cfg) => {
-            javaid::rules::cs::set_file(path);
             let cache = javaid::csast::CsCache::new(&tree, &src);
             engine::lint_file_cached(syn, cfg, &cache, Some(path), &mut result.diagnostics);
             // Checkstyle reports in line order; the walk finds things in document order and the

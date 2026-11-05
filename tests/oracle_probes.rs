@@ -1381,7 +1381,6 @@ fn findings(root: &Path, probe: &str, config: &str, grammar: Grammar) -> Result<
         let syn = Syntax::new(grammar);
         let tree = syn.new_parser().parse(&src, None).unwrap();
         syntax_errors = tree.root_node().has_error();
-        javaid::rules::cs::set_file(&path);
         lint_file(&syn, &loaded.config, &tree, &src, Some(&path), &mut out);
     } else {
         lint_text(&loaded.config, ext, &src, &mut out);

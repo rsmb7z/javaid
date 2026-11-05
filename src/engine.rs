@@ -330,6 +330,6 @@ pub fn lint_file_cached(syn: &Syntax, cfg: &Config, cache: &crate::csast::CsCach
     rules::csast_checks::run(cfg, cache, cx.out);
     rules::xpathfilter::match_xpath(&mut cx, cache);
     lint_text(cfg, "java", src, cx.out);
-    rules::cs::run(cfg, cache, cx.out);
+    rules::cs::run(cfg, cache, path, cx.out);
     crate::messages::apply(cfg, cx.out, from);
 }
