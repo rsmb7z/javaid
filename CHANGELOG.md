@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1
+
+- The README's benchmark chart shows in dark mode on crates.io (it showed only its alt text).
+  No change to the linter.
+
 ## 1.0.0
 
 - 128 Checkstyle modules (Indentation, the Javadoc family, EmptyLineSeparator, CustomImportOrder, the XPath, SuppressWarnings, comment and text suppression filters, the Google naming modules and more), each accepted only at zero difference from Checkstyle 14.4.0 on probe

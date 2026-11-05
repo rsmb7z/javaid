@@ -6,7 +6,7 @@ not covered.
 
 [![License: LGPL-2.1-or-later](https://img.shields.io/badge/license-LGPL--2.1--or--later-blue.svg)](#license)
 [![CI](https://github.com/rsmb7z/javaid/actions/workflows/ci.yml/badge.svg)](https://github.com/rsmb7z/javaid/actions/workflows/ci.yml)
-[![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-green.svg)](CHANGELOG.md)
+[![Version 1.0.1](https://img.shields.io/badge/version-1.0.1-green.svg)](CHANGELOG.md)
 
 - **Same findings as Checkstyle.** Same file, line, column, rule and message. With Checkstyle's
   bundled Google and Sun configs, zero differences on Guava and Spring Framework: 1,778,237 findings
@@ -151,7 +151,7 @@ inside is in [docs/architecture.md](docs/architecture.md).
 
 ## Status
 
-Version 1.0.0. See [CHANGELOG.md](CHANGELOG.md). Please open an issue if javaid's output differs from
+Version 1.0.1. See [CHANGELOG.md](CHANGELOG.md). Please open an issue if javaid's output differs from
 Checkstyle's on your code: attach the configuration and a snippet. That is the most useful bug report.
 
 ## Why "javaid"?

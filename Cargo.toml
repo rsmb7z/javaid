@@ -1,6 +1,6 @@
 [package]
 name = "javaid"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2024"
 license = "LGPL-2.1-or-later"
 description = "A fast, Checkstyle-compatible Java linter written in Rust"
