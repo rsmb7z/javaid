@@ -2,8 +2,8 @@
 //! `VisibilityModifier`.
 
 use crate::engine::Ctx;
-use crate::syntax::KindExt;
 use crate::rules::util::has_modifier;
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 /// What `FinalClass` keeps while it walks a file.
@@ -143,7 +143,13 @@ pub fn on_new(cx: &Ctx, st: &mut State, node: Node) {
     while let Some(p) = cx.parent_of(up) {
         match p.kind_s() {
             "assignment_expression" => return,
-            "parenthesized_expression" | "cast_expression" | "ternary_expression" | "binary_expression" | "unary_expression" | "array_access" | "instanceof_expression" => up = p,
+            "parenthesized_expression"
+            | "cast_expression"
+            | "ternary_expression"
+            | "binary_expression"
+            | "unary_expression"
+            | "array_access"
+            | "instanceof_expression" => up = p,
             _ => break,
         }
     }
@@ -183,11 +189,7 @@ fn nearest(st: &State, name: &str, count: impl Fn(&Class) -> usize) -> Option<us
             None => Some(i),
             Some(b) => {
                 let (cb, ci) = (count(&st.classes[b]), count(c));
-                if ci > cb || (ci == cb && c.depth < st.classes[b].depth) {
-                    Some(i)
-                } else {
-                    Some(b)
-                }
+                if ci > cb || (ci == cb && c.depth < st.classes[b].depth) { Some(i) } else { Some(b) }
             }
         };
     }
@@ -296,7 +298,10 @@ pub fn on_final_parameter(cx: &mut Ctx, node: Node) {
             if !wanted {
                 return;
             }
-            node.children(&mut node.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)).or_else(|| node.child_by_field_id(cx.syn.f.name))
+            node.children(&mut node.walk())
+                .filter(|c| c.kind_s() == "variable_declarator")
+                .find_map(|d| d.child_by_field_id(cx.syn.f.name))
+                .or_else(|| node.child_by_field_id(cx.syn.f.name))
         }
         "catch_formal_parameter" => {
             if !tokens.contains(Token::LiteralCatch) {
@@ -320,7 +325,8 @@ pub fn on_final_parameter(cx: &mut Ctx, node: Node) {
         // The type is a direct child; upstream grammars do not name it in a spread parameter.
         let primitive = node.children(&mut node.walk()).any(|t| matches!(t.kind_s(), "integral_type" | "floating_point_type" | "boolean_type"));
         // `int x[]` keeps its brackets after the name: an array.
-        let c_style_array = node.children(&mut node.walk()).any(|c| c.kind_s() == "dimensions") || cx.parent_of(name).is_some_and(|p| p.children(&mut p.walk()).any(|c| c.kind_s() == "dimensions"));
+        let c_style_array = node.children(&mut node.walk()).any(|c| c.kind_s() == "dimensions")
+            || cx.parent_of(name).is_some_and(|p| p.children(&mut p.walk()).any(|c| c.kind_s() == "dimensions"));
         if primitive && !c_style_array {
             return;
         }
@@ -329,7 +335,9 @@ pub fn on_final_parameter(cx: &mut Ctx, node: Node) {
     // Reported where the parameter starts, which for the variable of an enhanced `for` is its first
     // modifier or type, not the `for`.
     let anchor = if node.kind_s() == "enhanced_for_statement" {
-        node.children(&mut node.walk()).find(|c| c.kind_s() == "modifiers" || Some(c.id()) == node.child_by_field_id(cx.syn.f.type_).map(|t| t.id())).unwrap_or(name)
+        node.children(&mut node.walk())
+            .find(|c| c.kind_s() == "modifiers" || Some(c.id()) == node.child_by_field_id(cx.syn.f.type_).map(|t| t.id()))
+            .unwrap_or(name)
     } else {
         node
     };
@@ -353,7 +361,9 @@ pub fn on_visibility(cx: &mut Ctx, field: Node) {
         for m in mods.children(&mut mods.walk()) {
             match m.kind_s() {
                 "marker_annotation" | "annotation" => {
-                    let name = m.child_by_field_id(cx.syn.f.name).map(|n| cx.text(n).iter().filter(|b| !b.is_ascii_whitespace()).map(|b| *b as char).collect::<String>());
+                    let name = m
+                        .child_by_field_id(cx.syn.f.name)
+                        .map(|n| cx.text(n).iter().filter(|b| !b.is_ascii_whitespace()).map(|b| *b as char).collect::<String>());
                     ignored |= name.is_some_and(|n| opts.ignore_annotations.contains(&n));
                 }
                 _ => match cx.text(m) {

@@ -1,8 +1,8 @@
 //! `EqualsHashCode`.
 
 use crate::engine::Ctx;
-use crate::syntax::KindExt;
 use crate::syntax::Act;
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 pub fn on_type_body(cx: &mut Ctx, body: Node) {
@@ -57,8 +57,7 @@ fn has_single_object_param(cx: &Ctx, method: Node) -> bool {
         return false;
     }
     let Some(param) = params.named_child(0) else { return false };
-    param.kind_s() == "formal_parameter"
-        && param.child_by_field_id(cx.syn.f.type_).is_some_and(|t| matches!(cx.text(t), b"Object" | b"java.lang.Object"))
+    param.kind_s() == "formal_parameter" && param.child_by_field_id(cx.syn.f.type_).is_some_and(|t| matches!(cx.text(t), b"Object" | b"java.lang.Object"))
 }
 
 /// `MissingSwitchDefault`: a `switch` statement (never an expression) without a `default`.
@@ -116,7 +115,9 @@ pub fn on_declaration(cx: &mut Ctx, decl: Node) {
     // Looked at from the later declaration: the one before it ended on the line where this starts.
     // The finding is still reported at the earlier one.
     if let Some(before) = cx.previous_sibling() {
-        if matches!(before.kind_s(), "local_variable_declaration" | "field_declaration" | "constant_declaration") && before.end_position().row == decl.start_position().row {
+        if matches!(before.kind_s(), "local_variable_declaration" | "field_declaration" | "constant_declaration")
+            && before.end_position().row == decl.start_position().row
+        {
             cx.diag_start("MultipleVariableDeclarations", before, "Only one variable definition per line allowed.".into());
         }
     }
@@ -143,9 +144,18 @@ pub fn on_assignment(cx: &mut Ctx, assignment: Node) {
             Some(g) => match g.kind_s() {
                 "block" | "constructor_body" | "switch_block_statement_group" => true,
                 // The body of an `if`, `else` or loop without braces.
-                "if_statement" => g.child_by_field_id(f.consequence).is_some_and(|c| c.id() == parent.id()) || g.child_by_field_id(f.alternative).is_some_and(|c| c.id() == parent.id()),
-                "while_statement" | "for_statement" | "enhanced_for_statement" | "do_statement" => g.child_by_field_id(f.body).is_some_and(|c| c.id() == parent.id()),
-                "switch_rule" => g.parent().and_then(|b| b.parent()).and_then(|sw| sw.parent()).is_some_and(|s| matches!(s.kind_s(), "block" | "constructor_body" | "switch_block_statement_group")),
+                "if_statement" => {
+                    g.child_by_field_id(f.consequence).is_some_and(|c| c.id() == parent.id())
+                        || g.child_by_field_id(f.alternative).is_some_and(|c| c.id() == parent.id())
+                }
+                "while_statement" | "for_statement" | "enhanced_for_statement" | "do_statement" => {
+                    g.child_by_field_id(f.body).is_some_and(|c| c.id() == parent.id())
+                }
+                "switch_rule" => g
+                    .parent()
+                    .and_then(|b| b.parent())
+                    .and_then(|sw| sw.parent())
+                    .is_some_and(|s| matches!(s.kind_s(), "block" | "constructor_body" | "switch_block_statement_group")),
                 _ => false,
             },
             None => false,
@@ -164,7 +174,8 @@ pub fn on_assignment(cx: &mut Ctx, assignment: Node) {
 /// Is `top` an operand of a comparison that makes up the condition of a `while`, `do` or `for`?
 fn in_loop_idiom(cx: &Ctx, top: Node) -> bool {
     let Some(comparison) = top.parent().filter(|p| {
-        p.kind_s() == "binary_expression" && p.child_by_field_name("operator").is_some_and(|o| matches!(cx.text(o), b"==" | b"!=" | b"<" | b">" | b"<=" | b">="))
+        p.kind_s() == "binary_expression"
+            && p.child_by_field_name("operator").is_some_and(|o| matches!(cx.text(o), b"==" | b"!=" | b"<" | b">" | b"<=" | b">="))
     }) else {
         return false;
     };

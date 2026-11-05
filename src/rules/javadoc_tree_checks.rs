@@ -14,7 +14,7 @@
 //! the Java check, node for node, on the tree `javadoc_tree` builds.
 
 use crate::config::SummaryJavadoc;
-use crate::rules::javadoc_tree::{is_blank, is_java_ws, Id, Tree, Ty};
+use crate::rules::javadoc_tree::{Id, Tree, Ty, is_blank, is_java_ws};
 
 /// One finding: the line it is reported on, its column (1-based, 0 for none), and the message.
 pub struct Finding {

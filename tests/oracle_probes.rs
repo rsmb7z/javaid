@@ -9,7 +9,7 @@
 //! Unlike a unit test written from memory, a failure here means javaid disagrees with Checkstyle.
 
 use javaid::config::Config;
-use javaid::engine::{lint_file, lint_text, normalize_line_breaks, Diagnostic};
+use javaid::engine::{Diagnostic, lint_file, lint_text, normalize_line_breaks};
 use javaid::syntax::{Grammar, Syntax};
 use std::path::Path;
 
@@ -1402,11 +1402,7 @@ fn expected(root: &Path, probe: &str, config: &str) -> Vec<String> {
     let rows: Vec<String> = text.lines().filter(|l| !l.starts_with('#')).map(String::from).collect();
     // An empty fixture is fine only when the recorder said Checkstyle looked and found nothing;
     // otherwise it is the trace of a broken oracle run, which would prove nothing.
-    assert!(
-        !rows.is_empty() || text.lines().any(|l| l.starts_with("# no findings")),
-        "{}: empty fixture without the 'no findings' marker",
-        path.display()
-    );
+    assert!(!rows.is_empty() || text.lines().any(|l| l.starts_with("# no findings")), "{}: empty fixture without the 'no findings' marker", path.display());
     rows
 }
 
@@ -1435,7 +1431,9 @@ fn the_upstream_grammar_agrees_where_it_can_parse() {
         if !probe.ends_with(".java") || UPSTREAM_MISPARSES.iter().any(|(p, _)| p == probe) {
             continue;
         }
-        let (Ok((fork, _)), Ok((upstream, upstream_errors))) = (findings(root, probe, config, Grammar::Orchard), findings(root, probe, config, Grammar::Upstream)) else {
+        let (Ok((fork, _)), Ok((upstream, upstream_errors))) =
+            (findings(root, probe, config, Grammar::Orchard), findings(root, probe, config, Grammar::Upstream))
+        else {
             continue; // an unsupported config is reported by the other test
         };
         if upstream_errors {

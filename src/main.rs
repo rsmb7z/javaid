@@ -1,5 +1,5 @@
 use clap::Parser as ClapParser;
-use javaid::config::{module_names, Config};
+use javaid::config::{Config, module_names};
 use javaid::engine::{self, Diagnostic};
 use javaid::suppress;
 use javaid::syntax::{self, Grammar, Syntax};
@@ -192,18 +192,11 @@ fn check_file(parser: &mut tree_sitter::Parser, syn: &Syntax, mode: Mode, explai
 
 /// Canonical Checkstyle spelling of the requested module names, or the first unknown one.
 fn resolve_modules(requested: &[String]) -> Result<Vec<String>, String> {
-    requested
-        .iter()
-        .map(|r| module_names().find(|m| m.eq_ignore_ascii_case(r)).map(|m| m.to_string()).ok_or_else(|| r.clone()))
-        .collect()
+    requested.iter().map(|r| module_names().find(|m| m.eq_ignore_ascii_case(r)).map(|m| m.to_string()).ok_or_else(|| r.clone())).collect()
 }
 
 fn load_config(cli: &Cli) -> Result<Config, String> {
-    let only = if cli.rules.is_empty() {
-        None
-    } else {
-        Some(resolve_modules(&cli.rules).map_err(|bad| format!("unknown module '{bad}' (see --list-rules)"))?)
-    };
+    let only = if cli.rules.is_empty() { None } else { Some(resolve_modules(&cli.rules).map_err(|bad| format!("unknown module '{bad}' (see --list-rules)"))?) };
     let Some(path) = &cli.config else {
         return Ok(Config::checkstyle_defaults(only.as_deref()));
     };
@@ -323,10 +316,8 @@ fn main() -> ExitCode {
 
     let syn = Syntax::new(cli.grammar);
     let t1 = Instant::now();
-    let mut results: Vec<FileResult> = files
-        .par_iter()
-        .map_init(|| syn.new_parser(), |parser, path| check_file(parser, &syn, mode, cli.list_syntax_errors, path))
-        .collect();
+    let mut results: Vec<FileResult> =
+        files.par_iter().map_init(|| syn.new_parser(), |parser, path| check_file(parser, &syn, mode, cli.list_syntax_errors, path)).collect();
     // The modules that look at the set of files, not at one.
     let mut at_end = Vec::new();
     if let Mode::Lint(cfg) = mode {
@@ -389,11 +380,7 @@ fn main() -> ExitCode {
         );
     }
 
-    if violations > 0 {
-        ExitCode::from(1)
-    } else {
-        ExitCode::SUCCESS
-    }
+    if violations > 0 { ExitCode::from(1) } else { ExitCode::SUCCESS }
 }
 
 /// Dumps the Checkstyle-style AST of every file named in `list` into `out`, in parallel.

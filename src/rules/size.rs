@@ -1,9 +1,9 @@
 //! `MethodLength` and `ParameterNumber`: how big a method or constructor is.
 
 use crate::engine::Ctx;
+use crate::rules::util::has_override_annotation;
 use crate::syntax::KindExt;
 use crate::tokens::Token;
-use crate::rules::util::has_override_annotation;
 use tree_sitter::Node;
 
 /// A method, constructor or compact constructor, as the two modules see it.
@@ -16,7 +16,6 @@ pub fn on_method_like(cx: &mut Ctx, node: Node) {
     method_length(cx, node, token);
     parameter_number(cx, node, token);
 }
-
 
 /// `MethodLength`: the lines from the line of the opening brace to the line of the closing one. With
 /// `countEmpty=false`, only the lines on which some token of the body starts count (comments are not
@@ -31,7 +30,11 @@ fn method_length(cx: &mut Ctx, node: Node, token: Token) {
     let length = if count_empty { body.end_position().row - body.start_position().row + 1 } else { used_lines(body) };
     if length > max {
         let name = node.child_by_field_id(cx.syn.f.name).map(|n| String::from_utf8_lossy(cx.text(n)).into_owned()).unwrap_or_default();
-        cx.diag("MethodLength", node, format!("Method {name} length is {} lines (max allowed is {}).", crate::engine::grouped(length), crate::engine::grouped(max)));
+        cx.diag(
+            "MethodLength",
+            node,
+            format!("Method {name} length is {} lines (max allowed is {}).", crate::engine::grouped(length), crate::engine::grouped(max)),
+        );
     }
 }
 

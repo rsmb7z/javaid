@@ -73,14 +73,19 @@ fn visit(a: &CsAst, o: &Opts, ast: N, lines: &[&[u8]], tab_width: usize, out: &m
         return;
     }
     let semicolon = a.next_sibling(ast);
-    let (usage, dist) = if o.validate_between_scopes { distance_between_scopes(a, semicolon, variable) } else { distance_in_single_scope(a, semicolon, variable) };
+    let (usage, dist) =
+        if o.validate_between_scopes { distance_between_scopes(a, semicolon, variable) } else { distance_in_single_scope(a, semicolon, variable) };
     if dist > o.allowed_distance as i32 && !is_initialization_sequence(a, usage, name) {
         let tail = if o.ignore_final {
             "  Consider making that variable final if you still need to store its value in advance (before method calls that might have side effects on the original value)."
         } else {
             ""
         };
-        let message = format!("Distance between variable '{name}' declaration and its first usage is {}, but allowed {}.{tail}", grouped(dist as i64), grouped(o.allowed_distance as i64));
+        let message = format!(
+            "Distance between variable '{name}' declaration and its first usage is {}, but allowed {}.{tail}",
+            grouped(dist as i64),
+            grouped(o.allowed_distance as i64)
+        );
         let line = a.line_no(ast);
         let col = report_col(lines, line, a.column_no(ast), tab_width);
         out.push(Diagnostic { rule: "VariableDeclarationUsageDistance", line: line as u32, col, message });
@@ -213,11 +218,7 @@ fn next_node_to_check(a: &CsAst, cur: N) -> Option<N> {
         return Some(p);
     }
     let predecessor = first_predecessor(a, &[Tok::SLIST, Tok::OBJBLOCK], cur)?;
-    if a.ty(predecessor) == Tok::SLIST {
-        next_node_between_scopes_slist(a, predecessor)
-    } else {
-        a.parent(predecessor).and_then(|p| a.prev_sibling(p))
-    }
+    if a.ty(predecessor) == Tok::SLIST { next_node_between_scopes_slist(a, predecessor) } else { a.parent(predecessor).and_then(|p| a.prev_sibling(p)) }
 }
 
 fn next_node_between_scopes_slist(a: &CsAst, ast: N) -> Option<N> {

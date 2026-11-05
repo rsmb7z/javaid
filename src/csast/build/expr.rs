@@ -9,8 +9,8 @@
 
 //! Expressions.
 
-use tree_sitter::Node;
 use crate::syntax::KindExt;
+use tree_sitter::Node;
 
 use super::types::is_annotation;
 use super::{B, kids};
@@ -108,7 +108,15 @@ fn binary_precedence(op: &str) -> u8 {
 fn is_type_kind(k: &str) -> bool {
     matches!(
         k,
-        "generic_type" | "array_type" | "integral_type" | "floating_point_type" | "boolean_type" | "void_type" | "annotated_type" | "scoped_type_identifier" | "type_identifier"
+        "generic_type"
+            | "array_type"
+            | "integral_type"
+            | "floating_point_type"
+            | "boolean_type"
+            | "void_type"
+            | "annotated_type"
+            | "scoped_type_identifier"
+            | "type_identifier"
     )
 }
 
@@ -166,7 +174,13 @@ impl<'s> B<'s> {
             "identifier" => self.ident(n),
             "this" | "super" => self.punct(n),
             "true" | "false" | "null_literal" => {
-                let t = if n.kind_s() == "null_literal" { Tok::LITERAL_NULL } else if n.kind_s() == "true" { Tok::LITERAL_TRUE } else { Tok::LITERAL_FALSE };
+                let t = if n.kind_s() == "null_literal" {
+                    Tok::LITERAL_NULL
+                } else if n.kind_s() == "true" {
+                    Tok::LITERAL_TRUE
+                } else {
+                    Tok::LITERAL_FALSE
+                };
                 self.tok(t, n)
             }
             "decimal_integer_literal" | "hex_integer_literal" | "octal_integer_literal" | "binary_integer_literal" => {

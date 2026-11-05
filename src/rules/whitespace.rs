@@ -5,9 +5,9 @@
 //! `PadProbe*` fixtures show, one token at a time, and not what the grammar suggests.
 
 use super::pad::{self, Gap};
+use crate::engine::Ctx;
 use crate::syntax::KindExt;
 use crate::tokens::Token;
-use crate::engine::Ctx;
 use tree_sitter::Node;
 
 /// The Checkstyle token that owns the parenthesis `paren`, whose parent is `parent`.
@@ -65,11 +65,7 @@ fn paren_owner(cx: &Ctx, parent: Node) -> Option<Token> {
                         _ => break,
                     }
                 }
-                if in_ternary {
-                    Token::Question
-                } else {
-                    Token::Expr
-                }
+                if in_ternary { Token::Question } else { Token::Expr }
             }
         },
         _ => return None,
@@ -428,12 +424,23 @@ fn switch_is_whole_expression(cx: &Ctx) -> bool {
     // The `switch` keyword's parent is the switch itself, and the construct holding it is the next one up.
     let Some(up) = cx.ancestor(1) else { return false };
     match up.kind_s() {
-        "variable_declarator" | "argument_list" | "array_initializer" | "lambda_expression" | "return_statement" | "yield_statement"
-        | "assert_statement" | "expression_statement" | "throw_statement" | "element_value_pair" | "for_statement" | "enhanced_for_statement"
-        | "array_access" | "dimensions_expr" => true,
-        "parenthesized_expression" => {
-            cx.ancestor(2).is_some_and(|g| matches!(g.kind_s(), "if_statement" | "while_statement" | "do_statement" | "synchronized_statement" | "switch_expression"))
-        }
+        "variable_declarator"
+        | "argument_list"
+        | "array_initializer"
+        | "lambda_expression"
+        | "return_statement"
+        | "yield_statement"
+        | "assert_statement"
+        | "expression_statement"
+        | "throw_statement"
+        | "element_value_pair"
+        | "for_statement"
+        | "enhanced_for_statement"
+        | "array_access"
+        | "dimensions_expr" => true,
+        "parenthesized_expression" => cx
+            .ancestor(2)
+            .is_some_and(|g| matches!(g.kind_s(), "if_statement" | "while_statement" | "do_statement" | "synchronized_statement" | "switch_expression")),
         _ => false,
     }
 }
@@ -603,7 +610,9 @@ fn generic_before_name(arguments: Node) -> bool {
         }
         owner = n.parent();
     }
-    owner.is_some_and(|n| matches!(n.kind_s(), "method_invocation" | "method_reference" | "object_creation_expression" | "array_creation_expression" | "record_declaration"))
+    owner.is_some_and(|n| {
+        matches!(n.kind_s(), "method_invocation" | "method_reference" | "object_creation_expression" | "array_creation_expression" | "record_declaration")
+    })
 }
 
 /// `WhitespaceAfter`: the character after the token must be a blank, or the line must end.
@@ -733,7 +742,13 @@ fn no_whitespace_after_token(cx: &Ctx, node: Node) -> Option<Token> {
         "[" if parent.kind_s() == "array_access" => Token::IndexOp,
         "[" if matches!(parent.kind_s(), "dimensions" | "dimensions_expr") => Token::ArrayDeclarator,
         _ => match punctuation_token(cx, node)? {
-            token @ (Token::Dot | Token::MethodRef | Token::LiteralIf | Token::LiteralFor | Token::LiteralWhile | Token::DoWhile | Token::LiteralCatch
+            token @ (Token::Dot
+            | Token::MethodRef
+            | Token::LiteralIf
+            | Token::LiteralFor
+            | Token::LiteralWhile
+            | Token::DoWhile
+            | Token::LiteralCatch
             | Token::LiteralSynchronized) => token,
             _ => return None,
         },
@@ -751,7 +766,10 @@ fn no_whitespace_after(cx: &mut Ctx, node: Node) {
     }
     // Checkstyle skips a token whose previous sibling is the (possibly empty) annotation list: the
     // outermost `.` of a package name (which has one), and brackets that follow an annotation.
-    if token == Token::Dot && cx.parent().is_some_and(|p| p.kind_s() == "scoped_identifier") && cx.ancestor(1).is_some_and(|g| g.kind_s() == "package_declaration") {
+    if token == Token::Dot
+        && cx.parent().is_some_and(|p| p.kind_s() == "scoped_identifier")
+        && cx.ancestor(1).is_some_and(|g| g.kind_s() == "package_declaration")
+    {
         return;
     }
     if token == Token::ArrayDeclarator && previous_sibling_skipping_comments(node).is_some_and(|p| matches!(p.kind_s(), "annotation" | "marker_annotation")) {
@@ -817,7 +835,8 @@ fn leading_type_annotation<'a>(cx: &Ctx<'a>, bracket: Node<'a>) -> Option<Node<'
     // `java.lang.@A String [n]`: the annotation list is the one inside the qualified name.
     fn inside_name(t: Node) -> Option<Node> {
         let mut cur = t.walk();
-        let found = (t.kind_s() == "scoped_type_identifier").then(|| t.children(&mut cur).find(|n| matches!(n.kind_s(), "annotation" | "marker_annotation"))).flatten();
+        let found =
+            (t.kind_s() == "scoped_type_identifier").then(|| t.children(&mut cur).find(|n| matches!(n.kind_s(), "annotation" | "marker_annotation"))).flatten();
         found
     }
     match holder.kind_s() {
@@ -832,7 +851,9 @@ fn leading_type_annotation<'a>(cx: &Ctx<'a>, bracket: Node<'a>) -> Option<Node<'
             let outer = cx.ancestor(2)?;
             match outer.kind_s() {
                 // A bound (`? extends @A T[]`, `T extends @A U[]`) is measured from its previous sibling as usual.
-                "annotated_type" if !cx.ancestor(3).is_some_and(|b| matches!(b.kind_s(), "wildcard" | "type_bound")) => outer.child(0).filter(|n| is_annotation(*n)),
+                "annotated_type" if !cx.ancestor(3).is_some_and(|b| matches!(b.kind_s(), "wildcard" | "type_bound")) => {
+                    outer.child(0).filter(|n| is_annotation(*n))
+                }
                 "method_declaration" => {
                     let mut cur = outer.walk();
                     let first = outer.children(&mut cur).find(|n| is_annotation(*n));

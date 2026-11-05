@@ -9,8 +9,8 @@
 
 //! Package, imports, type declarations, members, parameters.
 
-use tree_sitter::Node;
 use crate::syntax::KindExt;
+use tree_sitter::Node;
 
 use super::types::is_annotation;
 use super::{B, kids};
@@ -437,11 +437,7 @@ impl<'s> B<'s> {
     }
 
     pub fn variable_initializer(&mut self, v: Node) -> N {
-        if v.kind_s() == "array_initializer" {
-            self.array_initializer(v)
-        } else {
-            self.expression(v)
-        }
+        if v.kind_s() == "array_initializer" { self.array_initializer(v) } else { self.expression(v) }
     }
 
     pub fn array_initializer(&mut self, v: Node) -> N {

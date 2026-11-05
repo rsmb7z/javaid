@@ -9,8 +9,8 @@
 
 //! Types, names, annotations and modifiers.
 
-use tree_sitter::Node;
 use crate::syntax::KindExt;
+use tree_sitter::Node;
 
 use super::{B, kids};
 use crate::csast::ast::{N, NIL};
@@ -346,11 +346,7 @@ impl<'s> B<'s> {
         let k = kids(t);
         let ub = self.tok(Tok::TYPE_UPPER_BOUNDS, k[0]);
         for x in &k[1..] {
-            let part = if x.kind_s() == "&" {
-                self.tok(Tok::TYPE_EXTENSION_AND, *x)
-            } else {
-                self.type_content(*x)
-            };
+            let part = if x.kind_s() == "&" { self.tok(Tok::TYPE_EXTENSION_AND, *x) } else { self.type_content(*x) };
             self.add(ub, part);
         }
         ub

@@ -22,9 +22,7 @@ pub fn on_comment(cx: &mut Ctx, node: Node) {
     };
     let at = node.start_position();
     for todo in &cfg.todo_comments {
-        let hit = content
-            .split(|&b| b == b'\n')
-            .any(|line| todo.format.matches(line) || line.strip_suffix(b"\r").is_some_and(|l| todo.format.matches(l)));
+        let hit = content.split(|&b| b == b'\n').any(|line| todo.format.matches(line) || line.strip_suffix(b"\r").is_some_and(|l| todo.format.matches(l)));
         if hit {
             let message = format!("Comment matches to-do format '{}'.", todo.format.source);
             let line = at.row as u32 + 1;

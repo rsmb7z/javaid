@@ -5,9 +5,9 @@
 //! read gets one parse-error finding per such module, and nothing else (see `javadoc_tags`).
 
 use crate::engine::Ctx;
-use crate::syntax::KindExt;
 use crate::rules::javadoc_tags::{self, Javadoc};
 use crate::rules::{javadoc_tree, javadoc_tree_checks};
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 /// The Checkstyle token a declaration is, for `AtclauseOrder.target`.
@@ -31,8 +31,15 @@ fn token_of(kind: &str) -> Option<&'static str> {
 
 pub fn wanted(cx: &Ctx) -> bool {
     let c = cx.cfg;
-    c.non_empty_atclause_description || c.atclause_order.is_some() || c.single_line_javadoc.is_some() || c.javadoc_missing_leading_asterisk || c.javadoc_asterisk_align.is_some() || c.require_empty_line_before_tag_group
-        || c.summary_javadoc.is_some() || c.javadoc_paragraph.is_some() || c.javadoc_tag_continuation_indent.is_some()
+    c.non_empty_atclause_description
+        || c.atclause_order.is_some()
+        || c.single_line_javadoc.is_some()
+        || c.javadoc_missing_leading_asterisk
+        || c.javadoc_asterisk_align.is_some()
+        || c.require_empty_line_before_tag_group
+        || c.summary_javadoc.is_some()
+        || c.javadoc_paragraph.is_some()
+        || c.javadoc_tag_continuation_indent.is_some()
 }
 
 /// `comment` is a Javadoc in a position Checkstyle reads; `decl` is the declaration it precedes.
@@ -81,7 +88,8 @@ pub fn on_javadoc(cx: &mut Ctx, comment: Node, decl: Node) {
     }
     if let Some(opts) = &cfg.atclause_order {
         // Without modifiers, a generic method's Javadoc hangs on its TYPE_PARAMETERS, not on the METHOD_DEF.
-        let on_type_params = matches!(decl.kind_s(), "method_declaration" | "constructor_declaration") && decl.named_child(0).is_some_and(|c| c.kind_s() == "type_parameters");
+        let on_type_params =
+            matches!(decl.kind_s(), "method_declaration" | "constructor_declaration") && decl.named_child(0).is_some_and(|c| c.kind_s() == "type_parameters");
         if !on_type_params && token_of(decl.kind_s()).is_some_and(|t| opts.target.iter().any(|x| x == t)) {
             let mut max_seen = 0usize;
             for tag in &doc.tags {
@@ -204,7 +212,12 @@ fn asterisk_align(cx: &mut Ctx, comment: Node, text: &str, first_line: u32, inde
         }
         let col = 1 + expanded_len(&chars[..lead].iter().collect::<String>(), tab);
         if col != expected {
-            cx.diag_at("JavadocLeadingAsteriskAlign", first_line + i as u32, (lead + 1) as u32, format!("Leading asterisk has incorrect indentation level {}, expected is {}.", level(col), level(expected)));
+            cx.diag_at(
+                "JavadocLeadingAsteriskAlign",
+                first_line + i as u32,
+                (lead + 1) as u32,
+                format!("Leading asterisk has incorrect indentation level {}, expected is {}.", level(col), level(expected)),
+            );
         }
     }
 }
@@ -337,6 +350,10 @@ pub fn multiline_asterisk(cx: &mut Ctx, comment: Node) {
         }
     }
     if !missing.is_empty() {
-        cx.diag("MultilineCommentLeadingAsteriskPresence", comment, format!("Multiline comment line(s) {} should start with leading asterisk.", missing.join(", ")));
+        cx.diag(
+            "MultilineCommentLeadingAsteriskPresence",
+            comment,
+            format!("Multiline comment line(s) {} should start with leading asterisk.", missing.join(", ")),
+        );
     }
 }

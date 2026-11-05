@@ -127,10 +127,69 @@ impl Syntax {
                 info[id as usize].pad_token = matches!(
                     kind,
                     Some(
-                        "," | ";" | "." | "..." | "::" | "++" | "--" | ":" | "->" | "if" | "else" | "while" | "do" | "for" | "finally" | "return" | "yield"
-                            | "catch" | "switch" | "synchronized" | "try" | "case" | "when" | "assert" | "instanceof" | "[" | "]" | "!" | "~" | "@" | "{" | "}" | "?" | "=" | "+=" | "-=" | "*="
-                            | "/=" | "%=" | "<<=" | ">>=" | ">>>=" | "&=" | "|=" | "^=" | "+" | "-" | "*" | "/" | "%" | "<<" | ">>" | ">>>" | "&"
-                            | "|" | "^" | "<" | ">" | "<=" | ">=" | "==" | "!=" | "&&" | "||"
+                        "," | ";"
+                            | "."
+                            | "..."
+                            | "::"
+                            | "++"
+                            | "--"
+                            | ":"
+                            | "->"
+                            | "if"
+                            | "else"
+                            | "while"
+                            | "do"
+                            | "for"
+                            | "finally"
+                            | "return"
+                            | "yield"
+                            | "catch"
+                            | "switch"
+                            | "synchronized"
+                            | "try"
+                            | "case"
+                            | "when"
+                            | "assert"
+                            | "instanceof"
+                            | "["
+                            | "]"
+                            | "!"
+                            | "~"
+                            | "@"
+                            | "{"
+                            | "}"
+                            | "?"
+                            | "="
+                            | "+="
+                            | "-="
+                            | "*="
+                            | "/="
+                            | "%="
+                            | "<<="
+                            | ">>="
+                            | ">>>="
+                            | "&="
+                            | "|="
+                            | "^="
+                            | "+"
+                            | "-"
+                            | "*"
+                            | "/"
+                            | "%"
+                            | "<<"
+                            | ">>"
+                            | ">>>"
+                            | "&"
+                            | "|"
+                            | "^"
+                            | "<"
+                            | ">"
+                            | "<="
+                            | ">="
+                            | "=="
+                            | "!="
+                            | "&&"
+                            | "||"
                     )
                 );
                 match kind {
@@ -146,9 +205,7 @@ impl Syntax {
                 "identifier" | "type_identifier" => Act::Ident,
                 "import_declaration" => Act::Import,
                 "package_declaration" => Act::Package,
-                "class_declaration" | "interface_declaration" | "enum_declaration" | "record_declaration" | "annotation_type_declaration" => {
-                    Act::TypeDecl
-                }
+                "class_declaration" | "interface_declaration" | "enum_declaration" | "record_declaration" | "annotation_type_declaration" => Act::TypeDecl,
                 "class_body" | "enum_body_declarations" => Act::TypeBody,
                 "method_declaration" => Act::Method,
                 "field_declaration" | "constant_declaration" => Act::Field,
@@ -293,7 +350,6 @@ pub fn walk_only(tree: &Tree) -> usize {
     }
     n
 }
-
 
 /// `Node::kind` without its cost. The binding turns the grammar's C string into a `&str` on every
 /// call (a `strlen` and a UTF-8 validation), and rules ask a node's kind several times per node;

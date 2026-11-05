@@ -3,8 +3,8 @@
 //! javadoc_tree_corpus -- --ignored`.
 
 use javaid::rules::javadoc_tree;
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 #[test]
 #[ignore]

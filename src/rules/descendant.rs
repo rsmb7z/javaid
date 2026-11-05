@@ -42,9 +42,21 @@ fn check(cx: &mut Ctx, rule: &crate::config::DescendantToken, stmt: Node, init: 
     let counted = if depth >= rule.min_depth && depth <= rule.max_depth { count } else { 0 };
     let name = if init { "FOR_INIT" } else { "FOR_ITERATOR" };
     let message = if counted < rule.min_number {
-        rule.minimum_message.clone().unwrap_or_else(|| format!("Count of {} for '{name}' descendant 'COMMA' is less than minimum count {}.", crate::engine::grouped(counted), crate::engine::grouped(rule.min_number)))
+        rule.minimum_message.clone().unwrap_or_else(|| {
+            format!(
+                "Count of {} for '{name}' descendant 'COMMA' is less than minimum count {}.",
+                crate::engine::grouped(counted),
+                crate::engine::grouped(rule.min_number)
+            )
+        })
     } else if counted > rule.max_number {
-        rule.maximum_message.clone().unwrap_or_else(|| format!("Count of {} for '{name}' descendant 'COMMA' exceeds maximum count {}.", crate::engine::grouped(counted), crate::engine::grouped(rule.max_number)))
+        rule.maximum_message.clone().unwrap_or_else(|| {
+            format!(
+                "Count of {} for '{name}' descendant 'COMMA' exceeds maximum count {}.",
+                crate::engine::grouped(counted),
+                crate::engine::grouped(rule.max_number)
+            )
+        })
     } else {
         return;
     };
@@ -64,11 +76,7 @@ fn root_token(expr: Node) -> (u32, u32) {
         "assignment_expression" => expr.child_by_field_name("operator").unwrap_or(expr),
         "update_expression" => {
             let first = expr.child(0).unwrap_or(expr);
-            if matches!(first.kind_s(), "++" | "--") {
-                first
-            } else {
-                expr.child(expr.child_count().saturating_sub(1) as u32).unwrap_or(expr)
-            }
+            if matches!(first.kind_s(), "++" | "--") { first } else { expr.child(expr.child_count().saturating_sub(1) as u32).unwrap_or(expr) }
         }
         "method_invocation" => expr.child_by_field_name("arguments").unwrap_or(expr),
         _ => expr,

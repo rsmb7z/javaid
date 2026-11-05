@@ -81,14 +81,25 @@ pub(super) fn google_non_constant_field_name(cfg: &mut Config, _module: &str, p:
 /// `AbbreviationAsWordInName`.
 pub(super) fn abbreviation_as_word_in_name(cfg: &mut Config, _module: &str, mut p: Props, _id: Option<&str>) -> Result<(), String> {
     let allowed_length = p.usize("allowedAbbreviationLength", 3)?;
-    let allowed_abbreviations = p.take("allowedAbbreviations").map_or_else(Vec::new, |v| v.split(',').map(|a| a.trim().to_string()).filter(|a| !a.is_empty()).collect());
+    let allowed_abbreviations =
+        p.take("allowedAbbreviations").map_or_else(Vec::new, |v| v.split(',').map(|a| a.trim().to_string()).filter(|a| !a.is_empty()).collect());
     let ignore_final = p.bool("ignoreFinal", true)?;
     let ignore_static = p.bool("ignoreStatic", true)?;
     let ignore_static_final = p.bool("ignoreStaticFinal", true)?;
     let ignore_overridden_methods = p.bool("ignoreOverriddenMethods", true)?;
     const ACCEPTED: &[&str] = &[
-        "CLASS_DEF", "INTERFACE_DEF", "ENUM_DEF", "ANNOTATION_DEF", "ANNOTATION_FIELD_DEF", "PARAMETER_DEF", "VARIABLE_DEF", "METHOD_DEF", "ENUM_CONSTANT_DEF",
-        "PATTERN_VARIABLE_DEF", "RECORD_DEF", "RECORD_COMPONENT_DEF",
+        "CLASS_DEF",
+        "INTERFACE_DEF",
+        "ENUM_DEF",
+        "ANNOTATION_DEF",
+        "ANNOTATION_FIELD_DEF",
+        "PARAMETER_DEF",
+        "VARIABLE_DEF",
+        "METHOD_DEF",
+        "ENUM_CONSTANT_DEF",
+        "PATTERN_VARIABLE_DEF",
+        "RECORD_DEF",
+        "RECORD_COMPONENT_DEF",
     ];
     let tokens = match p.take("tokens") {
         None => ACCEPTED.iter().filter(|t| **t != "ENUM_CONSTANT_DEF").map(|t| t.to_string()).collect(),
@@ -101,8 +112,15 @@ pub(super) fn abbreviation_as_word_in_name(cfg: &mut Config, _module: &str, mut 
         }
     };
     p.finish()?;
-    cfg.abbreviation_as_word_in_name =
-        Some(AbbreviationAsWordInName { allowed_length, allowed_abbreviations, ignore_final, ignore_static, ignore_static_final, ignore_overridden_methods, tokens });
+    cfg.abbreviation_as_word_in_name = Some(AbbreviationAsWordInName {
+        allowed_length,
+        allowed_abbreviations,
+        ignore_final,
+        ignore_static,
+        ignore_static_final,
+        ignore_overridden_methods,
+        tokens,
+    });
     Ok(())
 }
 

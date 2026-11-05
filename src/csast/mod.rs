@@ -11,7 +11,7 @@ pub mod print;
 pub mod shared;
 pub mod tok;
 
-pub use shared::{mark_big_stack_thread, with_big_stack, CsCache};
+pub use shared::{CsCache, mark_big_stack_thread, with_big_stack};
 
 pub use ast::{CsAst, N, NIL};
 pub use build::{build, build_checked, build_source, build_with_comments, try_build_source};

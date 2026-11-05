@@ -1,8 +1,8 @@
 //! `DesignForExtension`: a method of a class that others can subclass should say how to override it.
 
 use crate::engine::Ctx;
-use crate::syntax::KindExt;
 use crate::rules::util::has_modifier;
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 pub fn on_method(cx: &mut Ctx, method: Node) {
@@ -136,7 +136,9 @@ fn javadoc_satisfies(cx: &Ctx, phrase: &crate::config::Format, method: Node) -> 
         prev = p.prev_sibling();
     }
     comments.sort_by_key(|c| c.start_byte());
-    let Some(doc) = comments.into_iter().find(|c| c.kind_s() == "block_comment" && cx.text(*c).starts_with(b"/**") && cx.text(*c).len() > 4) else { return false };
+    let Some(doc) = comments.into_iter().find(|c| c.kind_s() == "block_comment" && cx.text(*c).starts_with(b"/**") && cx.text(*c).len() > 4) else {
+        return false;
+    };
     let text = cx.text(doc);
     phrase.matches(&text[2..text.len() - 2])
 }

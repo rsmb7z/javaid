@@ -5,9 +5,9 @@
 //! naming and hidden-field rules.
 
 use crate::config::AbbreviationAsWordInName;
-use crate::syntax::KindExt;
 use crate::engine::Ctx;
 use crate::rules::util::has_modifier;
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 /// The first run of capitals that is too long, as Checkstyle reports it.
@@ -18,7 +18,8 @@ fn disallowed(name: &str, opts: &AbbreviationAsWordInName) -> bool {
     let mut started = false;
     let illegal = |b: i64, e: i64, allowed_len: i64| -> bool {
         if e - b > allowed_len {
-            let abbr: String = if e as usize == chars.len() - 1 { chars[b as usize..].iter().collect() } else { chars[b as usize..e as usize].iter().collect() };
+            let abbr: String =
+                if e as usize == chars.len() - 1 { chars[b as usize..].iter().collect() } else { chars[b as usize..e as usize].iter().collect() };
             !opts.allowed_abbreviations.contains(&abbr)
         } else {
             false
@@ -51,7 +52,11 @@ fn wants<'a>(cx: &Ctx<'a>, token: &str) -> Option<&'a AbbreviationAsWordInName> 
 fn report(cx: &mut Ctx, opts: &AbbreviationAsWordInName, name: Node) {
     let text = String::from_utf8_lossy(cx.text(name)).into_owned();
     if disallowed(&text, opts) {
-        cx.diag("AbbreviationAsWordInName", name, format!("Abbreviation in name '{text}' must contain no more than '{}' consecutive capital letters.", opts.allowed_length + 1));
+        cx.diag(
+            "AbbreviationAsWordInName",
+            name,
+            format!("Abbreviation in name '{text}' must contain no more than '{}' consecutive capital letters.", opts.allowed_length + 1),
+        );
     }
 }
 
@@ -94,9 +99,9 @@ fn has_override(cx: &Ctx, method: Node) -> bool {
     let mut cur = method.walk();
     let Some(mods) = method.children(&mut cur).find(|c| c.kind_s() == "modifiers") else { return false };
     let mut inner = mods.walk();
-    let found = mods.children(&mut inner).any(|c| {
-        matches!(c.kind_s(), "marker_annotation" | "annotation") && c.child_by_field_id(cx.syn.f.name).is_some_and(|n| cx.text(n) == b"Override")
-    });
+    let found = mods
+        .children(&mut inner)
+        .any(|c| matches!(c.kind_s(), "marker_annotation" | "annotation") && c.child_by_field_id(cx.syn.f.name).is_some_and(|n| cx.text(n) == b"Override"));
     found
 }
 
@@ -113,11 +118,7 @@ pub fn on_method(cx: &mut Ctx, node: Node) {
 fn ignored_by_modifiers(cx: &Ctx, decl: Node, opts: &AbbreviationAsWordInName) -> bool {
     let is_static = has_modifier(cx, decl, b"static");
     let is_final = has_modifier(cx, decl, b"final");
-    if is_static && is_final {
-        opts.ignore_static_final
-    } else {
-        opts.ignore_static && is_static || opts.ignore_final && is_final
-    }
+    if is_static && is_final { opts.ignore_static_final } else { opts.ignore_static && is_static || opts.ignore_final && is_final }
 }
 
 pub fn on_field(cx: &mut Ctx, node: Node) {

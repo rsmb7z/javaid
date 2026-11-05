@@ -8,9 +8,9 @@
 //! `PatternVariableName` alone.
 
 use crate::config::Format;
-use crate::syntax::KindExt;
 use crate::engine::Ctx;
 use crate::rules::util::{enclosing_type_name, has_modifier, has_override_annotation};
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 fn report(cx: &mut Ctx, rule: &'static str, name: Node, fmt: &Format) {

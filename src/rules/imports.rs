@@ -5,9 +5,9 @@
 //! regression tests in `rules/tests.rs`.
 
 use crate::engine::Ctx;
-use crate::syntax::KindExt;
 use crate::javadoc;
 use crate::syntax::Act;
+use crate::syntax::KindExt;
 use rustc_hash::FxHashMap;
 use std::ops::Range;
 use tree_sitter::Node;

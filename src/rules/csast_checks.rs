@@ -2,7 +2,7 @@
 //! once per file, after the tree walk, on a tree built from the parse.
 
 use crate::config::Config;
-use crate::csast::{with_big_stack, CsCache};
+use crate::csast::{CsCache, with_big_stack};
 use crate::engine::Diagnostic;
 
 pub fn run(cfg: &Config, cache: &CsCache, out: &mut Vec<Diagnostic>) {

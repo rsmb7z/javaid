@@ -283,7 +283,11 @@ impl Tree {
 
     fn dump_node(&self, id: Id, depth: usize, first_line: u32, out: &mut String) {
         let n = &self.nodes[id];
-        let text = if n.children.is_empty() && n.ty != Ty::JavadocContent { n.text.replace('\n', "\\n").replace('\r', "\\r").replace('\t', "\\t") } else { n.ty.name().to_string() };
+        let text = if n.children.is_empty() && n.ty != Ty::JavadocContent {
+            n.text.replace('\n', "\\n").replace('\r', "\\r").replace('\t', "\\t")
+        } else {
+            n.ty.name().to_string()
+        };
         out.push_str(&format!("{}\t{}\t{}\t{}\n", depth, n.ty.name(), text, n.line - first_line));
         for c in &n.children {
             self.dump_node(*c, depth + 1, first_line, out);
@@ -293,7 +297,8 @@ impl Tree {
 
 /// Java's `Character.isWhitespace`.
 pub fn is_java_ws(c: char) -> bool {
-    matches!(c, ' ' | '\t' | '\n' | '\u{0B}' | '\u{0C}' | '\r' | '\u{1C}'..='\u{1F}') || (c.is_whitespace() && !matches!(c, '\u{00A0}' | '\u{2007}' | '\u{202F}'))
+    matches!(c, ' ' | '\t' | '\n' | '\u{0B}' | '\u{0C}' | '\r' | '\u{1C}'..='\u{1F}')
+        || (c.is_whitespace() && !matches!(c, '\u{00A0}' | '\u{2007}' | '\u{202F}'))
 }
 
 /// `CommonUtil.isBlank`.
@@ -313,7 +318,17 @@ pub fn parse(content: &str, line: u32, col: u32) -> Tree {
     }
     let mut p = P { s, pos: 0, nodes: Vec::new(), line_starts, base_line: line, base_col: col, tight_fail: HashSet::new(), inline_depth: 0 };
     // Node 0 is the root, filled in last.
-    p.nodes.push(Node { ty: Ty::JavadocContent, text: Ty::JavadocContent.name().to_string(), line, col, parent: None, children: Vec::new(), index: 0, start: 0, end: 0 });
+    p.nodes.push(Node {
+        ty: Ty::JavadocContent,
+        text: Ty::JavadocContent.name().to_string(),
+        line,
+        col,
+        parent: None,
+        children: Vec::new(),
+        index: 0,
+        start: 0,
+        end: 0,
+    });
     let items = p.parse_seq(&Mode::Top);
     for (i, k) in items.iter().enumerate() {
         p.nodes[*k].parent = Some(0);
@@ -1190,8 +1205,18 @@ impl P {
             _ => {}
         }
         // A tag that wants an argument and found none leaves its white space to the description.
-        let takes_arg = matches!(ty, Ty::ParamBlockTag | Ty::ThrowsBlockTag | Ty::ExceptionBlockTag | Ty::ProvidesBlockTag | Ty::UsesBlockTag | Ty::SerialFieldBlockTag | Ty::SeeBlockTag);
-        let has_arg = kids.iter().any(|k| !matches!(self.nodes[*k].ty, Ty::AtSign | Ty::TagName | Ty::Text | Ty::Newline | Ty::LeadingAsterisk | Ty::LeadingAsterisks));
+        let takes_arg = matches!(
+            ty,
+            Ty::ParamBlockTag
+                | Ty::ThrowsBlockTag
+                | Ty::ExceptionBlockTag
+                | Ty::ProvidesBlockTag
+                | Ty::UsesBlockTag
+                | Ty::SerialFieldBlockTag
+                | Ty::SeeBlockTag
+        );
+        let has_arg =
+            kids.iter().any(|k| !matches!(self.nodes[*k].ty, Ty::AtSign | Ty::TagName | Ty::Text | Ty::Newline | Ty::LeadingAsterisk | Ty::LeadingAsterisks));
         if takes_arg && !has_arg {
             kids.truncate(2);
             self.nodes.truncate(mark.1);

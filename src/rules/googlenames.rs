@@ -74,11 +74,7 @@ pub fn on_method(cx: &mut Ctx, node: Node) {
             format!("Method name '{text}' has invalid underscore usage, underscores only allowed between adjacent digits.")
         }
     } else if !format.is_match(stripped) {
-        if is_test {
-            format!("Test method name '{text}' segment {tail}")
-        } else {
-            format!("Method name '{text}' {tail}")
-        }
+        if is_test { format!("Test method name '{text}' segment {tail}") } else { format!("Method name '{text}' {tail}") }
     } else {
         return;
     };

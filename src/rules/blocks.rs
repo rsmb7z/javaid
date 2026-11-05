@@ -93,7 +93,8 @@ pub fn on_block(cx: &mut Ctx, block: Node) {
         "block" | "constructor_body" => true,
         "switch_block_statement_group" => {
             let mut cur = parent.walk();
-            let alone = parent.children(&mut cur).all(|c| c.id() == block.id() || matches!(c.kind_s(), "switch_label" | ":" | "line_comment" | "block_comment"));
+            let alone =
+                parent.children(&mut cur).all(|c| c.id() == block.id() || matches!(c.kind_s(), "switch_label" | ":" | "line_comment" | "block_comment"));
             !(opts.allow_in_switch_case && alone)
         }
         _ => false,

@@ -4,8 +4,8 @@
 //! Checkstyle's `finishTree`.
 
 use crate::config::CustomImportOrder;
-use crate::syntax::KindExt;
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 const NON_GROUP: &str = "NOT_ASSIGNED_TO_ANY_GROUP";
@@ -119,7 +119,13 @@ fn compare(a: &str, b: &str) -> std::cmp::Ordering {
 
 fn blank_lines_between(src: &[u8], from: u32, to: u32) -> usize {
     let lines: Vec<&[u8]> = src.split(|b| *b == b'\n').collect();
-    (from + 1..to).filter(|i| lines.get(*i as usize - 1).is_some_and(|l| std::str::from_utf8(l).map_or_else(|_| l.iter().all(|b| b.is_ascii_whitespace()), |s| s.chars().all(char::is_whitespace)))).count()
+    (from + 1..to)
+        .filter(|i| {
+            lines
+                .get(*i as usize - 1)
+                .is_some_and(|l| std::str::from_utf8(l).map_or_else(|_| l.iter().all(|b| b.is_ascii_whitespace()), |s| s.chars().all(char::is_whitespace)))
+        })
+        .count()
 }
 
 pub fn finish(cx: &mut Ctx, st: &mut State) {

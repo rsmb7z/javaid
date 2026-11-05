@@ -122,9 +122,21 @@ pub fn parse(text: &str, first_line: u32) -> Javadoc {
                     pending_arg = Some(out.tags.len());
                 }
                 if name == "serialField" && out.error.is_none() && rest.split_whitespace().count() == 1 {
-                    out.error = Some(ParseError { line: line_no, col: chars.len(), details: format!("token recognition error at: '\\n' while parsing {}", rest.trim()) });
+                    out.error = Some(ParseError {
+                        line: line_no,
+                        col: chars.len(),
+                        details: format!("token recognition error at: '\\n' while parsing {}", rest.trim()),
+                    });
                 }
-                out.tags.push(Tag { name, line: line_no, col: q, arg, first_text: after.trim().to_string(), has_description: !after.trim().is_empty(), described: !after.trim().is_empty() });
+                out.tags.push(Tag {
+                    name,
+                    line: line_no,
+                    col: q,
+                    arg,
+                    first_text: after.trim().to_string(),
+                    has_description: !after.trim().is_empty(),
+                    described: !after.trim().is_empty(),
+                });
                 p = r;
             }
         } else if let Some(tag) = out.tags.last_mut() {
@@ -180,7 +192,11 @@ pub fn parse(text: &str, first_line: u32) -> Javadoc {
                         match open.iter().rposition(|o| *o == name) {
                             Some(at) => open.truncate(at),
                             None => {
-                                out.error = Some(ParseError { line: line_no, col: k + 1, details: "no viable alternative at input '</' while parsing HTML_ELEMENT".to_string() });
+                                out.error = Some(ParseError {
+                                    line: line_no,
+                                    col: k + 1,
+                                    details: "no viable alternative at input '</' while parsing HTML_ELEMENT".to_string(),
+                                });
                             }
                         }
                     } else if chars.get(r) == Some(&',') {
@@ -224,7 +240,8 @@ fn split_arg(name: &str, rest: &str) -> (Option<String>, String) {
     if trimmed.is_empty() {
         return (None, String::new());
     }
-    let word_end = if trimmed.starts_with('<') { trimmed.find('>').map_or(trimmed.len(), |i| i + 1) } else { trimmed.find(char::is_whitespace).unwrap_or(trimmed.len()) };
+    let word_end =
+        if trimmed.starts_with('<') { trimmed.find('>').map_or(trimmed.len(), |i| i + 1) } else { trimmed.find(char::is_whitespace).unwrap_or(trimmed.len()) };
     (Some(trimmed[..word_end].to_string()), trimmed[word_end..].to_string())
 }
 
@@ -232,6 +249,20 @@ fn split_arg(name: &str, rest: &str) -> (Option<String>, String) {
 pub fn is_standard(name: &str) -> bool {
     matches!(
         name,
-        "author" | "deprecated" | "exception" | "hidden" | "param" | "provides" | "return" | "see" | "serial" | "serialData" | "serialField" | "since" | "throws" | "uses" | "version"
+        "author"
+            | "deprecated"
+            | "exception"
+            | "hidden"
+            | "param"
+            | "provides"
+            | "return"
+            | "see"
+            | "serial"
+            | "serialData"
+            | "serialField"
+            | "since"
+            | "throws"
+            | "uses"
+            | "version"
     )
 }

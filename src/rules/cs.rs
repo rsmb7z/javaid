@@ -12,7 +12,7 @@
 //! same parse.
 
 use crate::config::Config;
-use crate::csast::{CsAst, CsCache, Tok, N};
+use crate::csast::{CsAst, CsCache, N, Tok};
 use crate::engine::Diagnostic;
 
 /// What a ported check logs through: the file's lines (to expand tabs) and the output.
@@ -39,7 +39,11 @@ impl Log<'_> {
 
     /// `log(int line, int columnNo, ...)`: `column` is the 0-based code-point column.
     pub fn at_pos(&mut self, rule: &'static str, line: i32, column: i32, message: &str) {
-        let col = 1 + crate::columns::chars_width(self.lines.get((line - 1).max(0) as usize).copied().unwrap_or_default(), column.max(0) as usize, self.cfg.tab_width);
+        let col = 1 + crate::columns::chars_width(
+            self.lines.get((line - 1).max(0) as usize).copied().unwrap_or_default(),
+            column.max(0) as usize,
+            self.cfg.tab_width,
+        );
         let d = Diagnostic { rule: self.cfg.display(rule), line: line.max(0) as u32, col: col as u32, message: message.to_string() };
         if self.seen.insert((d.rule, d.line, d.col, d.message.clone())) {
             self.out.push(d);

@@ -43,7 +43,10 @@ fn javadoc_package_wants_a_package_info_in_each_directory() {
         v
     };
     let tail = |lines: Vec<String>| -> Vec<String> { lines.into_iter().map(|l| l.splitn(2, '/').nth(1).map(|r| format!("{name}/{r}")).unwrap_or(l)).collect() };
-    assert_eq!(tail(run("jp-default.xml", &dir)), want(&["legacy/C.java:1: JavadocPackage: Missing package-info.java file.", "sub/A.java:1: JavadocPackage: Missing package-info.java file."]));
+    assert_eq!(
+        tail(run("jp-default.xml", &dir)),
+        want(&["legacy/C.java:1: JavadocPackage: Missing package-info.java file.", "sub/A.java:1: JavadocPackage: Missing package-info.java file."])
+    );
     // With `allowLegacy` a package.html does instead of the package-info.java.
     assert_eq!(tail(run("jp-legacy.xml", &dir)), want(&["sub/A.java:1: JavadocPackage: Missing package-info.java file."]));
 }

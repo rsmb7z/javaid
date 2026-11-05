@@ -39,7 +39,7 @@
 //! Dynamic errors (a type error, an atomized element, a navigation from an attribute...) are
 //! returned as `Err`; Checkstyle aborts the run with an `IllegalStateException` for those.
 
-use crate::csast::{CsAst, Tok, N, NIL};
+use crate::csast::{CsAst, N, NIL, Tok};
 use std::collections::VecDeque;
 
 /// A compiled query.
@@ -179,7 +179,8 @@ enum Tk {
 }
 
 const SYMS: &[&str] = &[
-    "//", "::", "..", "||", "!=", "<=", ">=", "<<", ">>", ":=", "=>", "/", "(", ")", "[", "]", "@", ",", ".", "|", "+", "-", "*", "=", "<", ">", "!", "?", "{", "}", "#", "$",
+    "//", "::", "..", "||", "!=", "<=", ">=", "<<", ">>", ":=", "=>", "/", "(", ")", "[", "]", "@", ",", ".", "|", "+", "-", "*", "=", "<", ">", "!", "?", "{",
+    "}", "#", "$",
 ];
 
 fn is_name_start(c: char) -> bool {
@@ -885,7 +886,16 @@ impl Parser {
 fn is_kind_test(n: &str) -> bool {
     matches!(
         n,
-        "node" | "text" | "comment" | "processing-instruction" | "namespace-node" | "document-node" | "element" | "attribute" | "schema-element" | "schema-attribute"
+        "node"
+            | "text"
+            | "comment"
+            | "processing-instruction"
+            | "namespace-node"
+            | "document-node"
+            | "element"
+            | "attribute"
+            | "schema-element"
+            | "schema-attribute"
     )
 }
 
@@ -987,7 +997,15 @@ impl<'a> XTree<'a> {
     fn has_text(&self, e: N) -> bool {
         matches!(
             self.ast.ty(e),
-            Tok::IDENT | Tok::STRING_LITERAL | Tok::CHAR_LITERAL | Tok::NUM_LONG | Tok::NUM_INT | Tok::NUM_DOUBLE | Tok::NUM_FLOAT | Tok::TEXT_BLOCK_CONTENT | Tok::COMMENT_CONTENT
+            Tok::IDENT
+                | Tok::STRING_LITERAL
+                | Tok::CHAR_LITERAL
+                | Tok::NUM_LONG
+                | Tok::NUM_INT
+                | Tok::NUM_DOUBLE
+                | Tok::NUM_FLOAT
+                | Tok::TEXT_BLOCK_CONTENT
+                | Tok::COMMENT_CONTENT
         )
     }
 
@@ -1476,7 +1494,9 @@ impl Ev<'_> {
     fn compare(&self, op: Cmp, x: &Item, y: &Item) -> Result<bool, String> {
         use std::cmp::Ordering;
         let ord: Option<Ordering> = match (x, y) {
-            (Item::Untyped(a), Item::Untyped(b)) | (Item::Untyped(a), Item::Str(b)) | (Item::Str(a), Item::Untyped(b)) | (Item::Str(a), Item::Str(b)) => Some(a.cmp(b)),
+            (Item::Untyped(a), Item::Untyped(b)) | (Item::Untyped(a), Item::Str(b)) | (Item::Str(a), Item::Untyped(b)) | (Item::Str(a), Item::Str(b)) => {
+                Some(a.cmp(b))
+            }
             (Item::Untyped(_), Item::Num(..)) | (Item::Num(..), Item::Untyped(_)) | (Item::Num(..), Item::Num(..)) => {
                 let (a, b) = (self.to_double(x)?, self.to_double(y)?);
                 a.partial_cmp(&b)
@@ -1924,7 +1944,16 @@ mod tests {
 
     #[test]
     fn unsupported_constructs_are_refused_at_compile_time() {
-        for q in ["//A[replace(@text, 'a', 'b')]", "//A cast as xs:string", "//A[. is .]", "//A/namespace::*", "fn:count(//A)", "//A => f()", "//A[function($x) { $x }(1)]", "//A[tokenize(@text, ',')]"] {
+        for q in [
+            "//A[replace(@text, 'a', 'b')]",
+            "//A cast as xs:string",
+            "//A[. is .]",
+            "//A/namespace::*",
+            "fn:count(//A)",
+            "//A => f()",
+            "//A[function($x) { $x }(1)]",
+            "//A[tokenize(@text, ',')]",
+        ] {
             assert!(XPath::compile(q).is_err(), "{q} must be refused");
         }
     }

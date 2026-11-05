@@ -12,7 +12,7 @@
 //! the modules and messages known to do that are listed in `tokenless` and are left alone.
 
 use crate::config::Config;
-use crate::csast::{CsAst, Tok, N, NIL};
+use crate::csast::{CsAst, N, NIL, Tok};
 use crate::engine::{Ctx, Diagnostic};
 use crate::rules::commentfilter::CHECKER_LEVEL;
 use crate::xpath::XTree;
@@ -36,7 +36,8 @@ fn tokenless(module: &str, message: &str) -> bool {
         "JavadocMissingWhitespaceAfterAsterisk",
         "JavadocStyle",
     ];
-    const MESSAGES: &[&str] = &["Unknown tag ", "Unused Javadoc tag", "Unused @param tag", "Duplicate @", "@return tag should be present", "Javadoc comment at column"];
+    const MESSAGES: &[&str] =
+        &["Unknown tag ", "Unused Javadoc tag", "Unused @param tag", "Duplicate @", "@return tag should be present", "Javadoc comment at column"];
     MODULES.contains(&module) || (module.starts_with("Javadoc") && MESSAGES.iter().any(|m| message.starts_with(m)))
 }
 
@@ -210,7 +211,10 @@ fn string_expr(ast: &CsAst, expr: N) -> String {
         }
         Tok::IDENT => ast.text(first).to_string(),
         Tok::DOT => ast.last_child(first).map(|l| ast.text(l).to_string()).unwrap_or_default(),
-        Tok::TEXT_BLOCK_LITERAL_BEGIN => ast.first_child(first).map(|c| ast.text(c).chars().filter(|c| !matches!(c, ' ' | '\t' | '\n' | '\u{b}' | '\u{c}' | '\r')).collect()).unwrap_or_default(),
+        Tok::TEXT_BLOCK_LITERAL_BEGIN => ast
+            .first_child(first)
+            .map(|c| ast.text(c).chars().filter(|c| !matches!(c, ' ' | '\t' | '\n' | '\u{b}' | '\u{c}' | '\r')).collect())
+            .unwrap_or_default(),
         _ => String::new(),
     }
 }

@@ -28,8 +28,7 @@ pub fn has_override_annotation(cx: &Ctx, decl: Node) -> bool {
     let Some(mods) = decl.children(&mut cur).find(|c| c.kind_s() == "modifiers") else { return false };
     let mut inner = mods.walk();
     mods.children(&mut inner).any(|c| {
-        c.kind_s() == "marker_annotation"
-            && c.child_by_field_id(cx.syn.f.name).is_some_and(|n| matches!(cx.text(n), b"Override" | b"java.lang.Override"))
+        c.kind_s() == "marker_annotation" && c.child_by_field_id(cx.syn.f.name).is_some_and(|n| matches!(cx.text(n), b"Override" | b"java.lang.Override"))
     })
 }
 

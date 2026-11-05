@@ -10,8 +10,8 @@
 //! `GoogleRightCurly`, ported from `GoogleRightCurlyCheck.java` onto the emulated `DetailAST`
 //! (with comment nodes, as the check asks for them).
 
-use super::cs::{preorder, same_line, ty_is, Log};
-use crate::csast::{CsAst, Tok, N};
+use super::cs::{Log, preorder, same_line, ty_is};
+use crate::csast::{CsAst, N, Tok};
 
 const RULE: &str = "GoogleRightCurly";
 
@@ -28,7 +28,9 @@ fn break_before(text: &str, col: i32) -> String {
 }
 
 fn same_msg(text: &str, col: i32) -> String {
-    format!("'{text}' at column {col} should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally).")
+    format!(
+        "'{text}' at column {col} should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally)."
+    )
 }
 
 const CONCISE: &str = "Empty block should be concise {}.";
@@ -151,7 +153,8 @@ fn has_content_on_left_side(ast: &CsAst, brace: N) -> bool {
 
 fn has_content_on_right_side(ast: &CsAst, brace: N, next: N) -> bool {
     let valid_previous = ast.prev_sibling(next).is_some_and(|p| matches!(ast.ty(p), Tok::EXPR | Tok::VARIABLE_DEF | Tok::ELIST | Tok::LAMBDA));
-    let next_is_valid = valid_previous || matches!(ast.ty(next), Tok::SINGLE_LINE_COMMENT | Tok::BLOCK_COMMENT_BEGIN | Tok::BLOCK_COMMENT_END | Tok::COMMENT_CONTENT);
+    let next_is_valid =
+        valid_previous || matches!(ast.ty(next), Tok::SINGLE_LINE_COMMENT | Tok::BLOCK_COMMENT_BEGIN | Tok::BLOCK_COMMENT_END | Tok::COMMENT_CONTENT);
     !next_is_valid && same_line(ast, brace, next)
 }
 

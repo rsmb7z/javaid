@@ -11,7 +11,8 @@ pub fn on_modifiers(cx: &mut Ctx, modifiers: Node) {
     let Some(opts) = &cx.cfg.redundant_modifier else { return };
     let jdk = opts.jdk_version;
     let Some(decl) = cx.parent_of(modifiers) else { return };
-    let words: Vec<Node> = modifiers.children(&mut modifiers.walk()).filter(|m| !m.is_extra() && !matches!(m.kind_s(), "marker_annotation" | "annotation")).collect();
+    let words: Vec<Node> =
+        modifiers.children(&mut modifiers.walk()).filter(|m| !m.is_extra() && !matches!(m.kind_s(), "marker_annotation" | "annotation")).collect();
     let first = |cx: &Ctx, word: &[u8]| words.iter().copied().find(|m| cx.text(*m) == word);
     let in_interface = cx.parent_of(decl).is_some_and(|p| matches!(p.kind_s(), "interface_body" | "annotation_type_body"));
     let is_method = decl.kind_s() == "method_declaration";
@@ -76,7 +77,13 @@ pub fn on_modifiers(cx: &mut Ctx, modifiers: Node) {
     if jdk >= 17
         && matches!(
             decl.kind_s(),
-            "method_declaration" | "constructor_declaration" | "class_declaration" | "interface_declaration" | "enum_declaration" | "annotation_type_declaration" | "record_declaration"
+            "method_declaration"
+                | "constructor_declaration"
+                | "class_declaration"
+                | "interface_declaration"
+                | "enum_declaration"
+                | "annotation_type_declaration"
+                | "record_declaration"
         )
     {
         if let Some(m) = first(cx, b"strictfp") {
@@ -96,10 +103,13 @@ fn declares_underscore(cx: &Ctx, decl: Node) -> bool {
     match decl.kind_s() {
         "local_variable_declaration" => {
             let mut cur = decl.walk();
-            let found = decl.children_by_field_id(cx.syn.f.declarator, &mut cur).any(|d| d.child_by_field_id(cx.syn.f.name).is_some_and(|n| cx.text(n) == b"_"));
+            let found =
+                decl.children_by_field_id(cx.syn.f.declarator, &mut cur).any(|d| d.child_by_field_id(cx.syn.f.name).is_some_and(|n| cx.text(n) == b"_"));
             found
         }
-        "formal_parameter" | "catch_formal_parameter" | "enhanced_for_statement" | "instanceof_expression" => decl.child_by_field_id(cx.syn.f.name).is_some_and(|n| cx.text(n) == b"_"),
+        "formal_parameter" | "catch_formal_parameter" | "enhanced_for_statement" | "instanceof_expression" => {
+            decl.child_by_field_id(cx.syn.f.name).is_some_and(|n| cx.text(n) == b"_")
+        }
         "type_pattern" | "record_pattern_component" => {
             let last = decl.named_child_count().checked_sub(1).and_then(|i| decl.named_child(i as u32));
             last.is_some_and(|n| n.kind_s() == "identifier" && cx.text(n) == b"_")
@@ -193,9 +203,15 @@ fn is_public_class(cx: &Ctx, class: Node) -> bool {
     if parent.kind_s() == "program" {
         return public;
     }
-    let owner = if matches!(parent.kind_s(), "class_body" | "interface_body" | "enum_body_declarations" | "annotation_type_body") { body_owner(cx, parent) } else { None };
+    let owner = if matches!(parent.kind_s(), "class_body" | "interface_body" | "enum_body_declarations" | "annotation_type_body") {
+        body_owner(cx, parent)
+    } else {
+        None
+    };
     let Some(owner) = owner else { return false };
-    if (owner.kind_s() == "interface_declaration" || public) && matches!(owner.kind_s(), "class_declaration" | "interface_declaration" | "enum_declaration" | "record_declaration" | "annotation_type_declaration") {
+    if (owner.kind_s() == "interface_declaration" || public)
+        && matches!(owner.kind_s(), "class_declaration" | "interface_declaration" | "enum_declaration" | "record_declaration" | "annotation_type_declaration")
+    {
         return is_public_class(cx, owner);
     }
     false

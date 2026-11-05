@@ -21,8 +21,8 @@ mod expr;
 mod stmt;
 mod types;
 
-use tree_sitter::{Node, Tree};
 use crate::syntax::KindExt;
+use tree_sitter::{Node, Tree};
 
 use super::ast::{CsAst, N, NIL};
 use super::tok::Tok;
@@ -148,11 +148,7 @@ impl<'s> B<'s> {
     fn pos(&self, byte: usize) -> (u32, u32) {
         let line = self.line_starts.partition_point(|&s| s <= byte) - 1;
         let start = self.line_starts[line];
-        let col = if self.ascii {
-            byte - start
-        } else {
-            self.src[start..byte].iter().filter(|&&b| (b & 0xC0) != 0x80).count()
-        };
+        let col = if self.ascii { byte - start } else { self.src[start..byte].iter().filter(|&&b| (b & 0xC0) != 0x80).count() };
         (line as u32, col as u32)
     }
 

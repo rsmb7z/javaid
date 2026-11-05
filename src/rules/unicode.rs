@@ -5,8 +5,8 @@
 //! its line cancels it.
 
 use crate::config::AvoidEscapedUnicode;
-use crate::syntax::KindExt;
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
 use regex::Regex;
 use std::sync::LazyLock;
 use tree_sitter::Node;
@@ -18,16 +18,79 @@ static CONTROL: LazyLock<Regex> = LazyLock::new(|| {
     )
     .unwrap()
 });
-static ALL_ESCAPED: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"^(\\u+[a-fA-F0-9]{4}|"|'|\\|\\b|\\f|\\n|\r\n|[\n\x0B\x0C\r\x{85}\x{2028}\x{2029}]|\\r|\\s|\\t)+$"#).unwrap()
-});
+static ALL_ESCAPED: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"^(\\u+[a-fA-F0-9]{4}|"|'|\\|\\b|\\f|\\n|\r\n|[\n\x0B\x0C\r\x{85}\x{2028}\x{2029}]|\\r|\\s|\\t)+$"#).unwrap());
 static NON_PRINTABLE: LazyLock<Regex> = LazyLock::new(|| {
     let alternatives = [
-        r"0000", r"0009", r"000[bB]", r"000[cC]", r"0020", r"007[fF]", r"0085", r"009[fF]", r"00[aA]0", r"00[aA][dD]", r"04[fF]9", r"05[bB][eE]", r"05[dD]0", r"05[eE][aA]",
-        r"05[fF]3", r"05[fF]4", r"0600", r"0604", r"061[cC]", r"06[dD]{2}", r"06[fF]{2}", r"070[fF]", r"0750", r"077[fF]", r"0[eE]00", r"0[eE]7[fF]", r"1680", r"180[eE]",
-        r"1[eE]00", r"2000", r"2001", r"2002", r"2003", r"2004", r"2005", r"2006", r"2007", r"2008", r"2009", r"200[aA]", r"200[fF]", r"2025", r"2028", r"2029", r"202[fF]",
-        r"205[fF]", r"2064", r"2066", r"2067", r"2068", r"2069", r"206[aA]", r"206[fF]", r"20[aA][fF]", r"2100", r"213[aA]", r"3000", r"[dD]800", r"[fF]8[fF]{2}",
-        r"[fF][bB]50", r"[fF][dD][fF]{2}", r"[fF][eE]70", r"[fF][eE][fF]{2}", r"[fF]{2}0[eE]", r"[fF]{2}61", r"[fF]{2}[dD][cC]", r"[fF]{3}9", r"[fF]{3}[aA]", r"[fF]{3}[bB]",
+        r"0000",
+        r"0009",
+        r"000[bB]",
+        r"000[cC]",
+        r"0020",
+        r"007[fF]",
+        r"0085",
+        r"009[fF]",
+        r"00[aA]0",
+        r"00[aA][dD]",
+        r"04[fF]9",
+        r"05[bB][eE]",
+        r"05[dD]0",
+        r"05[eE][aA]",
+        r"05[fF]3",
+        r"05[fF]4",
+        r"0600",
+        r"0604",
+        r"061[cC]",
+        r"06[dD]{2}",
+        r"06[fF]{2}",
+        r"070[fF]",
+        r"0750",
+        r"077[fF]",
+        r"0[eE]00",
+        r"0[eE]7[fF]",
+        r"1680",
+        r"180[eE]",
+        r"1[eE]00",
+        r"2000",
+        r"2001",
+        r"2002",
+        r"2003",
+        r"2004",
+        r"2005",
+        r"2006",
+        r"2007",
+        r"2008",
+        r"2009",
+        r"200[aA]",
+        r"200[fF]",
+        r"2025",
+        r"2028",
+        r"2029",
+        r"202[fF]",
+        r"205[fF]",
+        r"2064",
+        r"2066",
+        r"2067",
+        r"2068",
+        r"2069",
+        r"206[aA]",
+        r"206[fF]",
+        r"20[aA][fF]",
+        r"2100",
+        r"213[aA]",
+        r"3000",
+        r"[dD]800",
+        r"[fF]8[fF]{2}",
+        r"[fF][bB]50",
+        r"[fF][dD][fF]{2}",
+        r"[fF][eE]70",
+        r"[fF][eE][fF]{2}",
+        r"[fF]{2}0[eE]",
+        r"[fF]{2}61",
+        r"[fF]{2}[dD][cC]",
+        r"[fF]{3}9",
+        r"[fF]{3}[aA]",
+        r"[fF]{3}[bB]",
         r"[fF]{4}",
     ];
     Regex::new(&alternatives.iter().map(|a| format!(r"\\u{a}")).collect::<Vec<_>>().join("|")).unwrap()
@@ -93,11 +156,7 @@ fn strip_indent(content: &str) -> String {
         .iter()
         .map(|l| {
             let end = l.trim_end_matches(is_ws).len();
-            if end > 0 {
-                l.get(indent..end).unwrap_or("").to_string()
-            } else {
-                String::new()
-            }
+            if end > 0 { l.get(indent..end).unwrap_or("").to_string() } else { String::new() }
         })
         .collect::<Vec<_>>()
         .join("\n")
@@ -184,7 +243,9 @@ fn starts_with_infix(node: Node) -> bool {
         "::" => parent.kind_s() == "method_reference",
         "->" => has_left && parent.kind_s() == "lambda_expression",
         "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>=" | ">>>=" => parent.kind_s() == "assignment_expression",
-        "+" | "-" | "*" | "/" | "%" | "<<" | ">>" | ">>>" | "&" | "|" | "^" | "&&" | "||" | "==" | "!=" | "<" | ">" | "<=" | ">=" => parent.kind_s() == "binary_expression",
+        "+" | "-" | "*" | "/" | "%" | "<<" | ">>" | ">>>" | "&" | "|" | "^" | "&&" | "||" | "==" | "!=" | "<" | ">" | "<=" | ">=" => {
+            parent.kind_s() == "binary_expression"
+        }
         _ => false,
     }
 }

@@ -9,8 +9,8 @@
 
 //! Statements, blocks, switch, try, patterns.
 
-use tree_sitter::Node;
 use crate::syntax::KindExt;
+use tree_sitter::Node;
 
 use super::{B, kids};
 use crate::csast::ast::{N, NIL};

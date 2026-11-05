@@ -10,9 +10,9 @@
 //! `EmptyLineSeparator`, ported from `EmptyLineSeparatorCheck.java` onto the emulated
 //! `DetailAST` (with comment nodes, as the check asks for them).
 
-use super::cs::{is_blank, is_comment_type, preorder, Log};
+use super::cs::{Log, is_blank, is_comment_type, preorder};
 use crate::config::EmptyLineSeparator;
-use crate::csast::{CsAst, Tok, N};
+use crate::csast::{CsAst, N, Tok};
 
 const RULE: &str = "EmptyLineSeparator";
 
@@ -480,7 +480,9 @@ impl Check<'_, '_, '_> {
         let ast = self.ast;
         let parent = ast.parent(variable_def).expect("parent");
         self.ty(parent) == Tok::COMPACT_COMPILATION_UNIT
-            || ast.parent(parent).is_some_and(|g| matches!(self.ty(g), Tok::CLASS_DEF | Tok::INTERFACE_DEF | Tok::ANNOTATION_DEF | Tok::ENUM_DEF | Tok::RECORD_DEF))
+            || ast
+                .parent(parent)
+                .is_some_and(|g| matches!(self.ty(g), Tok::CLASS_DEF | Tok::INTERFACE_DEF | Tok::ANNOTATION_DEF | Tok::ENUM_DEF | Tok::RECORD_DEF))
     }
 }
 

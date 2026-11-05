@@ -69,7 +69,8 @@ pub fn on_switch(cx: &mut Ctx, switch: Node) {
         }
         // Reported where the fall-through lands, which for the last group is its own label.
         let at = if is_last { g.first_label } else { gs[i + 1].first_label };
-        let message = if is_last { "Fall through from the last branch of the switch statement." } else { "Fall through from previous branch of the switch statement." };
+        let message =
+            if is_last { "Fall through from the last branch of the switch statement." } else { "Fall through from previous branch of the switch statement." };
         cx.diag("FallThrough", at, message.into());
     }
 }
@@ -134,7 +135,9 @@ fn last_named(n: Node) -> Option<Node> {
 /// and nothing else, so `while ((true))` and `while (!false)` are ordinary loops.
 fn is_infinite(cx: &Ctx, n: Node) -> bool {
     match n.kind_s() {
-        "while_statement" | "do_statement" => n.child_by_field_id(cx.syn.f.condition).is_some_and(|c| c.named_child_count() == 1 && c.named_child(0).is_some_and(|l| l.kind_s() == "true")),
+        "while_statement" | "do_statement" => {
+            n.child_by_field_id(cx.syn.f.condition).is_some_and(|c| c.named_child_count() == 1 && c.named_child(0).is_some_and(|l| l.kind_s() == "true"))
+        }
         "for_statement" => n.child_by_field_id(cx.syn.f.condition).is_none_or(|c| c.kind_s() == "true"),
         _ => false,
     }

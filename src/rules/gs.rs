@@ -5,9 +5,9 @@
 //! first token, annotations included.
 
 use crate::config::structural::*;
-use crate::syntax::KindExt;
 use crate::engine::Ctx;
 use crate::rules::util::has_modifier;
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 pub fn on_node(cx: &mut Ctx, node: Node) {
@@ -356,7 +356,11 @@ fn constructors_grouping(cx: &mut Ctx, ty: Node, order_by_count: bool) {
         let last_grouped = after_first[split - 1];
         let line = last_grouped.start_position().row + 1;
         for ctor in after_first[split..].iter().filter(|c| is_constructor(**c)) {
-            cx.diag("ConstructorsDeclarationGrouping", *ctor, format!("Constructors should be grouped together. The last grouped constructor is declared at line '{line}'."));
+            cx.diag(
+                "ConstructorsDeclarationGrouping",
+                *ctor,
+                format!("Constructors should be grouped together. The last grouped constructor is declared at line '{line}'."),
+            );
         }
     }
     if order_by_count {
@@ -395,7 +399,14 @@ fn overload_order(cx: &mut Ctx, body: Node, order_by_count: bool) {
         if let Some(&(previous_index, previous_line, previous_count, previous_ordered)) = seen.get(&name) {
             let previous_is_method = i > 0 && children[i - 1].kind_s() == "method_declaration";
             if !previous_is_method || index - previous_index > 1 {
-                cx.diag("OverloadMethodsDeclarationOrder", *child, format!("All overloaded methods should be placed next to each other. Previous overloaded method located at line '{}'.", crate::engine::grouped(previous_line)));
+                cx.diag(
+                    "OverloadMethodsDeclarationOrder",
+                    *child,
+                    format!(
+                        "All overloaded methods should be placed next to each other. Previous overloaded method located at line '{}'.",
+                        crate::engine::grouped(previous_line)
+                    ),
+                );
             }
             ordered = previous_ordered;
             if order_by_count {
@@ -632,7 +643,8 @@ fn avoid_module_import(cx: &mut Ctx, program: Node, opts: &AvoidModuleImport) {
     let imports: Vec<Node> = program.children(&mut cur).filter(|c| c.kind_s() == "import_declaration" && child_of_kind(*c, "module").is_some()).collect();
     for (i, import) in imports.iter().enumerate() {
         let mut inner = import.walk();
-        let name = import.children(&mut inner).find(|c| matches!(c.kind_s(), "scoped_identifier" | "identifier")).map(|n| full_ident(cx, n)).unwrap_or_default();
+        let name =
+            import.children(&mut inner).find(|c| matches!(c.kind_s(), "scoped_identifier" | "identifier")).map(|n| full_ident(cx, n)).unwrap_or_default();
         if i + 1 > opts.max_allowed && !opts.excludes.contains(&name) {
             let message = if opts.max_allowed > 0 {
                 format!("Only '{}' module import is allowed per file.", opts.max_allowed)
@@ -683,7 +695,8 @@ fn module_directive_order(cx: &mut Ctx, module: Node, opts: &ModuleDirectiveOrde
             } else if opts.order.iter().take_while(|o| *o != prev_kind).any(|o| o == kind) {
                 Some(format!("'{kind}' directive should be before '{prev_kind}' directive."))
             } else {
-                (opts.validate_block_separation && blank_lines != 1).then(|| format!("'{kind}' directive block should be separated from the previous block by exactly one empty line."))
+                (opts.validate_block_separation && blank_lines != 1)
+                    .then(|| format!("'{kind}' directive block should be separated from the previous block by exactly one empty line."))
             };
             if let Some(msg) = msg {
                 cx.diag("ModuleDirectiveOrder", directive, msg);
@@ -823,7 +836,17 @@ fn needs_space_after_bracket(cx: &Ctx, bracket: Node) -> Option<bool> {
     }
     let rest = &src[at..];
     let starts = |s: &[u8]| rest.starts_with(s);
-    let valid = if starts(b"[") || starts(b".") || starts(b"]") || starts(b")") || starts(b"}") || starts(b",") || starts(b";") || starts(b"::") || starts(b"++") || starts(b"--") {
+    let valid = if starts(b"[")
+        || starts(b".")
+        || starts(b"]")
+        || starts(b")")
+        || starts(b"}")
+        || starts(b",")
+        || starts(b";")
+        || starts(b"::")
+        || starts(b"++")
+        || starts(b"--")
+    {
         true
     } else if starts(b">") {
         // A generic closer, not a comparison or a shift.

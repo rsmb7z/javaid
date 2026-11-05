@@ -7,15 +7,28 @@
 //! space...) report to the Checker and are out of their reach.
 
 use crate::config::Format;
-use crate::syntax::KindExt;
 use crate::engine::Ctx;
-use crate::suppress::{fill, module_of, source_name, CommentFilter};
+use crate::suppress::{CommentFilter, fill, module_of, source_name};
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 /// Modules that report to the Checker, not to the TreeWalker.
 pub const CHECKER_LEVEL: &[&str] = &[
-    "FileTabCharacter", "RegexpSingleline", "RegexpMultiline", "Regexp", "NewlineAtEndOfFile", "LineLength", "JavadocPackage", "Translation", "UniqueProperties", "OrderedProperties",
-    "Header", "RegexpHeader", "MultiFileRegexpHeader", "RegexpOnFilename", "FileLength",
+    "FileTabCharacter",
+    "RegexpSingleline",
+    "RegexpMultiline",
+    "Regexp",
+    "NewlineAtEndOfFile",
+    "LineLength",
+    "JavadocPackage",
+    "Translation",
+    "UniqueProperties",
+    "OrderedProperties",
+    "Header",
+    "RegexpHeader",
+    "MultiFileRegexpHeader",
+    "RegexpOnFilename",
+    "FileLength",
 ];
 
 struct Comment {

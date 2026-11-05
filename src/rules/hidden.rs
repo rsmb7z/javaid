@@ -6,9 +6,9 @@
 //! enclosing types up to the first one marked `static` (a record always counts as static).
 
 use crate::config::HiddenField;
-use crate::syntax::KindExt;
 use crate::engine::Ctx;
 use crate::rules::util::has_modifier;
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 /// What kind of declaration is being checked; the exemptions differ.
@@ -43,7 +43,9 @@ pub fn on_param(cx: &mut Ctx, param: Node) {
     let name = match param.kind_s() {
         "formal_parameter" | "catch_formal_parameter" => param.child_by_field_id(cx.syn.f.name),
         // The name sits in a declarator, as in the final-parameter rule.
-        "spread_parameter" => param.children(&mut param.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)),
+        "spread_parameter" => {
+            param.children(&mut param.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name))
+        }
         _ => None,
     };
     if let Some(name) = name {
@@ -153,7 +155,8 @@ fn fields_of(cx: &Ctx, frame: Node, name: &[u8]) -> (bool, bool) {
         let mut cur = members.walk();
         for field in members.children(&mut cur).filter(|c| c.kind_s() == "field_declaration") {
             let mut dc = field.walk();
-            let declares = field.children_by_field_id(cx.syn.f.declarator, &mut dc).any(|d| d.child_by_field_id(cx.syn.f.name).is_some_and(|n| cx.text(n) == name));
+            let declares =
+                field.children_by_field_id(cx.syn.f.declarator, &mut dc).any(|d| d.child_by_field_id(cx.syn.f.name).is_some_and(|n| cx.text(n) == name));
             if declares {
                 if has_modifier(cx, field, b"static") {
                     stat = true;
@@ -184,7 +187,9 @@ fn fields_of(cx: &Ctx, frame: Node, name: &[u8]) -> (bool, bool) {
         if let Some(list) = frame.child_by_field_id(cx.syn.f.parameters) {
             let mut cur = list.walk();
             for p in list.children(&mut cur).filter(|c| matches!(c.kind_s(), "formal_parameter" | "spread_parameter")) {
-                let declared = p.child_by_field_id(cx.syn.f.name).or_else(|| p.children(&mut p.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)));
+                let declared = p
+                    .child_by_field_id(cx.syn.f.name)
+                    .or_else(|| p.children(&mut p.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)));
                 if declared.is_some_and(|n| cx.text(n) == name) {
                     instance = true;
                 }
@@ -246,7 +251,9 @@ fn in_anonymous_class<'a>(cx: &Ctx<'a>, method: Node<'a>) -> bool {
     while let Some(n) = p {
         match n.kind_s() {
             "object_creation_expression" => return true,
-            "class_declaration" | "enum_declaration" | "record_declaration" | "interface_declaration" | "enum_constant" | "annotation_type_declaration" => return false,
+            "class_declaration" | "enum_declaration" | "record_declaration" | "interface_declaration" | "enum_constant" | "annotation_type_declaration" => {
+                return false;
+            }
             _ => {}
         }
         p = cx.parent_of(n);
@@ -268,7 +275,9 @@ fn ignored_param(cx: &Ctx, opts: &HiddenField, param: Node, name: &[u8]) -> bool
         return true;
     }
     if opts.ignore_setter {
-        let count = list.map_or(0, |l| l.named_children(&mut l.walk()).filter(|c| matches!(c.kind_s(), "formal_parameter" | "spread_parameter" | "receiver_parameter")).count());
+        let count = list.map_or(0, |l| {
+            l.named_children(&mut l.walk()).filter(|c| matches!(c.kind_s(), "formal_parameter" | "spread_parameter" | "receiver_parameter")).count()
+        });
         return count == 1 && is_setter(cx, opts, owner, name);
     }
     false
@@ -298,7 +307,9 @@ fn is_setter(cx: &Ctx, opts: &HiddenField, method: Node, name: &[u8]) -> bool {
     let first = leading_identifier(ty);
     let mut p = cx.parent_of(method);
     while let Some(n) = p {
-        if matches!(n.kind_s(), "class_declaration" | "enum_declaration") && n.child_by_field_id(cx.syn.f.name).is_some_and(|nm| Some(cx.text(nm)) == first.map(|f| cx.text(f))) {
+        if matches!(n.kind_s(), "class_declaration" | "enum_declaration")
+            && n.child_by_field_id(cx.syn.f.name).is_some_and(|nm| Some(cx.text(nm)) == first.map(|f| cx.text(f)))
+        {
             return true;
         }
         p = cx.parent_of(n);

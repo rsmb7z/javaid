@@ -10,8 +10,8 @@
 //! `TextBlockGoogleStyleFormatting`, ported from `TextBlockGoogleStyleFormattingCheck.java` onto
 //! the emulated `DetailAST`.
 
-use super::cs::{is_java_whitespace, preorder, same_line, ty_is, Log};
-use crate::csast::{CsAst, Tok, N};
+use super::cs::{Log, is_java_whitespace, preorder, same_line, ty_is};
+use crate::csast::{CsAst, N, Tok};
 
 const RULE: &str = "TextBlockGoogleStyleFormatting";
 const OPEN: &str = "Opening quotes (\"\"\") of text-block must be on the new line.";

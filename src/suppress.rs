@@ -254,9 +254,7 @@ fn by_text(cfg: &Config, src: &[u8], findings: &mut Vec<Diagnostic>, rules: &mut
             let mut hits = conds.iter().filter(|c| c.matches(&event));
             if *plain {
                 // The nearest matching instruction before the finding decides; "on" lifts the suppression.
-                hits.filter_map(|c| c.spans[..c.spans.partition_point(|r| r.first <= event.line)].last())
-                    .max_by_key(|r| r.first)
-                    .is_some_and(|r| !r.on)
+                hits.filter_map(|c| c.spans[..c.spans.partition_point(|r| r.first <= event.line)].last()).max_by_key(|r| r.first).is_some_and(|r| !r.on)
             } else {
                 hits.any(|c| c.spans.iter().any(|r| r.first <= event.line && event.line <= r.last))
             }
@@ -374,30 +372,115 @@ impl<'c> RuleCache<'c> {
 /// `com.puppycrawl.tools.checkstyle.checks.<package>.<Module>Check`, the name `checks=` matches.
 pub fn source_name(module: String) -> String {
     let package = match module.as_str() {
-        "AnnotationLocation" | "AnnotationOnSameLine" | "AnnotationUseStyle" | "MissingDeprecated" | "MissingOverride" | "PackageAnnotation" | "SuppressWarnings" => "annotation",
+        "AnnotationLocation"
+        | "AnnotationOnSameLine"
+        | "AnnotationUseStyle"
+        | "MissingDeprecated"
+        | "MissingOverride"
+        | "PackageAnnotation"
+        | "SuppressWarnings" => "annotation",
         "AvoidNestedBlocks" | "GoogleRightCurly" | "EmptyBlock" | "EmptyCatchBlock" | "LeftCurly" | "NeedBraces" | "RightCurly" => "blocks",
-        "DesignForExtension" | "FinalClass" | "HideUtilityClassConstructor" | "InnerTypeLast" | "InterfaceIsType" | "MutableException" | "OneTopLevelClass" | "SealedShouldHavePermitsList"
-        | "ThrowsCount" | "VisibilityModifier" => "design",
-        "AvoidStarImport" | "AvoidStaticImport" | "CustomImportOrder" | "IllegalImport" | "ImportControl" | "ImportOrder" | "RedundantImport" | "UnusedImports" | "AvoidModuleImport" => "imports",
+        "DesignForExtension"
+        | "FinalClass"
+        | "HideUtilityClassConstructor"
+        | "InnerTypeLast"
+        | "InterfaceIsType"
+        | "MutableException"
+        | "OneTopLevelClass"
+        | "SealedShouldHavePermitsList"
+        | "ThrowsCount"
+        | "VisibilityModifier" => "design",
+        "AvoidStarImport" | "AvoidStaticImport" | "CustomImportOrder" | "IllegalImport" | "ImportControl" | "ImportOrder" | "RedundantImport"
+        | "UnusedImports" | "AvoidModuleImport" => "imports",
         "Indentation" => "indentation",
-        "AtclauseOrder" | "InvalidJavadocPosition" | "JavadocBlockTagLocation" | "JavadocContentLocation" | "JavadocLeadingAsteriskAlign" | "JavadocMethod" | "JavadocMissingLeadingAsterisk"
-        | "JavadocMissingWhitespaceAfterAsterisk" | "JavadocPackage" | "JavadocParagraph" | "JavadocStyle" | "JavadocTagContinuationIndentation" | "JavadocType" | "JavadocVariable"
-        | "MissingJavadocMethod" | "MissingJavadocPackage" | "MissingJavadocType" | "NonEmptyAtclauseDescription" | "RequireEmptyLineBeforeBlockTagGroup" | "SingleLineJavadoc"
-        | "SummaryJavadoc" | "WriteTag" => "javadoc",
-        "BooleanExpressionComplexity" | "ClassDataAbstractionCoupling" | "ClassFanOutComplexity" | "CyclomaticComplexity" | "JavaNCSS" | "NPathComplexity" => "metrics",
+        "AtclauseOrder"
+        | "InvalidJavadocPosition"
+        | "JavadocBlockTagLocation"
+        | "JavadocContentLocation"
+        | "JavadocLeadingAsteriskAlign"
+        | "JavadocMethod"
+        | "JavadocMissingLeadingAsterisk"
+        | "JavadocMissingWhitespaceAfterAsterisk"
+        | "JavadocPackage"
+        | "JavadocParagraph"
+        | "JavadocStyle"
+        | "JavadocTagContinuationIndentation"
+        | "JavadocType"
+        | "JavadocVariable"
+        | "MissingJavadocMethod"
+        | "MissingJavadocPackage"
+        | "MissingJavadocType"
+        | "NonEmptyAtclauseDescription"
+        | "RequireEmptyLineBeforeBlockTagGroup"
+        | "SingleLineJavadoc"
+        | "SummaryJavadoc"
+        | "WriteTag" => "javadoc",
+        "BooleanExpressionComplexity" | "ClassDataAbstractionCoupling" | "ClassFanOutComplexity" | "CyclomaticComplexity" | "JavaNCSS" | "NPathComplexity" => {
+            "metrics"
+        }
         "ModifierOrder" | "RedundantModifier" => "modifier",
-        "AbbreviationAsWordInName" | "CatchParameterName" | "ClassTypeParameterName" | "ConstantName" | "IllegalIdentifierName" | "InterfaceTypeParameterName" | "LambdaParameterName"
-        | "LocalFinalVariableName" | "LocalVariableName" | "MemberName" | "MethodName" | "MethodTypeParameterName" | "PackageName" | "ParameterName" | "PatternVariableName"
-        | "RecordComponentName" | "RecordTypeParameterName" | "StaticVariableName" | "TypeName" => "naming",
+        "AbbreviationAsWordInName"
+        | "CatchParameterName"
+        | "ClassTypeParameterName"
+        | "ConstantName"
+        | "IllegalIdentifierName"
+        | "InterfaceTypeParameterName"
+        | "LambdaParameterName"
+        | "LocalFinalVariableName"
+        | "LocalVariableName"
+        | "MemberName"
+        | "MethodName"
+        | "MethodTypeParameterName"
+        | "PackageName"
+        | "ParameterName"
+        | "PatternVariableName"
+        | "RecordComponentName"
+        | "RecordTypeParameterName"
+        | "StaticVariableName"
+        | "TypeName" => "naming",
         "Regexp" | "RegexpMultiline" | "RegexpOnFilename" | "RegexpSingleline" | "RegexpSinglelineJava" => "regexp",
-        "AnonInnerLength" | "ExecutableStatementCount" | "FileLength" | "LambdaBodyLength" | "LineLength" | "MethodCount" | "MethodLength" | "OuterTypeNumber" | "ParameterNumber"
+        "AnonInnerLength"
+        | "ExecutableStatementCount"
+        | "FileLength"
+        | "LambdaBodyLength"
+        | "LineLength"
+        | "MethodCount"
+        | "MethodLength"
+        | "OuterTypeNumber"
+        | "ParameterNumber"
         | "RecordComponentNumber" => "sizes",
-        "EmptyForInitializerPad" | "EmptyForIteratorPad" | "EmptyLineSeparator" | "FileTabCharacter" | "GenericWhitespace" | "MethodParamPad" | "NoLineWrap" | "NoWhitespaceAfter"
-        | "NoWhitespaceBefore" | "NoWhitespaceBeforeCaseDefaultColon" | "OperatorWrap" | "ParenPad" | "SeparatorWrap" | "SingleSpaceSeparator" | "TypecastParenPad" | "WhitespaceAfter"
+        "EmptyForInitializerPad"
+        | "EmptyForIteratorPad"
+        | "EmptyLineSeparator"
+        | "FileTabCharacter"
+        | "GenericWhitespace"
+        | "MethodParamPad"
+        | "NoLineWrap"
+        | "NoWhitespaceAfter"
+        | "NoWhitespaceBefore"
+        | "NoWhitespaceBeforeCaseDefaultColon"
+        | "OperatorWrap"
+        | "ParenPad"
+        | "SeparatorWrap"
+        | "SingleSpaceSeparator"
+        | "TypecastParenPad"
+        | "WhitespaceAfter"
         | "WhitespaceAround" => "whitespace",
         "Header" | "MultiFileRegexpHeader" | "RegexpHeader" => "header",
-        "ArrayTypeStyle" | "AvoidEscapedUnicodeCharacters" | "CommentsIndentation" | "DescendantToken" | "FinalParameters" | "NewlineAtEndOfFile" | "OuterTypeFilename" | "TodoComment"
-        | "Translation" | "TrailingComment" | "UncommentedMain" | "UpperEll" | "OrderedProperties" | "ConstructorsDeclarationGrouping" => "misc",
+        "ArrayTypeStyle"
+        | "AvoidEscapedUnicodeCharacters"
+        | "CommentsIndentation"
+        | "DescendantToken"
+        | "FinalParameters"
+        | "NewlineAtEndOfFile"
+        | "OuterTypeFilename"
+        | "TodoComment"
+        | "Translation"
+        | "TrailingComment"
+        | "UncommentedMain"
+        | "UpperEll"
+        | "OrderedProperties"
+        | "ConstructorsDeclarationGrouping" => "misc",
         // The rest are the coding checks.
         _ => "coding",
     };

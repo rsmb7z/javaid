@@ -15,7 +15,8 @@ fn check_dir(dir: &str, comments: bool) {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("bench/csast");
     let mut failures = Vec::new();
     let mut count = 0;
-    let mut entries: Vec<_> = std::fs::read_dir(root.join(if comments { "golden-comments" } else { "golden" }).join(dir)).unwrap().map(|e| e.unwrap().path()).collect();
+    let mut entries: Vec<_> =
+        std::fs::read_dir(root.join(if comments { "golden-comments" } else { "golden" }).join(dir)).unwrap().map(|e| e.unwrap().path()).collect();
     entries.sort();
     for golden in entries {
         let name = golden.file_name().unwrap().to_str().unwrap().trim_end_matches(".txt").to_string();

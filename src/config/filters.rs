@@ -173,7 +173,13 @@ pub fn parse_xpath_suppressions(text: &str) -> Result<Vec<XpathFilter>, String> 
             None => None,
         };
         let format = |n: &str| e.attribute(n).map(Format::new).transpose();
-        out.push(XpathFilter { files: format("files")?, checks: format("checks")?, message: format("message")?, id: e.attribute("id").map(String::from), query });
+        out.push(XpathFilter {
+            files: format("files")?,
+            checks: format("checks")?,
+            message: format("message")?,
+            id: e.attribute("id").map(String::from),
+            query,
+        });
     }
     Ok(out)
 }

@@ -1,18 +1,27 @@
 //! Rule families and the dispatch from node kind to rule.
 
+pub mod abbr;
 pub mod blocks;
 pub mod coding;
+pub mod commentfilter;
 pub mod comments;
+pub mod commentsindent;
+pub mod cs;
+pub mod csast_checks;
+pub mod customimport;
 pub mod declorder;
 pub mod descendant;
 pub mod design;
+pub mod emptyline;
 pub mod extension;
 pub mod fallthrough;
+pub mod googlenames;
+pub mod googlerightcurly;
 pub mod gs;
 pub mod hidden;
 pub mod importcheck;
-pub mod indentation;
 pub mod imports;
+pub mod indentation;
 pub mod javadoc;
 pub mod javadoc_style;
 pub mod javadoc_tags;
@@ -21,35 +30,26 @@ pub mod javadoc_tree_checks;
 pub mod magic;
 pub mod misc;
 pub mod modifiers;
-pub mod abbr;
-pub mod commentfilter;
-pub mod customimport;
-pub mod unicode;
-pub mod cs;
-pub mod textblock;
-pub mod googlerightcurly;
-pub mod emptyline;
-pub mod googlenames;
 pub mod naming;
 pub mod pad;
 pub mod redundant;
 pub mod size;
 pub mod statements;
 pub mod text;
+pub mod textblock;
+pub mod unicode;
 pub mod util;
+pub mod vdud;
 pub mod whitespace;
 pub mod wrap;
-pub mod vdud;
-pub mod commentsindent;
-pub mod csast_checks;
 pub mod xpathfilter;
 
 #[cfg(test)]
 mod tests;
 
 use crate::engine::Ctx;
-use crate::syntax::KindExt;
 use crate::syntax::Act;
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 /// Per-file state that rules carry across nodes.

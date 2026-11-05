@@ -1,0 +1,3 @@
+# The codebase is written in long lines; 160 with "Max" heuristics keeps its one-line expressions.
+max_width = 160
+use_small_heuristics = "Max"

@@ -263,7 +263,7 @@ pub(super) fn constructors_declaration_grouping(cfg: &mut Config, _module: &str,
 
 /// `IllegalTokenText`.
 pub(super) fn illegal_token_text(cfg: &mut Config, _module: &str, mut p: Props, id: Option<&str>) -> Result<(), String> {
-    use super::structural::{message_format, token_names, ILLEGAL_TOKEN_TEXT_ACCEPTED};
+    use super::structural::{ILLEGAL_TOKEN_TEXT_ACCEPTED, message_format, token_names};
     let tokens = token_names(p.take("tokens"), "", ILLEGAL_TOKEN_TEXT_ACCEPTED)?;
     let ignore_case = p.bool("ignoreCase", false)?;
     let pattern = p.take("format").unwrap_or_else(|| "^$".to_string());
@@ -317,11 +317,7 @@ pub(super) fn redundant_modifier(cfg: &mut Config, _module: &str, mut p: Props, 
     )?;
     let jdk_version = match p.take("jdkVersion") {
         None => 22,
-        Some(v) => v
-            .trim()
-            .trim_start_matches("1.")
-            .parse()
-            .map_err(|_| format!("property jdkVersion: '{}' is not a Java version", v.trim()))?,
+        Some(v) => v.trim().trim_start_matches("1.").parse().map_err(|_| format!("property jdkVersion: '{}' is not a Java version", v.trim()))?,
     };
     p.finish()?;
     cfg.redundant_modifier = Some(RedundantModifier { jdk_version });
@@ -337,8 +333,7 @@ pub(super) fn hidden_field(cfg: &mut Config, _module: &str, mut p: Props, _id: O
     let setter_can_return_its_class = p.bool("setterCanReturnItsClass", false)?;
     let ignore_abstract_methods = p.bool("ignoreAbstractMethods", false)?;
     p.finish()?;
-    cfg.hidden_field =
-        Some(HiddenField { ignore_format, ignore_constructor_parameter, ignore_setter, setter_can_return_its_class, ignore_abstract_methods });
+    cfg.hidden_field = Some(HiddenField { ignore_format, ignore_constructor_parameter, ignore_setter, setter_can_return_its_class, ignore_abstract_methods });
     Ok(())
 }
 
@@ -449,7 +444,17 @@ pub(super) fn descendant_token(cfg: &mut Config, _module: &str, mut p: Props, id
     let maximum_message = p.take("maximumMessage");
     p.finish()?;
     let name = id.map_or("DescendantToken", leak);
-    cfg.descendant_tokens.push(DescendantToken { name, for_init, for_iterator, min_depth, max_depth, min_number, max_number, minimum_message, maximum_message });
+    cfg.descendant_tokens.push(DescendantToken {
+        name,
+        for_init,
+        for_iterator,
+        min_depth,
+        max_depth,
+        min_number,
+        max_number,
+        minimum_message,
+        maximum_message,
+    });
     Ok(())
 }
 

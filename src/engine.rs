@@ -4,8 +4,8 @@
 //! table in `syntax`, so adding a rule never adds another traversal.
 
 use crate::config::Config;
-use crate::syntax::KindExt;
 use crate::rules::{self, State};
+use crate::syntax::KindExt;
 use crate::syntax::Syntax;
 use std::path::Path;
 use tree_sitter::{Node, Tree};
@@ -53,7 +53,18 @@ pub struct Ctx<'a> {
 
 impl<'a> Ctx<'a> {
     pub fn new(syn: &'a Syntax, cfg: &'a Config, src: &'a [u8], out: &'a mut Vec<Diagnostic>) -> Self {
-        Ctx { syn, cfg, src, out, path: None, parents: Vec::new(), previous: vec![None], line_starts: std::cell::OnceCell::new(), kind_name: "", node_id: usize::MAX }
+        Ctx {
+            syn,
+            cfg,
+            src,
+            out,
+            path: None,
+            parents: Vec::new(),
+            previous: vec![None],
+            line_starts: std::cell::OnceCell::new(),
+            kind_name: "",
+            node_id: usize::MAX,
+        }
     }
 
     /// The parent of the node being visited. Only meaningful for that node, not for others.
@@ -191,7 +202,14 @@ impl<'a> Ctx<'a> {
 fn anchor(node: Node) -> Node {
     if !matches!(
         node.kind_s(),
-        "method_declaration" | "field_declaration" | "constant_declaration" | "local_variable_declaration" | "formal_parameter" | "catch_formal_parameter" | "annotation_type_element_declaration" | "resource"
+        "method_declaration"
+            | "field_declaration"
+            | "constant_declaration"
+            | "local_variable_declaration"
+            | "formal_parameter"
+            | "catch_formal_parameter"
+            | "annotation_type_element_declaration"
+            | "resource"
     ) {
         return node;
     }

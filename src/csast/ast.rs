@@ -58,18 +58,7 @@ impl CsAst {
 
     /// As [`CsAst::token`], taking the text over (no copy) or borrowing a static one.
     pub fn token_text(&mut self, ty: Tok, text: std::borrow::Cow<'static, str>, line: u32, col: u32) -> N {
-        self.push(Node {
-            ty,
-            text,
-            line: line as i32 + 1,
-            col: col as i32,
-            parent: NIL,
-            first: NIL,
-            next: NIL,
-            prev: NIL,
-            start: NO_SPAN,
-            end: NO_SPAN,
-        })
+        self.push(Node { ty, text, line: line as i32 + 1, col: col as i32, parent: NIL, first: NIL, next: NIL, prev: NIL, start: NO_SPAN, end: NO_SPAN })
     }
 
     /// Records the source bytes a token node covers.
@@ -306,10 +295,7 @@ fn opt(n: N) -> Option<N> {
 }
 
 fn is_comment(ty: Tok) -> bool {
-    matches!(
-        ty,
-        Tok::SINGLE_LINE_COMMENT | Tok::BLOCK_COMMENT_BEGIN | Tok::BLOCK_COMMENT_END | Tok::COMMENT_CONTENT
-    )
+    matches!(ty, Tok::SINGLE_LINE_COMMENT | Tok::BLOCK_COMMENT_BEGIN | Tok::BLOCK_COMMENT_END | Tok::COMMENT_CONTENT)
 }
 
 pub struct Children<'a> {

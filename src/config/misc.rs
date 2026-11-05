@@ -111,7 +111,8 @@ pub(super) fn method_length(cfg: &mut Config, _module: &str, mut p: Props, _id: 
 pub(super) fn parameter_number(cfg: &mut Config, _module: &str, mut p: Props, _id: Option<&str>) -> Result<(), String> {
     let max = p.usize("max", 7)?;
     let ignore_overridden = p.bool("ignoreOverriddenMethods", false)?;
-    let ignore_annotated_by = p.take("ignoreAnnotatedBy").map(|v| v.split(',').map(|e| e.trim().to_string()).filter(|e| !e.is_empty()).collect()).unwrap_or_default();
+    let ignore_annotated_by =
+        p.take("ignoreAnnotatedBy").map(|v| v.split(',').map(|e| e.trim().to_string()).filter(|e| !e.is_empty()).collect()).unwrap_or_default();
     let tokens = p.tokens(PARAMETER_NUMBER_TOKENS, PARAMETER_NUMBER_TOKENS)?;
     p.finish()?;
     cfg.parameter_number = Some(ParameterNumber { max, ignore_overridden, ignore_annotated_by, tokens });
@@ -127,7 +128,7 @@ pub(super) fn missing_override_on_record_accessor(cfg: &mut Config, _module: &st
 
 /// `AnnotationLocation`.
 pub(super) fn annotation_location(cfg: &mut Config, _module: &str, mut p: Props, id: Option<&str>) -> Result<(), String> {
-    use super::structural::{token_names, ANNOTATION_LOCATION_ACCEPTED, ANNOTATION_LOCATION_DEFAULT};
+    use super::structural::{ANNOTATION_LOCATION_ACCEPTED, ANNOTATION_LOCATION_DEFAULT, token_names};
     let same_line_single = p.bool("allowSamelineSingleParameterlessAnnotation", true)?;
     let same_line_parameterized = p.bool("allowSamelineParameterizedAnnotation", false)?;
     let same_line_multiple = p.bool("allowSamelineMultipleAnnotations", false)?;

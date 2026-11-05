@@ -104,9 +104,8 @@ pub(super) fn avoid_star_import(cfg: &mut Config, _module: &str, mut p: Props, _
     let allow_static_member_imports = p.bool("allowStaticMemberImports", false)?;
     p.expect_default("maxAllowedStarImports", "0")?;
     // Entries are trimmed, and `java.io.*` means the same as `java.io`.
-    let excludes = p.take("excludes").map_or_else(Vec::new, |v| {
-        v.split(',').map(|e| e.trim().trim_end_matches(".*").to_string()).filter(|e| !e.is_empty()).collect()
-    });
+    let excludes =
+        p.take("excludes").map_or_else(Vec::new, |v| v.split(',').map(|e| e.trim().trim_end_matches(".*").to_string()).filter(|e| !e.is_empty()).collect());
     p.finish()?;
     cfg.avoid_star_import = Some(AvoidStarImport { allow_class_imports, allow_static_member_imports, excludes });
     Ok(())
@@ -129,7 +128,10 @@ pub(super) fn custom_import_order(cfg: &mut Config, _module: &str, mut p: Props,
                 "STATIC" | "THIRD_PARTY_PACKAGE" | "STANDARD_JAVA_PACKAGE" | "SPECIAL_IMPORTS" => rules.push(rule.to_string()),
                 r if r.starts_with("SAME_PACKAGE") => {
                     let inner = r.split_once('(').and_then(|(_, t)| t.split_once(')')).map(|(n, _)| n.trim());
-                    same_package_depth = inner.and_then(|n| n.parse().ok()).filter(|n| *n > 0).ok_or_else(|| format!("SAME_PACKAGE rule parameter should be positive integer: {r}"))?;
+                    same_package_depth = inner
+                        .and_then(|n| n.parse().ok())
+                        .filter(|n| *n > 0)
+                        .ok_or_else(|| format!("SAME_PACKAGE rule parameter should be positive integer: {r}"))?;
                     rules.push("SAME_PACKAGE".to_string());
                 }
                 other => return Err(format!("customImportOrderRules: unexpected rule {other}")),
@@ -139,8 +141,16 @@ pub(super) fn custom_import_order(cfg: &mut Config, _module: &str, mut p: Props,
     p.finish()?;
     let mut rules_with_fallback = rules.clone();
     rules_with_fallback.push("NOT_ASSIGNED_TO_ANY_GROUP".to_string());
-    cfg.custom_import_order =
-        Some(CustomImportOrder { rules, rules_with_fallback, same_package_depth, standard_package, third_party, special_imports, separate_line_between_groups, sort_alphabetically });
+    cfg.custom_import_order = Some(CustomImportOrder {
+        rules,
+        rules_with_fallback,
+        same_package_depth,
+        standard_package,
+        third_party,
+        special_imports,
+        separate_line_between_groups,
+        sort_alphabetically,
+    });
     Ok(())
 }
 

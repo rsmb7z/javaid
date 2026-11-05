@@ -3,27 +3,27 @@
 //! The rule is *never skip silently*. A module javaid does not implement, or a property it cannot
 //! honour, is reported by name with the reason, and that module does not run.
 
-use crate::tokens::{parse_tokens, TokenSet};
+use crate::tokens::{TokenSet, parse_tokens};
 
-mod props;
-pub mod structural;
 mod coding;
 mod filters;
 mod imports;
 mod javadoc;
 mod misc;
 mod naming;
+mod props;
+pub mod structural;
 mod text;
 mod whitespace;
 
-pub use props::{Extensions, Format};
-use props::*;
 pub use coding::*;
 pub use filters::*;
 pub use imports::*;
 pub use javadoc::*;
 pub use misc::*;
 pub use naming::*;
+use props::*;
+pub use props::{Extensions, Format};
 pub use text::*;
 pub use whitespace::*;
 
@@ -61,16 +61,52 @@ pub const REGISTRY: &[Module] = &[
     Module { name: "OuterTypeFilename", family: "misc", multi: false, own_name: false, apply: misc::outer_type_filename },
     Module { name: "NoLineWrap", family: "whitespace and wrapping", multi: false, own_name: false, apply: whitespace::no_line_wrap },
     Module { name: "IllegalTokenText", family: "coding and blocks", multi: true, own_name: true, apply: coding::illegal_token_text },
-    Module { name: "ArrayBracketNoWhitespace", family: "whitespace and wrapping", multi: false, own_name: false, apply: whitespace::array_bracket_no_whitespace },
+    Module {
+        name: "ArrayBracketNoWhitespace",
+        family: "whitespace and wrapping",
+        multi: false,
+        own_name: false,
+        apply: whitespace::array_bracket_no_whitespace,
+    },
     Module { name: "SingleSpaceSeparator", family: "whitespace and wrapping", multi: false, own_name: false, apply: whitespace::single_space_separator },
     Module { name: "AvoidModuleImport", family: "imports", multi: false, own_name: false, apply: imports::avoid_module_import },
     Module { name: "ModuleDirectiveOrder", family: "imports", multi: false, own_name: false, apply: imports::module_directive_order },
     Module { name: "AnnotationLocation", family: "modifiers and small checks", multi: true, own_name: true, apply: misc::annotation_location },
-    Module { name: "WhitespaceBeforeEmptyBody", family: "whitespace and wrapping", multi: false, own_name: false, apply: whitespace::whitespace_before_empty_body },
-    Module { name: "NoWhitespaceBeforeCaseDefaultColon", family: "whitespace and wrapping", multi: false, own_name: false, apply: whitespace::no_whitespace_before_case_default_colon },
-    Module { name: "ConstructorsDeclarationGrouping", family: "coding and blocks", multi: false, own_name: false, apply: coding::constructors_declaration_grouping },
-    Module { name: "OverloadMethodsDeclarationOrder", family: "coding and blocks", multi: false, own_name: false, apply: coding::overload_methods_declaration_order },
-    Module { name: "MissingOverrideOnRecordAccessor", family: "modifiers and small checks", multi: false, own_name: false, apply: misc::missing_override_on_record_accessor },
+    Module {
+        name: "WhitespaceBeforeEmptyBody",
+        family: "whitespace and wrapping",
+        multi: false,
+        own_name: false,
+        apply: whitespace::whitespace_before_empty_body,
+    },
+    Module {
+        name: "NoWhitespaceBeforeCaseDefaultColon",
+        family: "whitespace and wrapping",
+        multi: false,
+        own_name: false,
+        apply: whitespace::no_whitespace_before_case_default_colon,
+    },
+    Module {
+        name: "ConstructorsDeclarationGrouping",
+        family: "coding and blocks",
+        multi: false,
+        own_name: false,
+        apply: coding::constructors_declaration_grouping,
+    },
+    Module {
+        name: "OverloadMethodsDeclarationOrder",
+        family: "coding and blocks",
+        multi: false,
+        own_name: false,
+        apply: coding::overload_methods_declaration_order,
+    },
+    Module {
+        name: "MissingOverrideOnRecordAccessor",
+        family: "modifiers and small checks",
+        multi: false,
+        own_name: false,
+        apply: misc::missing_override_on_record_accessor,
+    },
     Module { name: "HideUtilityClassConstructor", family: "coding and blocks", multi: false, own_name: false, apply: coding::hide_utility_class_constructor },
     Module { name: "InterfaceIsType", family: "coding and blocks", multi: false, own_name: false, apply: coding::interface_is_type },
     Module { name: "HiddenField", family: "coding and blocks", multi: false, own_name: false, apply: coding::hidden_field },
@@ -107,12 +143,24 @@ pub const REGISTRY: &[Module] = &[
     Module { name: "FileLength", family: "text", multi: false, own_name: false, apply: text::file_length },
     Module { name: "LineLength", family: "text", multi: false, own_name: false, apply: text::line_length },
     Module { name: "RegexpSingleline", family: "text", multi: true, own_name: true, apply: text::regexp_singleline },
-    Module { name: "BeforeExecutionExclusionFileFilter", family: "filters", multi: true, own_name: true, apply: filters::before_execution_exclusion_file_filter },
+    Module {
+        name: "BeforeExecutionExclusionFileFilter",
+        family: "filters",
+        multi: true,
+        own_name: true,
+        apply: filters::before_execution_exclusion_file_filter,
+    },
     Module { name: "SuppressionFilter", family: "filters", multi: true, own_name: true, apply: filters::suppression_filter },
     Module { name: "SuppressWithNearbyTextFilter", family: "filters", multi: true, own_name: true, apply: filters::suppress_with_nearby_text_filter },
     Module { name: "SuppressionCommentFilter", family: "filters", multi: true, own_name: true, apply: filters::suppression_comment_filter },
     Module { name: "SuppressWithNearbyCommentFilter", family: "filters", multi: true, own_name: true, apply: filters::suppress_with_nearby_comment_filter },
-    Module { name: "SuppressWithPlainTextCommentFilter", family: "filters", multi: true, own_name: true, apply: filters::suppress_with_plain_text_comment_filter },
+    Module {
+        name: "SuppressWithPlainTextCommentFilter",
+        family: "filters",
+        multi: true,
+        own_name: true,
+        apply: filters::suppress_with_plain_text_comment_filter,
+    },
     Module { name: "SuppressionXpathFilter", family: "filters", multi: true, own_name: true, apply: filters::suppression_filter },
     Module { name: "SuppressionXpathSingleFilter", family: "filters", multi: true, own_name: true, apply: filters::suppression_xpath_single_filter },
     Module { name: "SuppressWarningsHolder", family: "filters", multi: false, own_name: false, apply: filters::suppress_warnings_holder },
@@ -125,15 +173,33 @@ pub const REGISTRY: &[Module] = &[
     Module { name: "AbbreviationAsWordInName", family: "naming", multi: false, own_name: false, apply: naming::abbreviation_as_word_in_name },
     Module { name: "GoogleMethodName", family: "naming", multi: false, own_name: false, apply: naming::google_method_name },
     Module { name: "GoogleNonConstantFieldName", family: "naming", multi: false, own_name: false, apply: naming::google_non_constant_field_name },
-    Module { name: "MultilineCommentLeadingAsteriskPresence", family: "misc", multi: false, own_name: false, apply: misc::multiline_comment_leading_asterisk_presence },
+    Module {
+        name: "MultilineCommentLeadingAsteriskPresence",
+        family: "misc",
+        multi: false,
+        own_name: false,
+        apply: misc::multiline_comment_leading_asterisk_presence,
+    },
     Module { name: "AvoidEscapedUnicodeCharacters", family: "misc", multi: false, own_name: false, apply: misc::avoid_escaped_unicode_characters },
     Module { name: "CustomImportOrder", family: "imports", multi: false, own_name: false, apply: imports::custom_import_order },
     Module { name: "JavadocContentLocation", family: "javadoc", multi: false, own_name: false, apply: javadoc::javadoc_content_location },
     Module { name: "JavadocLeadingAsteriskAlign", family: "javadoc", multi: false, own_name: false, apply: javadoc::javadoc_leading_asterisk_align },
-    Module { name: "RequireEmptyLineBeforeBlockTagGroup", family: "javadoc", multi: false, own_name: false, apply: javadoc::require_empty_line_before_block_tag_group },
+    Module {
+        name: "RequireEmptyLineBeforeBlockTagGroup",
+        family: "javadoc",
+        multi: false,
+        own_name: false,
+        apply: javadoc::require_empty_line_before_block_tag_group,
+    },
     Module { name: "SummaryJavadoc", family: "javadoc", multi: false, own_name: false, apply: javadoc::summary_javadoc },
     Module { name: "JavadocParagraph", family: "javadoc", multi: false, own_name: false, apply: javadoc::javadoc_paragraph },
-    Module { name: "JavadocTagContinuationIndentation", family: "javadoc", multi: false, own_name: false, apply: javadoc::javadoc_tag_continuation_indentation },
+    Module {
+        name: "JavadocTagContinuationIndentation",
+        family: "javadoc",
+        multi: false,
+        own_name: false,
+        apply: javadoc::javadoc_tag_continuation_indentation,
+    },
     Module { name: "MissingJavadocType", family: "javadoc", multi: false, own_name: false, apply: javadoc::missing_javadoc_type },
     Module { name: "JavadocPackage", family: "javadoc", multi: false, own_name: false, apply: javadoc::javadoc_package },
     Module { name: "Translation", family: "misc", multi: false, own_name: false, apply: misc::translation },
@@ -147,7 +213,13 @@ pub const REGISTRY: &[Module] = &[
     Module { name: "TodoComment", family: "text", multi: true, own_name: true, apply: text::todo_comment },
     Module { name: "ArrayTypeStyle", family: "modifiers and small checks", multi: false, own_name: false, apply: misc::array_type_style },
     Module { name: "EmptyStatement", family: "modifiers and small checks", multi: false, own_name: false, apply: misc::empty_statement },
-    Module { name: "VariableDeclarationUsageDistance", family: "coding and blocks", multi: false, own_name: false, apply: coding::variable_declaration_usage_distance },
+    Module {
+        name: "VariableDeclarationUsageDistance",
+        family: "coding and blocks",
+        multi: false,
+        own_name: false,
+        apply: coding::variable_declaration_usage_distance,
+    },
     Module { name: "CommentsIndentation", family: "misc", multi: false, own_name: false, apply: misc::comments_indentation },
     Module { name: "MethodLength", family: "modifiers and small checks", multi: false, own_name: false, apply: misc::method_length },
     Module { name: "ParameterNumber", family: "modifiers and small checks", multi: false, own_name: false, apply: misc::parameter_number },
@@ -175,7 +247,13 @@ pub const REGISTRY: &[Module] = &[
     Module { name: "RightCurly", family: "whitespace and wrapping", multi: false, own_name: false, apply: whitespace::right_curly },
     Module { name: "LeftCurly", family: "whitespace and wrapping", multi: true, own_name: true, apply: whitespace::left_curly },
     Module { name: "Indentation", family: "whitespace and wrapping", multi: false, own_name: false, apply: whitespace::indentation },
-    Module { name: "TextBlockGoogleStyleFormatting", family: "coding and blocks", multi: false, own_name: false, apply: coding::text_block_google_style_formatting },
+    Module {
+        name: "TextBlockGoogleStyleFormatting",
+        family: "coding and blocks",
+        multi: false,
+        own_name: false,
+        apply: coding::text_block_google_style_formatting,
+    },
     Module { name: "GoogleRightCurly", family: "coding and blocks", multi: false, own_name: false, apply: coding::google_right_curly },
     Module { name: "EmptyLineSeparator", family: "whitespace and wrapping", multi: false, own_name: false, apply: whitespace::empty_line_separator },
 ];
@@ -613,7 +691,9 @@ impl Config {
                         if !module.own_name {
                             let module = module.name;
                             match cfg.ids.iter().find(|(m, _)| *m == module) {
-                                Some((_, first)) if first != id => notes.push(format!("{name}: its instances have different ids; javaid prints '{first}' for all")),
+                                Some((_, first)) if first != id => {
+                                    notes.push(format!("{name}: its instances have different ids; javaid prints '{first}' for all"))
+                                }
                                 Some(_) => {}
                                 None => cfg.ids.push((module, leak(id))),
                             }
@@ -718,7 +798,8 @@ fn collect_modules(node: roxmltree::Node, out: &mut Vec<RawModule>) {
             })
             .collect();
         let mut props: Vec<(String, String)> = props;
-        let mut messages: Vec<(String, String)> = children("message").filter_map(|m| Some((m.attribute("key")?.to_string(), m.attribute("value").unwrap_or("").to_string()))).collect();
+        let mut messages: Vec<(String, String)> =
+            children("message").filter_map(|m| Some((m.attribute("key")?.to_string(), m.attribute("value").unwrap_or("").to_string()))).collect();
         // MatchXpath's custom message is its output, so it travels as a pseudo-property.
         if short_name(node.attribute("name").unwrap_or("")) == "MatchXpath" {
             for (k, v) in &messages {
@@ -781,8 +862,10 @@ mod tests {
 
     #[test]
     fn tokens_are_accepted_at_a_modules_default_and_refused_otherwise() {
-        let same = only_module(r#"<module name="NeedBraces"><property name="tokens" value="LITERAL_WHILE, LITERAL_IF,
-            LITERAL_FOR, LITERAL_ELSE, LITERAL_DO"/></module>"#);
+        let same = only_module(
+            r#"<module name="NeedBraces"><property name="tokens" value="LITERAL_WHILE, LITERAL_IF,
+            LITERAL_FOR, LITERAL_ELSE, LITERAL_DO"/></module>"#,
+        );
         assert!(same.skipped.is_empty() && same.config.need_braces, "order, spacing and newlines do not matter");
         let narrower = only_module(r#"<module name="NeedBraces"><property name="tokens" value="LITERAL_IF"/></module>"#);
         assert!(!narrower.config.need_braces);

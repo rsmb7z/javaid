@@ -242,7 +242,8 @@ pub(super) fn missing_javadoc_method(cfg: &mut Config, _module: &str, mut p: Pro
     p.expect_default("tokens", "METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF, COMPACT_CTOR_DEF")?;
     let scope = p.scope("scope")?.unwrap_or(1);
     let exclude_scope = p.scope("excludeScope")?;
-    let min_line_count = p.take("minLineCount").map_or(Ok(-1), |v| v.trim().parse::<i64>().map_err(|_| format!("property minLineCount: '{}' is not an integer", v.trim())))?;
+    let min_line_count =
+        p.take("minLineCount").map_or(Ok(-1), |v| v.trim().parse::<i64>().map_err(|_| format!("property minLineCount: '{}' is not an integer", v.trim())))?;
     let allowed_annotations = match p.take("allowedAnnotations") {
         None => vec!["Override".to_string()],
         Some(v) => v.split(',').map(|a| a.trim().to_string()).filter(|a| !a.is_empty()).collect(),

@@ -85,7 +85,8 @@ pub fn on_number(cx: &mut Ctx, literal: Node) {
 
 fn is_annotation_default(ancestors: &[Node], literal: Node) -> bool {
     ancestors.iter().any(|a| {
-        a.kind_s() == "annotation_type_element_declaration" && a.children(&mut a.walk()).find(|c| c.kind_s() == "default").is_some_and(|d| d.end_byte() <= literal.start_byte())
+        a.kind_s() == "annotation_type_element_declaration"
+            && a.children(&mut a.walk()).find(|c| c.kind_s() == "default").is_some_and(|d| d.end_byte() <= literal.start_byte())
     })
 }
 
@@ -114,7 +115,9 @@ fn is_field_declaration(ancestors: &[Node]) -> bool {
 }
 
 fn is_magic(cx: &Ctx, literal: Node, ancestors: &[Node]) -> bool {
-    let Some(def_at) = ancestors.iter().position(|a| matches!(a.kind_s(), "local_variable_declaration" | "field_declaration" | "constant_declaration" | "enum_constant")) else {
+    let Some(def_at) =
+        ancestors.iter().position(|a| matches!(a.kind_s(), "local_variable_declaration" | "field_declaration" | "constant_declaration" | "enum_constant"))
+    else {
         return true;
     };
     let def = ancestors[def_at];
@@ -145,10 +148,19 @@ fn waives(cx: &Ctx, node: Node, child: Node) -> bool {
     match node.kind_s() {
         // A call whose result is the receiver of another call sits under a DOT, which is not waived.
         "method_invocation" => node.child_by_field_name("object").is_none_or(|o| o.id() != child.id()),
-        "variable_declarator" | "parenthesized_expression" | "cast_expression" | "ternary_expression" | "argument_list" | "object_creation_expression"
-        | "array_initializer" | "expression_statement" => true,
+        "variable_declarator"
+        | "parenthesized_expression"
+        | "cast_expression"
+        | "ternary_expression"
+        | "argument_list"
+        | "object_creation_expression"
+        | "array_initializer"
+        | "expression_statement" => true,
         "unary_expression" => !matches!(node.child(0).map(|c| c.kind_s()), Some("!")),
-        "binary_expression" => matches!(op(node).as_slice(), b"*" | b"/" | b"+" | b"-" | b"%" | b">>" | b">>>" | b"<<" | b">=" | b">" | b"<=" | b"<" | b"==" | b"!=" | b"^" | b"|" | b"&"),
+        "binary_expression" => matches!(
+            op(node).as_slice(),
+            b"*" | b"/" | b"+" | b"-" | b"%" | b">>" | b">>>" | b"<<" | b">=" | b">" | b"<=" | b"<" | b"==" | b"!=" | b"^" | b"|" | b"&"
+        ),
         "assignment_expression" => op(node) == b"=",
         "array_creation_expression" => child.kind_s() != "dimensions_expr",
         _ => false,

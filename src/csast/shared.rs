@@ -12,7 +12,7 @@
 //! thread borrows a helper thread that is spawned once and reused.
 
 use std::cell::{Cell, OnceCell, RefCell};
-use std::panic::{catch_unwind, AssertUnwindSafe};
+use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::mpsc;
 use tree_sitter::Tree;
 
@@ -130,7 +130,8 @@ impl<'a> CsCache<'a> {
     fn build(&self, comments: bool) -> Option<CsAst> {
         let (tree, src) = (self.tree, self.src);
         let reusable = tree.filter(|t| is_orchard(t) && !has_lone_cr(src));
-        let roots = reusable.map(|t| self.roots.get_or_init(|| if t.root_node().has_error() { Default::default() } else { super::build::misparsed_cast_roots(t) }));
+        let roots =
+            reusable.map(|t| self.roots.get_or_init(|| if t.root_node().has_error() { Default::default() } else { super::build::misparsed_cast_roots(t) }));
         with_big_stack(move || {
             // The builder reads the fork grammar's node names (`@interface`, ...) and ends a line
             // at a lone `\r`, as ANTLR does. The walk's tree is reusable when it came from that

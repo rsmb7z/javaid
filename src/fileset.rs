@@ -54,7 +54,12 @@ fn javadoc_package(cfg: &Config, discovered: &[PathBuf], out: &mut Findings) {
             None
         };
         if let Some(message) = message {
-            out.on_file.entry(path.clone()).or_default().push(Diagnostic { rule: cfg.display("JavadocPackage"), line: 1, col: 0, message: message.to_string() });
+            out.on_file.entry(path.clone()).or_default().push(Diagnostic {
+                rule: cfg.display("JavadocPackage"),
+                line: 1,
+                col: 0,
+                message: message.to_string(),
+            });
         }
     }
 }
@@ -99,7 +104,10 @@ fn translation(cfg: &Config, discovered: &[PathBuf], out: &mut Findings) {
     }
     for ((dir, base, ext), files) in bundles {
         let report_dir = |name: String, out: &mut Findings| {
-            out.at_end.push((dir.clone(), Diagnostic { rule: cfg.display("Translation"), line: 1, col: 0, message: format!("Properties file '{name}' is missing.") }));
+            out.at_end.push((
+                dir.clone(),
+                Diagnostic { rule: cfg.display("Translation"), line: 1, col: 0, message: format!("Properties file '{name}' is missing.") },
+            ));
         };
         let default_name = format!("{base}.{ext}");
         if !files.iter().any(|f| f.file_name().is_some_and(|n| *n == *default_name)) {
@@ -111,7 +119,10 @@ fn translation(cfg: &Config, discovered: &[PathBuf], out: &mut Findings) {
                 let rest = n.strip_prefix(&format!("{base}_{code}")).unwrap_or("");
                 n.starts_with(&format!("{base}_{code}"))
                     && (rest == format!(".{ext}")
-                        || (rest.len() == ext.len() + 4 && rest.starts_with('_') && rest.ends_with(&format!(".{ext}")) && rest[1..3].bytes().all(|b| b.is_ascii_uppercase()))
+                        || (rest.len() == ext.len() + 4
+                            && rest.starts_with('_')
+                            && rest.ends_with(&format!(".{ext}"))
+                            && rest[1..3].bytes().all(|b| b.is_ascii_uppercase()))
                         || (rest.starts_with('_') && rest.ends_with(&format!(".{ext}"))))
             });
             if !has {
@@ -123,7 +134,8 @@ fn translation(cfg: &Config, discovered: &[PathBuf], out: &mut Findings) {
         for (file, have) in &keys {
             for key in union.iter().filter(|k| !have.contains(**k)) {
                 let shown = key.replace('\n', "\\n");
-                out.at_end.push(((*file).clone(), Diagnostic { rule: cfg.display("Translation"), line: 1, col: 0, message: format!("Key '{shown}' missing.") }));
+                out.at_end
+                    .push(((*file).clone(), Diagnostic { rule: cfg.display("Translation"), line: 1, col: 0, message: format!("Key '{shown}' missing.") }));
             }
         }
     }

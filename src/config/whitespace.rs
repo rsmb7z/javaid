@@ -205,7 +205,8 @@ pub(super) fn indentation(cfg: &mut Config, _module: &str, mut p: Props, _id: Op
     let line_wrapping_indentation = p.i32("lineWrappingIndentation", 4)?;
     let force_strict_condition = p.bool("forceStrictCondition", false)?;
     p.finish()?;
-    cfg.indentation = Some(Indentation { basic_offset, brace_adjustment, case_indent, throws_indent, array_init_indent, line_wrapping_indentation, force_strict_condition });
+    cfg.indentation =
+        Some(Indentation { basic_offset, brace_adjustment, case_indent, throws_indent, array_init_indent, line_wrapping_indentation, force_strict_condition });
     Ok(())
 }
 
@@ -408,6 +409,7 @@ pub(super) fn empty_line_separator(cfg: &mut Config, _module: &str, mut p: Props
         }
     };
     p.finish()?;
-    cfg.empty_line_separator = Some(EmptyLineSeparator { tokens, allow_no_empty_line_between_fields, allow_multiple_empty_lines, allow_multiple_empty_lines_inside_class_members });
+    cfg.empty_line_separator =
+        Some(EmptyLineSeparator { tokens, allow_no_empty_line_between_fields, allow_multiple_empty_lines, allow_multiple_empty_lines_inside_class_members });
     Ok(())
 }

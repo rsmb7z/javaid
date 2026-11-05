@@ -7,12 +7,12 @@
 //! Checkstyle's tree puts a prefix operator, `new` and a cast's `(` above the operand they
 //! introduce, so those are passed over.
 
-use crate::tokens::Token;
-use crate::syntax::KindExt;
 use super::pad;
-use crate::config::{CurlyOption, RightCurlyOption};
 use super::whitespace::{is_comment, is_empty_statement, operator_token, punctuation_token};
+use crate::config::{CurlyOption, RightCurlyOption};
 use crate::engine::Ctx;
+use crate::syntax::KindExt;
+use crate::tokens::Token;
 use tree_sitter::Node;
 
 /// An operator token, for the rules that look at which line it is on.
@@ -104,10 +104,7 @@ fn brace_owners<'a>(cx: &Ctx<'a>, brace: Node<'a>) -> Vec<Owner<'a>> {
             "finally_clause" => vec![owner(Token::LiteralFinally, Opens::Block)],
             "switch_rule" => {
                 let label = preceding_label(parent);
-                vec![
-                    owner(Token::SwitchRule, Opens::Block),
-                    Owner { decl: label.unwrap_or(grand), ..owner(label_token(label), Opens::Block) },
-                ]
+                vec![owner(Token::SwitchRule, Opens::Block), Owner { decl: label.unwrap_or(grand), ..owner(label_token(label), Opens::Block) }]
             }
             // Only the block that comes first after a label is the one the label owns.
             "switch_block_statement_group" => match preceding_label(parent) {
@@ -128,9 +125,10 @@ fn brace_owners<'a>(cx: &Ctx<'a>, brace: Node<'a>) -> Vec<Owner<'a>> {
         "annotation_type_body" => vec![owner(Token::AnnotationDef, Opens::Members)],
         "enum_body" => {
             // `ignoreEnums` excuses an enum only while no annotation comes first.
-            let annotated = grand.children(&mut grand.walk()).find(|c| c.kind_s() == "modifiers").is_some_and(|m| {
-                m.children(&mut m.walk()).any(|a| matches!(a.kind_s(), "annotation" | "marker_annotation"))
-            });
+            let annotated = grand
+                .children(&mut grand.walk())
+                .find(|c| c.kind_s() == "modifiers")
+                .is_some_and(|m| m.children(&mut m.walk()).any(|a| matches!(a.kind_s(), "annotation" | "marker_annotation")));
             vec![Owner { plain_enum: !annotated, ..owner(Token::EnumDef, Opens::Members) }]
         }
         "switch_block" => vec![owner(Token::LiteralSwitch, Opens::Cases)],
@@ -175,18 +173,23 @@ fn declaration_start_row(decl: Node) -> usize {
     while let Some(next) = next_sibling_skipping_comments(last).filter(|n| is_annotation(*n)) {
         last = next;
     }
-    next_sibling_skipping_comments(last)
-        .or_else(|| next_sibling_skipping_comments(modifiers))
-        .map_or(own, |n| n.start_position().row)
+    next_sibling_skipping_comments(last).or_else(|| next_sibling_skipping_comments(modifiers)).map_or(own, |n| n.start_position().row)
 }
 
 /// Where the construct that owns a brace starts, for `nlow`.
 fn construct_start_row(owner: &Owner, brace: Node) -> usize {
     match owner.token {
-        Token::MethodDef | Token::CtorDef | Token::CompactCtorDef | Token::ClassDef | Token::RecordDef | Token::InterfaceDef | Token::AnnotationDef | Token::EnumDef => {
-            declaration_start_row(owner.decl)
+        Token::MethodDef
+        | Token::CtorDef
+        | Token::CompactCtorDef
+        | Token::ClassDef
+        | Token::RecordDef
+        | Token::InterfaceDef
+        | Token::AnnotationDef
+        | Token::EnumDef => declaration_start_row(owner.decl),
+        Token::Lambda => {
+            owner.decl.children(&mut owner.decl.walk()).find(|c| c.kind_s() == "->").map_or(brace.start_position().row, |a| a.start_position().row)
         }
-        Token::Lambda => owner.decl.children(&mut owner.decl.walk()).find(|c| c.kind_s() == "->").map_or(brace.start_position().row, |a| a.start_position().row),
         Token::Objblock => brace.start_position().row,
         _ => owner.decl.start_position().row,
     }
@@ -525,14 +528,16 @@ fn right_curly(cx: &mut Ctx, lbrace: Node) {
         "should have line break before"
     } else if option == RightCurlyOption::Same && !check_last && next.is_some_and(|n| n.start_position().row != rrow) {
         "should be on the same line as the next part of a multi-block statement (one that directly contains multiple blocks: if/else-if/else, do/while or try/catch/finally)"
-    } else if (option == RightCurlyOption::Alone && !alone)
-        || ((option == RightCurlyOption::AloneOrSingleline || check_last) && !alone && !single_line_block)
-    {
+    } else if (option == RightCurlyOption::Alone && !alone) || ((option == RightCurlyOption::AloneOrSingleline || check_last) && !alone && !single_line_block) {
         "should be alone on a line"
     } else {
         return;
     };
-    cx.diag("RightCurly", rcurly, format!("'}}' at column {} {message}.", cx.char_column(rcurly.start_position().row as u32 + 1, rcurly.start_position().column as u32 + 1)));
+    cx.diag(
+        "RightCurly",
+        rcurly,
+        format!("'}}' at column {} {message}.", cx.char_column(rcurly.start_position().row as u32 + 1, rcurly.start_position().column as u32 + 1)),
+    );
 }
 
 /// The row Checkstyle compares the closing brace with: that of the last statement's own token, which for a
@@ -567,7 +572,22 @@ fn outermost_if(else_keyword: Node) -> Node {
 /// count as one, an anonymous class does.)
 fn switch_in_expression(cx: &Ctx, switch_block: Node) -> bool {
     let Some(switch) = switch_block.parent() else { return false };
-    let is_statement = |n: Node| n.parent().is_some_and(|p| matches!(p.kind_s(), "block" | "constructor_body" | "switch_block_statement_group" | "if_statement" | "while_statement" | "do_statement" | "for_statement" | "enhanced_for_statement" | "labeled_statement"));
+    let is_statement = |n: Node| {
+        n.parent().is_some_and(|p| {
+            matches!(
+                p.kind_s(),
+                "block"
+                    | "constructor_body"
+                    | "switch_block_statement_group"
+                    | "if_statement"
+                    | "while_statement"
+                    | "do_statement"
+                    | "for_statement"
+                    | "enhanced_for_statement"
+                    | "labeled_statement"
+            )
+        })
+    };
     if !is_statement(switch) {
         return true;
     }
@@ -578,9 +598,22 @@ fn switch_in_expression(cx: &Ctx, switch_block: Node) -> bool {
             // A lambda that is a variable's whole initialiser has no expression node above it.
             "variable_declarator" => a.child_by_field_name("value").is_none_or(|v| v.kind_s() != "lambda_expression"),
             "lambda_expression" => !a.parent().is_some_and(|p| p.kind_s() == "variable_declarator"),
-            "argument_list" | "assignment_expression" | "return_statement" | "yield_statement" | "parenthesized_expression"
-            | "binary_expression" | "ternary_expression" | "unary_expression" | "cast_expression" | "method_invocation" | "object_creation_expression"
-            | "expression_statement" | "array_access" | "field_access" | "element_value_pair" | "array_initializer" => true,
+            "argument_list"
+            | "assignment_expression"
+            | "return_statement"
+            | "yield_statement"
+            | "parenthesized_expression"
+            | "binary_expression"
+            | "ternary_expression"
+            | "unary_expression"
+            | "cast_expression"
+            | "method_invocation"
+            | "object_creation_expression"
+            | "expression_statement"
+            | "array_access"
+            | "field_access"
+            | "element_value_pair"
+            | "array_initializer" => true,
             _ => false,
         };
         if in_expression && a.id() != switch.id() {

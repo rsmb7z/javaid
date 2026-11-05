@@ -51,7 +51,12 @@ pub fn run(cfg: &Config, ext: &str, src: &[u8], out: &mut Vec<Diagnostic>) {
     if let Some(m) = size {
         let count = lines(src).count();
         if count > m.max {
-            out.push(Diagnostic { rule: cfg.display("FileLength"), line: 1, col: 0, message: format!("File length is {} lines (max allowed is {}).", crate::engine::grouped(count), crate::engine::grouped(m.max)) });
+            out.push(Diagnostic {
+                rule: cfg.display("FileLength"),
+                line: 1,
+                col: 0,
+                message: format!("File length is {} lines (max allowed is {}).", crate::engine::grouped(count), crate::engine::grouped(m.max)),
+            });
         }
     }
     if tab.is_none() && length.is_none() && patterns.is_empty() {

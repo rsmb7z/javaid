@@ -16,9 +16,9 @@
 //! and every virtual method is a `match` over the kinds, with the `super` calls written out.
 
 use crate::config::Indentation;
-use crate::csast::{CsAst, N, NIL};
 use crate::csast::Tok;
 use crate::csast::Tok::*;
+use crate::csast::{CsAst, N, NIL};
 use crate::engine::Ctx;
 use std::collections::{BTreeMap, HashMap, HashSet};
 
@@ -279,13 +279,28 @@ enum Wrap {
     None,
 }
 
-const CHECKED_CHILDREN: &[Tok] = &[VARIABLE_DEF, EXPR, ANNOTATION, OBJBLOCK, LITERAL_BREAK, LITERAL_RETURN, LITERAL_THROW, LITERAL_CONTINUE, CTOR_CALL, SUPER_CTOR_CALL];
+const CHECKED_CHILDREN: &[Tok] =
+    &[VARIABLE_DEF, EXPR, ANNOTATION, OBJBLOCK, LITERAL_BREAK, LITERAL_RETURN, LITERAL_THROW, LITERAL_CONTINUE, CTOR_CALL, SUPER_CTOR_CALL];
 const CLASS_CHECKED_CHILDREN: &[Tok] = &[EXPR, OBJBLOCK, LITERAL_BREAK, LITERAL_RETURN, LITERAL_THROW, LITERAL_CONTINUE];
 const CASE_CHILDREN: &[Tok] = &[LITERAL_CASE, LITERAL_DEFAULT];
 const LINE_WRAP_NEW_PARENT_TYPES: &[Tok] = &[ASSIGN, LITERAL_RETURN, LITERAL_THROW];
 const LINE_WRAPPING_INDENT_TRIGGERS: &[Tok] = &[ASSIGN, SWITCH_RULE, LAMBDA];
 const IGNORED_LIST: &[Tok] = &[LCURLY, RCURLY, LITERAL_NEW, LITERAL_YIELD, ARRAY_INIT, LITERAL_DEFAULT, LITERAL_CASE];
-const SLIST_PARENT_TYPES: &[Tok] = &[CTOR_DEF, METHOD_DEF, STATIC_INIT, LITERAL_SYNCHRONIZED, LITERAL_IF, LITERAL_WHILE, LITERAL_DO, LITERAL_FOR, LITERAL_ELSE, LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY, COMPACT_CTOR_DEF];
+const SLIST_PARENT_TYPES: &[Tok] = &[
+    CTOR_DEF,
+    METHOD_DEF,
+    STATIC_INIT,
+    LITERAL_SYNCHRONIZED,
+    LITERAL_IF,
+    LITERAL_WHILE,
+    LITERAL_DO,
+    LITERAL_FOR,
+    LITERAL_ELSE,
+    LITERAL_TRY,
+    LITERAL_CATCH,
+    LITERAL_FINALLY,
+    COMPACT_CTOR_DEF,
+];
 
 struct Ind<'a> {
     a: &'a CsAst,
@@ -463,7 +478,9 @@ impl<'a> Ind<'a> {
     fn msg(key: u8, name: &str, actual: i32, expected: &str) -> String {
         match key {
             MSG_ERROR => format!("'{name}' has incorrect indentation level {}, expected level should be {expected}.", fmt_int(actual)),
-            MSG_ERROR_MULTI => format!("'{name}' has incorrect indentation level {}, expected level should be one of the following: {expected}.", fmt_int(actual)),
+            MSG_ERROR_MULTI => {
+                format!("'{name}' has incorrect indentation level {}, expected level should be one of the following: {expected}.", fmt_int(actual))
+            }
             MSG_CHILD_ERROR => format!("'{name}' child has incorrect indentation level {}, expected level should be {expected}.", fmt_int(actual)),
             _ => format!("'{name}' child has incorrect indentation level {}, expected level should be one of the following: {expected}.", fmt_int(actual)),
         }
@@ -691,11 +708,7 @@ impl<'a> Ind<'a> {
             }
             K::SwitchRule => {
                 let i = self.indent(h);
-                if self.kind(child) == K::Slist || self.sr_same_line_as_switch(h, self.main(child)) {
-                    i
-                } else {
-                    IL::off(&i, &[self.lw()])
-                }
+                if self.kind(child) == K::Slist || self.sr_same_line_as_switch(h, self.main(child)) { i } else { IL::off(&i, &[self.lw()]) }
             }
             K::Yield => {
                 if self.same_line(self.main(h), self.main(child)) {
@@ -1617,11 +1630,7 @@ impl<'a> Ind<'a> {
             self.find_subtree_ast(&mut set, self.fc(main));
             let first_col = self.ecol(set.first_line());
             let line_start = self.line_start(self.mc_first_ast(main));
-            if line_start == first_col {
-                self.indent_super(h)
-            } else {
-                IL::one(line_start)
-            }
+            if line_start == first_col { self.indent_super(h) } else { IL::one(line_start) }
         }
     }
 

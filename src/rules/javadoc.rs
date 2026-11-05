@@ -7,9 +7,9 @@
 //! several comments before the declaration the last Javadoc is the one that counts.
 
 use crate::engine::Ctx;
-use crate::syntax::KindExt;
 use crate::rules::javadoc_tags;
 use crate::rules::util::has_modifier;
+use crate::syntax::KindExt;
 use tree_sitter::Node;
 
 fn is_comment(n: Node) -> bool {
@@ -188,11 +188,7 @@ pub fn on_method(cx: &mut Ctx, decl: Node) {
 fn lines_in_body(decl: Node) -> i64 {
     let Some(body) = decl.child_by_field_name("body") else { return 1 };
     let (open, close) = (body.start_position().row, body.end_position().row);
-    if open == close {
-        1
-    } else {
-        close as i64 - open as i64 - 1
-    }
+    if open == close { 1 } else { close as i64 - open as i64 - 1 }
 }
 
 pub fn has_allowed_annotation(cx: &Ctx, decl: Node, allowed: &[String]) -> bool {
@@ -205,7 +201,9 @@ pub fn has_allowed_annotation(cx: &Ctx, decl: Node, allowed: &[String]) -> bool 
 }
 
 fn plain_method_shape(decl: Node) -> bool {
-    decl.kind_s() == "method_declaration" && !decl.children(&mut decl.walk()).any(|c| matches!(c.kind_s(), "type_parameters" | "throws")) && decl.child_by_field_name("body").is_some()
+    decl.kind_s() == "method_declaration"
+        && !decl.children(&mut decl.walk()).any(|c| matches!(c.kind_s(), "type_parameters" | "throws"))
+        && decl.child_by_field_name("body").is_some()
 }
 
 /// `getX`/`isX` with no parameters and a body that starts with `return`.
@@ -215,7 +213,13 @@ fn is_getter(cx: &Ctx, decl: Node) -> bool {
     }
     let Some(name) = decl.child_by_field_id(cx.syn.f.name) else { return false };
     let n = cx.text(name);
-    let prefix = if n.starts_with(b"get") { 3 } else if n.starts_with(b"is") { 2 } else { return false };
+    let prefix = if n.starts_with(b"get") {
+        3
+    } else if n.starts_with(b"is") {
+        2
+    } else {
+        return false;
+    };
     if !n.get(prefix).is_some_and(u8::is_ascii_uppercase) {
         return false;
     }
@@ -246,7 +250,9 @@ fn is_setter(cx: &Ctx, decl: Node) -> bool {
     // One statement; an `x = y;` whose operator is a plain `=`.
     statements.len() == 1
         && statements[0].kind_s() == "expression_statement"
-        && statements[0].named_child(0).is_some_and(|e| e.kind_s() == "assignment_expression" && e.child_by_field_name("operator").is_some_and(|o| cx.text(o) == b"="))
+        && statements[0]
+            .named_child(0)
+            .is_some_and(|e| e.kind_s() == "assignment_expression" && e.child_by_field_name("operator").is_some_and(|o| cx.text(o) == b"="))
 }
 
 #[allow(dead_code)]
@@ -333,7 +339,8 @@ fn record_component_names(cx: &Ctx, decl: Node) -> Vec<String> {
     let Some(list) = decl.child_by_field_id(cx.syn.f.parameters) else { return Vec::new() };
     list.named_children(&mut list.walk())
         .filter_map(|p| {
-            p.child_by_field_id(cx.syn.f.name).or_else(|| p.children(&mut p.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)))
+            p.child_by_field_id(cx.syn.f.name)
+                .or_else(|| p.children(&mut p.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)))
         })
         .map(|n| String::from_utf8_lossy(cx.text(n)).into_owned())
         .collect()
@@ -443,7 +450,9 @@ fn signature<'a>(cx: &Ctx, decl: Node<'a>) -> Documented<'a> {
         for p in list.named_children(&mut list.walk()) {
             let name = match p.kind_s() {
                 "formal_parameter" => p.child_by_field_id(cx.syn.f.name),
-                "spread_parameter" => p.children(&mut p.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name)),
+                "spread_parameter" => {
+                    p.children(&mut p.walk()).filter(|c| c.kind_s() == "variable_declarator").find_map(|d| d.child_by_field_id(cx.syn.f.name))
+                }
                 _ => None,
             };
             if let Some(n) = name {
@@ -633,7 +642,8 @@ pub fn on_javadoc_method(cx: &mut Ctx, decl: Node) {
                 }
                 fresh
             });
-            let mut documented_throws: Vec<String> = throws_tags.iter().filter_map(|t| t.arg.as_ref().map(|a| a.rsplit('.').next().unwrap_or(a).to_string())).collect();
+            let mut documented_throws: Vec<String> =
+                throws_tags.iter().filter_map(|t| t.arg.as_ref().map(|a| a.rsplit('.').next().unwrap_or(a).to_string())).collect();
             for (node, written) in wanted {
                 if let Some(i) = documented_throws.iter().position(|d| *d == simple_of(&written)) {
                     documented_throws.remove(i);

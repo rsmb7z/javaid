@@ -15,8 +15,8 @@
 //! gets the comments after it as next siblings. Because the memory is per token, a token that the
 //! visitor turns into several nodes (the type of `int a, b;`) gets its comments several times.
 
-use tree_sitter::Node;
 use crate::syntax::KindExt;
+use tree_sitter::Node;
 
 use super::{B, is_comment};
 use crate::csast::ast::{N, NIL};

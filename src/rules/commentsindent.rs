@@ -92,7 +92,8 @@ impl Ck<'_> {
         let key = if self.ty(comment) == Tok::SINGLE_LINE_COMMENT { "Comment" } else { "Block comment" };
         let (line, col) = (self.line(comment), self.col(comment));
         let col = report_col(self.raw, line, col, self.tab_width);
-        let message = format!("{key} has incorrect indentation level {comment_col}, expected is {expected}, indentation should be the same level as line {line_arg}.");
+        let message =
+            format!("{key} has incorrect indentation level {comment_col}, expected is {expected}, indentation should be the same level as line {line_arg}.");
         self.out.push(Diagnostic { rule: "CommentsIndentation", line: line as u32, col, message });
     }
 
@@ -437,7 +438,8 @@ impl Ck<'_> {
 
     fn next_token(&self, checked: N) -> Option<N> {
         let a = self.a;
-        let mut next = if matches!(self.ty(checked), Tok::SLIST | Tok::ARRAY_INIT | Tok::CASE_GROUP) { a.first_child(checked) } else { a.next_sibling(checked) };
+        let mut next =
+            if matches!(self.ty(checked), Tok::SLIST | Tok::ARRAY_INIT | Tok::CASE_GROUP) { a.first_child(checked) } else { a.next_sibling(checked) };
         if let Some(n) = next {
             if is_comment(a, n) && self.is_trailing_comment(n) {
                 next = a.next_sibling(n);
