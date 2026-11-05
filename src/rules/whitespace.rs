@@ -6,7 +6,7 @@
 
 use super::pad::{self, Gap};
 use crate::syntax::KindExt;
-use super::tokens::Token;
+use crate::tokens::Token;
 use crate::engine::Ctx;
 use tree_sitter::Node;
 

@@ -283,7 +283,7 @@ pub fn on_interface(cx: &mut Ctx, node: Node) {
 pub fn on_final_parameter(cx: &mut Ctx, node: Node) {
     let Some(opts) = &cx.cfg.final_parameters else { return };
     let (tokens, ignore_primitive) = (opts.tokens, opts.ignore_primitive_types);
-    use crate::rules::tokens::Token;
+    use crate::tokens::Token;
     let name = match node.kind_s() {
         "formal_parameter" | "spread_parameter" => {
             let Some(list) = cx.parent_of(node).filter(|p| p.kind_s() == "formal_parameters") else { return };

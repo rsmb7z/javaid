@@ -11,59 +11,13 @@
 //! whatever its type. Findings Checkstyle logs by position only (token type 0) can never match, so
 //! the modules and messages known to do that are listed in `tokenless` and are left alone.
 
-use crate::config::{Config, Format};
+use crate::config::Config;
 use crate::csast::{CsAst, Tok, N, NIL};
 use crate::engine::{Ctx, Diagnostic};
 use crate::rules::commentfilter::CHECKER_LEVEL;
-use crate::xpath::{XPath, XTree};
+use crate::xpath::XTree;
 use std::collections::HashSet;
 use std::path::Path;
-
-/// One `SuppressionXpathSingleFilter` instance or one `<suppress-xpath>` element.
-#[derive(Clone, Debug)]
-pub struct XpathFilter {
-    pub files: Option<Format>,
-    pub checks: Option<Format>,
-    pub message: Option<Format>,
-    /// The module `id` a finding must carry.
-    pub id: Option<String>,
-    pub query: Option<XPath>,
-}
-
-/// One `MatchXpath` instance.
-#[derive(Clone, Debug)]
-pub struct MatchXpath {
-    pub name: &'static str,
-    pub query: XPath,
-    pub message: String,
-}
-
-/// The default `matchxpath.match` message.
-pub const MATCH_MESSAGE: &str = "Illegal code structure detected.";
-
-/// Parse the `<suppress-xpath>` elements of a `SuppressionXpathFilter` file.
-pub fn parse_xpath_suppressions(text: &str) -> Result<Vec<XpathFilter>, String> {
-    let opts = roxmltree::ParsingOptions { allow_dtd: true, ..Default::default() };
-    let doc = roxmltree::Document::parse_with_options(text, opts).map_err(|e| format!("cannot parse the suppressions file: {e}"))?;
-    let mut out = Vec::new();
-    for e in doc.root_element().children().filter(|c| c.is_element()) {
-        if e.tag_name().name() != "suppress-xpath" {
-            return Err(format!("the XPath suppressions file has an unexpected <{}> element", e.tag_name().name()));
-        }
-        let query = match e.attribute("query") {
-            Some(q) => Some(XPath::compile(q).map_err(|err| format!("incorrect xpath query '{q}': {err}"))?),
-            None => None,
-        };
-        let format = |n: &str| e.attribute(n).map(Format::new).transpose();
-        out.push(XpathFilter { files: format("files")?, checks: format("checks")?, message: format("message")?, id: e.attribute("id").map(String::from), query });
-    }
-    Ok(out)
-}
-
-/// `MessageFormat` on a message without arguments: a doubled quote is one quote.
-pub fn format_message(m: &str) -> String {
-    m.replace("''", "'")
-}
 
 /// Whether Checkstyle logs this finding by position only, so that an XPath filter never sees a
 /// node for it. Measured against Checkstyle 14.4.0 with a `//*` suppression.

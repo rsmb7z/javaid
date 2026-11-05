@@ -14,5 +14,6 @@ mod messages_table;
 pub mod rules;
 pub mod fileset;
 pub mod suppress;
+pub mod tokens;
 pub mod syntax;
 pub mod xpath;

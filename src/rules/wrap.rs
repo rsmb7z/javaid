@@ -7,7 +7,7 @@
 //! Checkstyle's tree puts a prefix operator, `new` and a cast's `(` above the operand they
 //! introduce, so those are passed over.
 
-use super::tokens::Token;
+use crate::tokens::Token;
 use crate::syntax::KindExt;
 use super::pad;
 use crate::config::{CurlyOption, RightCurlyOption};

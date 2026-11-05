@@ -2,7 +2,7 @@
 
 use crate::engine::Ctx;
 use crate::syntax::KindExt;
-use crate::rules::tokens::Token;
+use crate::tokens::Token;
 use crate::rules::util::has_override_annotation;
 use tree_sitter::Node;
 
