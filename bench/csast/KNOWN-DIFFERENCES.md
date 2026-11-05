@@ -44,7 +44,7 @@ they are small enough to recreate from the quoted source).
    (`for (Point(int a, int b) : list)`, a Java 20 preview feature Checkstyle's grammar still accepts)
    and every file with a syntax error: `try_build_source`/`build_checked` return an error
    ("syntax error at LINE:COL") instead of an AST. `build` itself assumes a tree without `ERROR`
-   nodes and panics on shapes only error recovery produces (release builds abort).
+   nodes and panics on shapes only error recovery produces (caught: that file then gets no emulated AST).
 
 6. **Input Checkstyle's grammar accepts but Java does not** in general, where tree-sitter either
    rejects it (5) or reads it as Java does (3).

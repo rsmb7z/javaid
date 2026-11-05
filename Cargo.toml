@@ -24,4 +24,7 @@ tree-sitter-java-orchard = "0.5.23"
 opt-level = 3
 lto = "fat"
 codegen-units = 1
-panic = "abort"
+# Not "abort": the emulated-AST builder runs under `catch_unwind` (`csast::shared::with_big_stack`)
+# so that a tree shape it does not handle costs that file its csast modules, not the whole run.
+# Under abort that guard would be dead code in exactly the build users run.
+panic = "unwind"

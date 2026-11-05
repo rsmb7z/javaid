@@ -82,8 +82,8 @@ pub fn build_source(src: &[u8], grammar: crate::syntax::Grammar) -> CsAst {
     try_build_source(src, grammar, false).unwrap_or_else(|e| panic!("{e}"))
 }
 
-/// As [`build_source`], reporting a construct the builder cannot handle as an error. (Only with
-/// `panic = "unwind"`; the release profile aborts instead.)
+/// As [`build_source`], reporting a construct the builder cannot handle as an error (the panic is
+/// caught; see `panic = "unwind"` in `Cargo.toml`).
 pub fn try_build_source(src: &[u8], grammar: crate::syntax::Grammar, comments: bool) -> Result<CsAst, String> {
     super::shared::with_big_stack(|| parse_and_build(src, grammar, comments))
         .map_err(|p| p.downcast_ref::<String>().cloned().or_else(|| p.downcast_ref::<&str>().map(|s| s.to_string())).unwrap_or_else(|| "panic".into()))?
