@@ -50,8 +50,8 @@ i7-10700 desktop (8 cores, 16 threads).
 Guava has 3,277 files and Spring Framework 9,293.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/img/benchmark-dark.png">
-  <img alt="Bar chart of wall-clock seconds for Checkstyle 14.4.0, javaid on one thread and javaid on 16 threads, on Guava and Spring Framework with the Google and Sun configs" src="docs/img/benchmark-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/rsmb7z/javaid/main/docs/img/benchmark-dark.png">
+  <img alt="Bar chart of wall-clock seconds for Checkstyle 14.4.0, javaid on one thread and javaid on 16 threads, on Guava and Spring Framework with the Google and Sun configs" src="https://raw.githubusercontent.com/rsmb7z/javaid/main/docs/img/benchmark-light.png">
 </picture>
 
 | config, corpus | Checkstyle 14.4.0 | javaid, 1 thread | javaid, 16 threads |
