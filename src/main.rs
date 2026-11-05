@@ -216,8 +216,11 @@ fn main() -> ExitCode {
     let cli = Cli::parse();
 
     if cli.list_rules {
+        let mut out = std::io::stdout().lock();
         for m in module_names() {
-            println!("{m}");
+            if writeln!(out, "{m}").is_err() {
+                break; // a closed pipe (`| head`) is not an error
+            }
         }
         return ExitCode::SUCCESS;
     }

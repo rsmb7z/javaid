@@ -1,0 +1,39 @@
+name: release
+# Pushing a tag vX.Y.Z publishes that version to crates.io, after the same checks CI runs.
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # trusted publishing: GitHub vouches for this workflow to crates.io
+    env:
+      # The first release of a crate needs an API token (crates.io cannot trust a workflow for a
+      # crate that does not exist yet). Once the crate exists and this repository is registered as
+      # its trusted publisher, delete the secret: every later release goes through trusted publishing.
+      HAS_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: The tag names the version in Cargo.toml
+        run: |
+          version=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "tag $GITHUB_REF_NAME does not match version $version in Cargo.toml"; exit 1
+          fi
+      - run: cargo fmt --check
+      - run: cargo test --locked
+      - name: Authenticate with crates.io (trusted publishing)
+        id: auth
+        if: env.HAS_TOKEN != 'true'
+        uses: rust-lang/crates-io-auth-action@v1
+      - run: cargo publish --locked
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN || steps.auth.outputs.token }}

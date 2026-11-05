@@ -1,11 +1,16 @@
 [package]
 name = "javaid"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
 license = "LGPL-2.1-or-later"
 description = "A fast, Checkstyle-compatible Java linter written in Rust"
 repository = "https://github.com/rsmb7z/javaid"
 readme = "README.md"
+keywords = ["java", "linter", "checkstyle", "static-analysis", "cli"]
+categories = ["development-tools", "command-line-utilities"]
+# What crates.io gets: the source and its notices. The probe fixtures, goldens and benchmarks in
+# bench/ and tests/ (about 25 MB) stay in the repository.
+include = ["/src/**/*.rs", "/Cargo.toml", "/Cargo.lock", "/README.md", "/CHANGELOG.md", "/COPYING.LESSER", "/NOTICE"]
 
 [dependencies]
 clap = { version = "4.6.7", features = ["derive"] }

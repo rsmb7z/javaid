@@ -1,0 +1,36 @@
+javaid reproduces the output of Checkstyle 14.4.0 (https://checkstyle.org), a separate project
+maintained by the Checkstyle contributors: Copyright (C) 2001-2026 the original author or authors,
+licensed under the GNU Lesser General Public License, version 2.1 or (at your option) any later
+version.
+
+javaid is licensed under the same terms (LGPL-2.1-or-later, see COPYING.LESSER). It does not link to
+Checkstyle or run it. Most of it is written from Checkstyle's observable behaviour, recorded on probe
+files. This repository also contains material translated, generated or derived from Checkstyle:
+
+Translated to Rust from Checkstyle 14.4.0's Java source. Each file names its source classes and
+carries Checkstyle's copyright notice:
+- src/rules/indentation.rs: IndentationCheck and its handlers
+- src/rules/commentsindent.rs: CommentsIndentationCheck
+- src/rules/vdud.rs: VariableDeclarationUsageDistanceCheck
+- src/rules/emptyline.rs: EmptyLineSeparatorCheck
+- src/rules/googlerightcurly.rs: GoogleRightCurlyCheck
+- src/rules/textblock.rs: TextBlockGoogleStyleFormattingCheck
+- src/rules/javadoc_tree_checks.rs: SummaryJavadocCheck, JavadocParagraphCheck and
+  JavadocTagContinuationIndentationCheck
+- src/rules/cs.rs: helpers from CommonUtil, TokenUtil and CheckUtil
+- src/csast/ast.rs: DetailAstImpl
+- src/csast/print.rs: AstTreeStringPrinter
+- src/csast/build/: JavaAstVisitor, and JavaParser's comment attachment (comments.rs)
+
+Generated from Checkstyle 14.4.0's sources:
+- src/csast/tok.rs: the token types of TokenTypes.java
+- src/messages_table.rs: the message patterns of its messages.properties files
+
+Derived from Checkstyle 14.4.0's files:
+- bench/oracle/google-implemented.xml, bench/oracle/sun-implemented.xml and a few other files in
+  bench/oracle (for example xp-google-subset.xml): derived from the bundled google_checks.xml and
+  sun_checks.xml, used by the comparison scripts. The original files are not included; the README's
+  demo fetches google_checks.xml from Checkstyle's repository.
+- tests/ and bench/oracle/probes: expected-output files recording what Checkstyle 14.4.0 printed for
+  javaid's own probe files. The probe files and the other configurations in bench/oracle are written
+  for this project.

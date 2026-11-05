@@ -15,3 +15,5 @@ jobs:
       # The unit tests and the Checkstyle-derived probe fixtures: no Java and no corpora needed.
       - run: cargo test --locked
       - run: cargo build --release --locked
+      # What crates.io would receive builds on its own (see `include` in Cargo.toml).
+      - run: cargo package --locked

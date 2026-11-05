@@ -1,166 +1,163 @@
 # javaid
 
-A fast Java linter written in Rust, built to **reproduce Checkstyle's findings exactly**. It is a
-v0.1 preview (see [CHANGELOG.md](CHANGELOG.md)): 128 modules, a `checkstyle.xml` reader, no cache, no
-fixes. The goal is a drop-in for Checkstyle configurations; today it runs the modules it has and
-lists, by name, every one it skips. The project began with one question, answered with evidence:
+**A Checkstyle-compatible Java linter in Rust.** Point it at your existing `checkstyle.xml` and get
+the findings Checkstyle 14.4.0 prints, in a fraction of the time. See [Limits](#limits) for what is
+not covered.
 
-> Can a native, parallel, syntax-only linter reproduce Checkstyle's findings at a
-> fraction of the time and memory?
+[![License: LGPL-2.1-or-later](https://img.shields.io/badge/license-LGPL--2.1--or--later-blue.svg)](#license)
+[![CI](https://github.com/rsmb7z/javaid/actions/workflows/ci.yml/badge.svg)](https://github.com/rsmb7z/javaid/actions/workflows/ci.yml)
+[![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-green.svg)](CHANGELOG.md)
 
-The answer, the method and the caveats are in [FINDINGS.md](FINDINGS.md).
+- **Same findings as Checkstyle.** Same file, line, column, rule and message. With Checkstyle's
+  bundled Google and Sun configs, zero differences on Guava and Spring Framework: 1,778,237 findings
+  with Google's, 1,696,055 with Sun's, leaving out Checkstyle's Javadoc parse-error lines
+  ([how it is verified](#how-it-is-verified)).
+- **Reads your existing config.** It reads `checkstyle.xml`. All 128 modules used by Checkstyle's bundled
+  `google_checks.xml` and `sun_checks.xml` are implemented. Anything it cannot run is named on
+  stderr, never skipped silently.
+- **3.6x to 5.7x faster on one thread, 22x to 38x on 16**, in 37 to 400 MB instead of 3.0 to 3.9 GB.
+  One file takes 9 to 15 ms instead of 1.0 to 1.3 s, short enough for an editor or a pre-commit hook.
 
-## What it does
+## See it work
 
-Parses every `.java` file with [tree-sitter-java](https://github.com/tree-sitter/tree-sitter-java),
-walks each syntax tree **once** (all rules share the walk, dispatched through a node-kind lookup
-table), and processes files in parallel with one reused parser per thread.
+After [installing javaid](#install), run this from a clone of this repo. `docs/demo/` holds a 14-line
+file with a few problems. Fetch Google's configuration (the `google_checks.xml` Checkstyle 14.4.0
+ships) and run it:
 
-| family | modules (Checkstyle's names) |
-|---|---|
-| blocks and coding | `EmptyCatchBlock`, `NeedBraces`, `EqualsHashCode`, `MissingSwitchDefault`, `FallThrough`, `MultipleVariableDeclarations`, `OneStatementPerLine` |
-| imports | `UnusedImports`, including Javadoc references (`processJavadoc`); `AvoidStarImport` |
-| modifiers and small checks | `ModifierOrder`, `ArrayTypeStyle`, `UpperEll` |
-| text, per line or per comment | `FileTabCharacter`, `LineLength`, `RegexpSingleline`, `TodoComment` |
-| whitespace and wrapping | `ParenPad`, `MethodParamPad`, `NoWhitespaceBefore`, `WhitespaceAfter`, `WhitespaceAround`, `GenericWhitespace`, `OperatorWrap`, `SeparatorWrap`, `LeftCurly` |
-| naming | `TypeName`, `MethodName`, `MemberName`, `ConstantName`, `StaticVariableName`, `ParameterName`, `LocalVariableName`, `LocalFinalVariableName`, `PackageName`, `ClassTypeParameterName`, `InterfaceTypeParameterName`, `MethodTypeParameterName`, `RecordTypeParameterName`, `CatchParameterName`, `LambdaParameterName`, `PatternVariableName`, `RecordComponentName` |
+```console
+$ cd docs/demo
+$ curl -LO https://raw.githubusercontent.com/checkstyle/checkstyle/checkstyle-14.4.0/src/main/resources/google_checks.xml
+$ javaid --config google_checks.xml src
+javaid: google_checks.xml: running 106 module(s), skipped 0
+src/demo/Demo.java:3:17: AvoidStarImport: Using the '.*' form of import should be avoided - java.util.*.
+src/demo/Demo.java:5:1: MissingJavadocType: Missing a Javadoc comment for 'Demo'.
+src/demo/Demo.java:6:15: GoogleNonConstantFieldName: Non-constant field name 'Count' must start lowercase, be at least 2 chars, avoid single lowercase letter followed by uppercase, contain only letters, digits or underscores, with underscores allowed only between adjacent digits.
+src/demo/Demo.java:8:3: MissingJavadocMethod: Missing a Javadoc comment for 'do_work'.
+src/demo/Demo.java:8:15: GoogleMethodName: Method name 'do_work' has invalid underscore usage, underscores only allowed between adjacent digits.
+src/demo/Demo.java:9:5: NeedBraces: 'if' construct must use '{}'s.
+src/demo/Demo.java:11:9: Indentation: 'for' child has incorrect indentation level 8, expected level should be 6.
+$ echo $?
+1
+```
 
-The four text modules need no syntax tree. They also read the files a Checker-level `fileExtensions`
-adds (`.properties`, `.xml`), as Checkstyle does. A module's `id` is what a finding is labelled with,
-as in Checkstyle.
+Checkstyle 14.4.0 prints the same seven findings, in its own output format. The first line goes to stderr and says how many of your configuration's modules ran. The
+exit status is 1 if anything is reported, so it works in CI and hooks as it is.
 
-Checkstyle is the **oracle**. A module is accepted only at zero difference from Checkstyle 14.4.0
-on two large codebases (Guava, Spring Framework) and on probe files that exercise every construct,
-which are pinned as fixtures in `bench/oracle/probes` and checked by `cargo test`.
+## javaid vs Checkstyle
+
+The full bundled configs, wall-clock seconds (medians of 3 runs for javaid, 2 for Checkstyle), on an
+i7-10700 desktop (8 cores, 16 threads).
+Guava has 3,277 files and Spring Framework 9,293.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/benchmark-dark.png">
+  <img alt="Bar chart of wall-clock seconds for Checkstyle 14.4.0, javaid on one thread and javaid on 16 threads, on Guava and Spring Framework with the Google and Sun configs" src="docs/img/benchmark-light.png">
+</picture>
+
+| config, corpus | Checkstyle 14.4.0 | javaid, 1 thread | javaid, 16 threads |
+|---|---:|---:|---:|
+| Google, Guava | 67.9 s | 18.2 s (3.7x) | 2.88 s (24x) |
+| Google, Spring | 153.6 s | 26.8 s (5.7x) | 4.06 s (38x) |
+| Sun, Guava | 43.3 s | 12.0 s (3.6x) | 1.94 s (22x) |
+| Sun, Spring | 72.4 s | 17.1 s (4.2x) | 2.67 s (27x) |
+| Peak memory | 3.0 to 3.9 GB | 37 to 300 MB | 190 to 400 MB |
+| One file (`Joiner.java`), process start to exit | 1.0 to 1.3 s | 9 to 15 ms | not applicable |
+
+Checkstyle runs on one thread, so the one-thread column is the like-for-like comparison. The one-file
+row is process start to exit: the mean of 100 runs for javaid, the median of 10 for Checkstyle. The machine
+is an ordinary desktop, not an isolated benchmark box. Method, raw data and the script are in
+[bench/results/full-configs.md](bench/results/full-configs.md).
+
+## Install
+
+From [crates.io](https://crates.io/crates/javaid), with a Rust toolchain (built and tested with Rust
+1.96; the crate uses edition 2024). There are no prebuilt binaries yet.
+
+```bash
+cargo install javaid           # installs to ~/.cargo/bin
+```
+
+or build from a clone:
+
+```bash
+git clone https://github.com/rsmb7z/javaid && cd javaid
+cargo build --release          # the binary is target/release/javaid
+```
 
 ## Use
 
 ```bash
-cargo build --release
-target/release/javaid path/to/src                       # every module, at Checkstyle's defaults
-target/release/javaid --config checkstyle.xml src/      # your Checkstyle configuration
-target/release/javaid --rules NeedBraces,MethodName src/
-target/release/javaid --list-rules
-target/release/javaid -j 1 --stats src/                 # one thread, timings on stderr
+javaid --config checkstyle.xml src/      # your Checkstyle configuration
+javaid src/                              # every module, at Checkstyle's defaults
+javaid --rules NeedBraces,MethodName src/
+javaid --list-rules                      # the 128 modules, also in docs/modules.md
+javaid --grammar upstream src/           # use the upstream tree-sitter-java grammar (see Limits)
+javaid -j 4 --stats src/                 # four threads, timings on stderr
 ```
 
-Output is `path:line:col: Module: message`. Exit status is 1 if anything was reported.
+Output is one finding per line, `path:line:col: Module: message`. Symlinked directories are followed,
+as Checkstyle does (`--no-follow-symlinks` turns that off).
 
-**It never skips silently.** With `--config`, a module javaid does not implement, or a property it
-cannot honour, is listed on stderr with the reason, and that module does not run:
+**With your own configuration:** a module javaid does not implement, or a property it cannot honour,
+is listed on stderr with the reason, and that module does not run (a custom `<message>` template it
+cannot apply is only noted, and javaid prints its own wording). For example:
 
 ```
-javaid: google_checks.xml: running 44 module(s), skipped 62
-  skipped SuppressWarningsFilter: not implemented
-  skipped SuppressionFilter: not implemented
-  ...
-  skipped Indentation: not implemented
-  note TypeName: the custom message for 'name.invalidPattern' is not applied; javaid prints its own wording
+javaid: custom.xml: running 17 module(s), skipped 1
+  skipped Foo: not implemented
 ```
 
-A property it cannot honour reads `skipped NeedBraces: unsupported property: allowSingleLineStatement`.
-`${property}` placeholders take their `default` as Checkstyle does; one with no default skips just
-that module. The reader is checked, not assumed: the 44 instances javaid runs from Checkstyle's
-`google_checks.xml` and the 33 from `sun_checks.xml` give exactly Checkstyle's findings on Guava and
-Spring Framework, XML and properties files included (1,025,538 of 1,025,538 and 345,358 of 345,358).
+## How it is verified
 
-By default javaid follows symlinked directories, as Checkstyle does (`--no-follow-symlinks` turns
-that off).
+Checkstyle 14.4.0 is the oracle. A module is accepted only at zero difference from it on:
 
-## Reproduce the benchmark and the oracle
+1. **Two real codebases**, Guava and Spring Framework, compared finding by finding.
+2. **Mutated copies** of both, edited so that rare rules fire.
+3. **Hand-written probe files**, with Checkstyle's output pinned as fixtures. They run in
+   `cargo test`.
 
-Needs Checkstyle's `-all.jar`, a PMD distribution, and two corpora (Guava and Spring Framework,
-shallow clones). The scripts in `bench/` take the directory that holds them as their first argument.
+The comparison covers file, line, column, rule and message. It leaves out Checkstyle's own "Javadoc
+comment ... has parse error" lines (36 with Google's config, 4 with Sun's), which javaid deliberately
+does not imitate. Matching the documentation is not enough, because Checkstyle has quirks that javaid
+reproduces: a Javadoc attaches only before the first token of a declaration, a comment before an infix
+operator is never "trailing", and one message prints `1,152` where another prints `1152`.
 
-```bash
-cargo test                                   # unit tests and the Checkstyle-derived probe fixtures
-python3 bench/run_bench.py --help            # the timing harness
-python3 bench/parity.py reference.out javaid.out    # per-module diff against Checkstyle (or PMD) output
-python3 bench/parity.py --strict reference.out javaid.out   # also match on the column, and count message differences
-bench/oracle/make-reference.sh <dir> bench/oracle/naming.xml naming    # Checkstyle's reference output
-bench/oracle/config-parity.sh <dir> <dir>/google_checks.xml google     # a bundled config, cut to what javaid runs
-python3 bench/oracle/mutate_corpus.py <src> <dst>                      # a copy of a corpus edited so the rare rules fire
-bench/phase2-bench.sh <dir>                                            # speed with all 33 modules, then the same diff
-```
+To reproduce the comparison and the timings, see [bench/README.md](bench/README.md). The original
+experiment that started the project, with its caveats, is in [FINDINGS.md](FINDINGS.md).
 
-## Results at a glance
+## Limits
 
-The spike's numbers: five rules, same files, on an i7-10700 desktop. Medians; each baseline in its
-fastest configuration. Method, ranges, 2-core CI-runner numbers and threats to validity are in
-[FINDINGS.md](FINDINGS.md). Section 8 there has the Phase 1 numbers for 21 and 33 modules.
+- **Not all of Checkstyle.** 128 modules, the ones the Google and Sun configs use, filters included.
+  Checkstyle 14.4.0's jar has roughly 250 check classes. Issues asking for a module are welcome.
+- **Syntax only**, as Checkstyle is: no type resolution. javaid uses the maintained
+  `tree-sitter-java-orchard` grammar by default, because upstream `tree-sitter-java` cannot parse
+  annotated varargs (`Object @Nullable ... args`), which Spring and Guava use.
+- **Plain-text output only.** No XML, SARIF or other formats, no `--fix`, no cache.
+- **Some properties, and XPath constructs outside the supported subset, are refused by name**, for
+  example `ModifierOrder modifiersOrder` and `ArrayTypeStyle javaStyle=false`.
+- **Repeated modules.** Several instances of one module run for a listed set of modules (`LeftCurly`,
+  `OperatorWrap`, `SeparatorWrap`, `TypeName`, `RegexpSingleline`, `TodoComment` and a few more, all
+  listed in [docs/compatibility.md](docs/compatibility.md)); any other second instance is skipped and
+  listed on stderr.
+- **Javadoc parse-error lines** that Checkstyle prints for odd Javadoc are not imitated, and a few
+  known divergences on odd constructs are listed in the compatibility notes.
+- **Reads `.java` files.** Without `fileExtensions`, Checkstyle hands the file-level modules every
+  file under the paths; javaid reads `.java` only and prints a note saying so. A Checker-level
+  `fileExtensions` adds `.properties` and `.xml` for the text-based modules (line length, tabs,
+  regular expressions) only.
 
-| | Checkstyle 14.4 | PMD 7.29 | javaid |
-|---|---:|---:|---:|
-| Guava (3,277 files), 1 thread | 30.5 s | 14.7 s | **3.05 s** |
-| Guava, 16 threads | single-threaded | 7.4 s | **0.40 s** |
-| Spring Framework (9,293 files), 1 thread | 47 s | 18.5 s | **5.0 s** |
-| Spring Framework, 16 threads | single-threaded | 11.4 s | **0.81 s** |
-| 2-core CI runner (Guava / Spring) | 34 s / 52 s | 17 s / 20 s | **1.6 s / 2.6 s** |
-| Peak memory | 0.7-3.3 GB | 0.5-2.5 GB | **17-53 MB** |
-| One file (hook / editor / agent) | 0.59 s | 1.21 s | **3.2 ms** |
+The details, with the exact lists, are in [docs/compatibility.md](docs/compatibility.md). How it works
+inside is in [docs/architecture.md](docs/architecture.md).
 
-With **all 33 modules** javaid and Checkstyle do the same work, checked finding by finding (99,414
-identical findings on the two corpora, none extra), and the ratio holds. Checkstyle's defaults for
-the first 21 modules, Google's settings for the file-level ones:
+## Status
 
-| | Checkstyle 14.4 | javaid |
-|---|---:|---:|
-| Guava (3,277 files), 1 thread | 35.9 s | **4.07 s** (8.8x) |
-| Guava, 16 threads | single-threaded | **0.60 s** (60x) |
-| Spring Framework (9,515 files with the symlink), 1 thread | 58.4 s | **6.38 s** (9.1x) |
-| Spring Framework, 16 threads | single-threaded | **0.89 s** (66x) |
-| Peak memory | 3.3 GB | **19-67 MB** |
-| One file (hook / editor / agent) | 0.81 s | **3.9 ms** (209x) |
+Version 1.0.0. See [CHANGELOG.md](CHANGELOG.md). Please open an issue if javaid's output differs from
+Checkstyle's on your code: attach the configuration and a snippet. That is the most useful bug report.
 
-These numbers are from before a later optimisation of the tree walk that cut what the twelve newest
-modules cost from about 10% to about 3% of the run; a clean re-run was not possible on a shared
-desktop. See [FINDINGS.md](FINDINGS.md) section 8 for ranges, the A/B measurement and caveats.
+## Why "javaid"?
 
-A JVM startup fix does not erase the gap. JDK 25's AOT cache roughly halves the JVM tools' one-file
-latency and changes a whole-repository run by 3.5-18%. Only a *warm resident* JVM matches javaid on
-one file (Checkstyle 4.0 ms), at 733 MB. See [FINDINGS.md](FINDINGS.md) section 2.5.
-
-## Known limits
-
-- **128 modules.** Checkstyle 14.4 has 243 rule modules; its two bundled configs name 128 distinct
-  modules, filters included, and javaid implements all of them. `google_checks.xml` (106 instances)
-  and `sun_checks.xml` (73) run in full and give Checkstyle's findings exactly (line, column and
-  message) on Guava and Spring Framework. Modules outside those two configs are not all there yet;
-  javaid says which module or property it cannot honour when a configuration loads. XPath constructs
-  outside the subset listed in `src/xpath.rs` are refused the same way.
-- **Speed against Checkstyle is not re-measured for the full configs.** Single-threaded on
-  spring-core (1,101 files), javaid's user CPU is about 5.3 s for the whole Google config and 2.4 s
-  for the whole Sun config (machine load about 7, not idle). The older 6-9x per core and about 50x
-  on all threads figures (FINDINGS.md section 8) were measured with 42 modules.
-- **Syntax-only.** No type resolution, so nothing that needs symbol or type information. This
-  matches Checkstyle, which is also purely syntactic.
-- **Grammar.** The default is the maintained fork `tree-sitter-java-orchard`. Upstream
-  `tree-sitter-java` 0.23.5 cannot parse annotated varargs (`Object @Nullable ... args`), which
-  Spring 7, JUnit 6 and Guava use; `--grammar upstream` switches back. A test documents the gap.
-- **Modelled by probing, not by reading Checkstyle.** A few modules approximate control flow or
-  layout in ways that are not obvious, and javaid reproduces the approximation. `FallThrough` decides
-  whether a `break` can leave an infinite loop by looking at a few positions only; six odd shapes of
-  that (an `if` pairing a `return` with a `break`, nested inside the loop) are not reproduced, and
-  `OneStatementPerLine` follows a handful of quirks about members that share a line. Both are listed
-  in `bench/oracle/probes/make-fallthrough-probes.py` and `FINDINGS.md`.
-- **Checkstyle's Javadoc-parser diagnostics are not imitated.** At default settings Checkstyle
-  prints "Javadoc comment ... has parse error" for odd Javadoc under the `UnusedImports` name; those
-  are not unused-import findings and javaid does not produce them.
-- **Properties not honoured yet** include a second instance of a module other than `TypeName`,
-  `RegexpSingleline`, `TodoComment`, `OperatorWrap`, `SeparatorWrap` and `LeftCurly`, and custom
-  `<message>` templates: those are
-  listed as notes and javaid prints its own wording, which changes the text of a finding and not
-  whether or where it is reported. Specifically refused, by name: `ArrayTypeStyle javaStyle=false`,
-  `ModifierOrder modifiersOrder`, `FallThrough reliefPattern` other than the default, and
-  `AvoidStarImport maxAllowedStarImports`. Regular expressions that need lookahead work, through a
-  slower engine used only for them. All of this is reported by name, not ignored.
-- **File types.** Without any `fileExtensions`, Checkstyle hands the file-level modules every file
-  under the paths; javaid reads `.java` only, and prints a note saying so. A file with old-Mac
-  (`\r`-only) line endings gets Checkstyle's line numbers. The one known difference there is
-  `TodoComment` on a multi-line block comment: Checkstyle splits a comment's text only at `\n`, so it
-  sees one line, while javaid has turned each `\r` into `\n` to parse the file and sees several.
-- No cache, no `--fix`, no output format other than plain text.
-- No licence has been chosen yet.
+When I was a freelancer two decades ago, clients assumed I was a Java expert because of my name. I
+wasn't. So I named a Java tool after myself.
 
 ## License
 
@@ -171,4 +168,4 @@ Running javaid, in CI or anywhere else, places no conditions on you or on the co
 Most of javaid is written from Checkstyle's observable behaviour: its findings and message text,
 recorded on probe files. Some modules and the emulation of Checkstyle's syntax tree are translated to
 Rust from Checkstyle 14.4.0's source; those files name their source and carry Checkstyle's copyright
-notice.
+notice; see [NOTICE](NOTICE).
