@@ -412,7 +412,7 @@ impl<'a> Ind<'a> {
         let mut len = 0;
         for i in 0..to.max(0) as usize {
             if line.get(i) == Some(&9) {
-                len = (len / self.tab + 1) * self.tab;
+                len = crate::columns::tab_stop(len as usize, self.tab as usize) as i32;
             } else {
                 len += 1;
             }

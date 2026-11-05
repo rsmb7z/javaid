@@ -31,25 +31,6 @@ pub fn lines(src: &[u8]) -> impl Iterator<Item = &[u8]> {
     })
 }
 
-/// The length Checkstyle reports for a line: tabs run to the next multiple of `tab_width` counted in
-/// UTF-16 units, where a supplementary character takes two, and then each such character is taken
-/// off once (probed: `LineLength` expands over the string's units but reports in code points).
-fn expanded_length(line: &[u8], tab_width: usize) -> usize {
-    let (mut len, mut pairs) = (0, 0);
-    for &b in line {
-        if b == b'\t' {
-            len = (len / tab_width + 1) * tab_width;
-        } else if b & 0xC0 != 0x80 {
-            len += 1; // not a UTF-8 continuation byte, so the start of a code point
-            if b >= 0xF0 {
-                len += 1;
-                pairs += 1;
-            }
-        }
-    }
-    len - pairs
-}
-
 /// 1-based column of byte `at`, counting UTF-16 code units (no tab expansion).
 fn column(line: &[u8], at: usize) -> u32 {
     line[..at].iter().filter(|&&b| b & 0xC0 != 0x80).map(|&b| if b >= 0xF0 { 2 } else { 1 }).sum::<u32>() + 1
@@ -96,7 +77,7 @@ pub fn run(cfg: &Config, ext: &str, src: &[u8], out: &mut Vec<Diagnostic>) {
 
         if let Some(m) = length {
             if line.len() > m.max || (file_has_tab && memchr(b'\t', line).is_some()) {
-                let found = expanded_length(line, cfg.tab_width);
+                let found = crate::columns::line_length(line, cfg.tab_width);
                 if found > m.max && !m.ignore_pattern.matches(line) {
                     let message = format!("Line is longer than {} characters (found {}).", crate::engine::grouped(m.max), crate::engine::grouped(found));
                     out.push(Diagnostic { rule: cfg.display("LineLength"), line: n, col: 0, message });

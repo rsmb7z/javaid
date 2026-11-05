@@ -39,7 +39,7 @@ impl Log<'_> {
 
     /// `log(int line, int columnNo, ...)`: `column` is the 0-based code-point column.
     pub fn at_pos(&mut self, rule: &'static str, line: i32, column: i32, message: &str) {
-        let col = 1 + expanded_len(self.lines.get((line - 1).max(0) as usize).copied().unwrap_or_default(), column.max(0) as usize, self.cfg.tab_width);
+        let col = 1 + crate::columns::chars_width(self.lines.get((line - 1).max(0) as usize).copied().unwrap_or_default(), column.max(0) as usize, self.cfg.tab_width);
         let d = Diagnostic { rule: self.cfg.display(rule), line: line.max(0) as u32, col: col as u32, message: message.to_string() };
         if self.seen.insert((d.rule, d.line, d.col, d.message.clone())) {
             self.out.push(d);
@@ -58,22 +58,6 @@ impl Log<'_> {
     pub fn line_only(&mut self, rule: &'static str, line: i32, message: &str) {
         self.out.push(Diagnostic { rule: self.cfg.display(rule), line: line.max(0) as u32, col: 0, message: message.to_string() });
     }
-}
-
-/// `CommonUtil.lengthExpandedTabs`: the width of the first `to` code points, a tab running to the
-/// next multiple of the tab width.
-fn expanded_len(line: &[u8], to: usize, tab_width: usize) -> usize {
-    let text = String::from_utf8_lossy(line);
-    let mut width = 0usize;
-    for c in text.chars().take(to) {
-        if c == '\t' {
-            width = (width / tab_width + 1) * tab_width;
-        } else {
-            width += 1;
-        }
-    }
-    // A column past the end of the line (it cannot normally happen) counts one each.
-    width + to.saturating_sub(text.chars().count())
 }
 
 /// Java's `Character.isWhitespace(char)`.

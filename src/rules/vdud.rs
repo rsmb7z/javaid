@@ -90,21 +90,7 @@ fn visit(a: &CsAst, o: &Opts, ast: N, lines: &[&[u8]], tab_width: usize, out: &m
 /// `AbstractCheck.log`: the column is 1 + the tab-expanded length of the text before it.
 pub fn report_col(lines: &[&[u8]], line: i32, col: i32, tab_width: usize) -> u32 {
     let Some(text) = lines.get((line - 1).max(0) as usize) else { return col as u32 + 1 };
-    let mut width = 0usize;
-    let mut seen = 0;
-    for ch in String::from_utf8_lossy(text).chars() {
-        if seen >= col {
-            break;
-        }
-        seen += 1;
-        if ch == '\t' {
-            width = (width / tab_width + 1) * tab_width;
-        } else {
-            width += 1;
-        }
-    }
-    // Columns past the end of the line count one each.
-    width as u32 + (col - seen).max(0) as u32 + 1
+    crate::columns::chars_width(text, col.max(0) as usize, tab_width) as u32 + 1
 }
 
 fn instance_name(a: &CsAst, method_call: N) -> String {

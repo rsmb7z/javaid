@@ -220,30 +220,7 @@ fn anchor(node: Node) -> Node {
     dot.unwrap_or(node)
 }
 
-/// The column Checkstyle prints for the position after `before`, the bytes of the line up to that
-/// position.
-///
-/// Checkstyle's parser counts code points, so the position is `n` characters in; the tab expansion
-/// then walks the first `n` UTF-16 *units* of the line (`CommonUtil.lengthExpandedTabs`), a tab
-/// running to the next multiple of `tab_width`. They are the same thing unless a supplementary
-/// character (an emoji) comes first, when the walk stops short by one unit for each of them
-/// (probed): a tab after an emoji expands from a column that is too small.
-pub fn expanded_column(before: &[u8], tab_width: usize) -> u32 {
-    if before.is_ascii() {
-        let mut width = 0usize;
-        for &b in before {
-            width = if b == b'\t' { (width / tab_width + 1) * tab_width } else { width + 1 };
-        }
-        return width as u32 + 1;
-    }
-    let text = String::from_utf8_lossy(before);
-    let characters = text.chars().count();
-    let mut width = 0usize;
-    for unit in text.encode_utf16().take(characters) {
-        width = if unit == u16::from(b'\t') { (width / tab_width + 1) * tab_width } else { width + 1 };
-    }
-    width as u32 + 1
-}
+pub use crate::columns::expanded_column;
 
 /// An integer as `MessageFormat` prints it in the default (US) locale, `{0,number,integer}` and a
 /// bare `{0}` holding an `Integer` alike: groups of three digits separated by commas.

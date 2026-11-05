@@ -175,15 +175,7 @@ pub fn content_location(cx: &mut Ctx, comment: Node, first_line: bool) {
 
 /// Width of `s` with tabs expanded to the next multiple of `tab_width`.
 fn expanded_len(s: &str, tab_width: usize) -> usize {
-    let mut n = 0;
-    for c in s.chars() {
-        if c == '\t' {
-            n += tab_width - n % tab_width;
-        } else {
-            n += 1;
-        }
-    }
-    n
+    crate::columns::expanded_chars(s.as_bytes(), usize::MAX, tab_width).0
 }
 
 /// `JavadocLeadingAsteriskAlign`.

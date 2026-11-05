@@ -174,7 +174,7 @@ fn char_index(lines: &[&[u8]], line: u32, col: u32, tab_width: usize) -> i32 {
                 exact = Some(i as i32);
             }
             if let Some(&b) = text.get(i) {
-                width = if b == b'\t' { (width / tab_width + 1) * tab_width } else { width + 1 };
+                width = if b == b'\t' { crate::columns::tab_stop(width, tab_width) } else { width + 1 };
             }
         }
         return exact.unwrap_or(best);
@@ -182,25 +182,25 @@ fn char_index(lines: &[&[u8]], line: u32, col: u32, tab_width: usize) -> i32 {
     let mut chars = 0i32;
     let mut best = 0i32;
     for (i, ch) in String::from_utf8_lossy(text).char_indices() {
-        if crate::engine::expanded_column(&text[..i], tab_width) <= col {
+        if crate::columns::expanded_column(&text[..i], tab_width) <= col {
             best = chars;
         }
         let _ = ch;
         chars += 1;
     }
-    if crate::engine::expanded_column(text, tab_width) <= col {
+    if crate::columns::expanded_column(text, tab_width) <= col {
         best = chars;
     }
     // Several prefixes can share a column only when a tab sits between them; take the last that fits exactly.
     let mut exact = None;
     let mut n = 0i32;
     for (i, _) in String::from_utf8_lossy(text).char_indices() {
-        if crate::engine::expanded_column(&text[..i], tab_width) == col {
+        if crate::columns::expanded_column(&text[..i], tab_width) == col {
             exact = Some(n);
         }
         n += 1;
     }
-    if crate::engine::expanded_column(text, tab_width) == col {
+    if crate::columns::expanded_column(text, tab_width) == col {
         exact = Some(n);
     }
     exact.unwrap_or(best)

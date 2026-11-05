@@ -4,6 +4,7 @@
 //! library exists so that integration tests (and, later, editor integrations) can drive the same
 //! engine as the command-line binary.
 
+pub mod columns;
 pub mod config;
 pub mod csast;
 pub mod engine;

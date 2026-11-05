@@ -342,16 +342,8 @@ fn record_component_names(cx: &Ctx, decl: Node) -> Vec<String> {
 /// 1-based column of a character index in a line, tabs running to the next multiple of the tab width.
 fn column_of(cx: &Ctx, line: u32, index: usize) -> u32 {
     let text = cx.src.split(|&b| b == b'\n').nth(line as usize - 1).unwrap_or_default();
-    let text = String::from_utf8_lossy(text);
-    let mut width = 0usize;
-    for c in text.chars().take(index) {
-        if c == '\t' {
-            width = (width / cx.cfg.walker_tab() + 1) * cx.cfg.walker_tab();
-        } else {
-            width += 1;
-        }
-    }
-    width as u32 + 1
+    // Unlike `columns::chars_width`, a position past the end of the line adds nothing.
+    crate::columns::expanded_chars(text, index, cx.cfg.walker_tab()).0 as u32 + 1
 }
 
 /// `JavadocType`
