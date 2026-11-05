@@ -97,9 +97,10 @@ dumps in `bench/csast/golden*/`, which `bench/csast/regen-golden.sh` regenerates
 
 1. Set the new `version` in `Cargo.toml`, and move the changelog's notes under that version.
 2. Commit, then tag the commit `v<version>` (for example `v1.0.1`) and push the tag.
-3. `.github/workflows/release.yml` checks that the tag matches `Cargo.toml`, runs the checks CI runs,
-   and publishes to crates.io through trusted publishing. A published version cannot be replaced,
-   only yanked, so the checks run before it.
+3. `.github/workflows/release.yml` waits for a maintainer to approve the run (Actions tab, the
+   `release` environment). Then it checks that the tag matches `Cargo.toml` and that its commit is
+   on `main`, runs the checks CI runs, and publishes to crates.io through trusted publishing. A
+   published version cannot be replaced, only yanked, so reject the run if the tag was a mistake.
 
 ## License
 
