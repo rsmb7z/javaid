@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 .claude/
 .idea/
+# Local corpora, tools and results the bench scripts read (see bench/full-configs-timing.sh)
+/.scratchpad/
